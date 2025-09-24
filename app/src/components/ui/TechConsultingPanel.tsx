@@ -1476,7 +1476,7 @@ export default function TechConsultingPanel() {
                 </div>
               ) : (
                 <div className="text-muted-foreground">
-                  생성 버튼을 눌러주세요.
+                  {aiSampleTexts.threatAnalysis}
                 </div>
               )}
             </div>
@@ -1520,7 +1520,7 @@ export default function TechConsultingPanel() {
                 </div>
               ) : (
                 <div className="text-muted-foreground">
-                  생성 버튼을 눌러주세요.
+                  {aiSampleTexts.yaraRule}
                 </div>
               )}
             </div>
