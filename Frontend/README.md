@@ -11,7 +11,7 @@
 3. `npm run dev` (local에서만 접근 가능) or `npm run dev -- --host` (같은 네트워크 대역이면 접근 가능)
 4. log에 나온 주소로 접속하여 UI 및 기능 확인
 
-  
+  ---
   ### Figma React Fix (Vite + Tailwind)
 
   ### 빠른 실행
