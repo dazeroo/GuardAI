@@ -12,7 +12,7 @@
 4. log에 나온 주소로 접속하여 UI 및 기능 확인
 
 
-    ### Figma React Fix (Vite + Tailwind)
+    ### (참고) Figma React Fix (Vite + Tailwind)
 
     ### 빠른 실행
     ```bash
