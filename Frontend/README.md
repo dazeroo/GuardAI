@@ -13,13 +13,13 @@
 
 ### (참고) Figma React Fix (Vite + Tailwind)
 
-   ### 빠른 실행
+   #### 빠른 실행
    ```bash
    npm i
    npm run dev
    ```
 
-   ### 빌드
+   #### 빌드
    ```bash
    npm run build
    npm run preview
