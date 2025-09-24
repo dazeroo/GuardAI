@@ -5,7 +5,7 @@
 ---
 
 ## 🧪 테스트 방법 (How to Test)
-* GuarAI/Frontend/ 경로에서 실행
+GuarAI/Frontend/ 경로에서 실행
 1. `git checkout develop`
 2. `npm install`
 3. `npm run dev` (local에서만 접근 가능) or `npm run dev -- --host` (같은 네트워크 대역이면 접근 가능)
