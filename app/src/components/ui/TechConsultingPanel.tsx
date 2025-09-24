@@ -543,8 +543,8 @@ const webItems = [
 // AI 추가진단 샘플 텍스트
 const aiSampleTexts = {
   threatAnalysis:
-    "추가 위협 예측에 대한 AI 추가 진단 결과입니다.",
-  yaraRule: "YARA Rule 생성에 대한 AI 추가 진단 결과입니다.",
+    "추가 위협 공격에 대해 안내해드립니다. 자세한 내용을 확인하고 싶으시면 생성을 눌러주세요.",
+  yaraRule: "공격을 방어할 수 있는 Yara Rule을 추천드립니다. 자세한 내용을 확인하고 싶으시면 생성을 눌러주세요.",
 };
 
 // 취약점 대응방안 데이터
@@ -969,10 +969,30 @@ export default function TechConsultingPanel() {
 
     showModalMessage("AI 진단", "생성을 시작합니다...", "info");
 
-    // 로딩 시뮬레이션 (2-3초)
-    await new Promise((resolve) =>
-      setTimeout(resolve, 2000 + Math.random() * 1000),
-    );
+    const ai_res = await fetch("/api/ai/run", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tabType }), // tabType을 JSON 형식으로 전송
+    });
+
+    // HTTP 상태 코드 확인
+    if (!ai_res.ok) {
+      throw new Error(`HTTP error! status: ${ai_res.status}`);
+    }
+
+    const ai_res_json = await ai_res.json();
+
+    // 응답 데이터 검증
+    if (!ai_res_json || !ai_res_json.attack || !ai_res_json.yara) {
+      throw new Error("AI 응답 데이터가 올바르지 않습니다.");
+    }
+
+    // AI 응답을 샘플 텍스트에 적용
+    aiSampleTexts.threatAnalysis = ai_res_json.attack;
+    aiSampleTexts.yaraRule = ai_res_json.yara;
+
 
     if (tabType === "db") {
       setSummaryDBSAI({ show: true, loading: false });
@@ -980,6 +1000,7 @@ export default function TechConsultingPanel() {
       setSummaryWebAI({ show: true, loading: false });
     }
 
+    
     showModalMessage(
       "AI 진단 완료",
       "생성이 완료되었습니다.",
@@ -1013,10 +1034,29 @@ export default function TechConsultingPanel() {
 
     showModalMessage("AI 진단", "생성을 시작합니다...", "info");
 
-    // 로딩 시뮬레이션 (2-3초)
-    await new Promise((resolve) =>
-      setTimeout(resolve, 2000 + Math.random() * 1000),
-    );
+    const ai_res = await fetch("/api/ai/run", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tabType }), // tabType을 JSON 형식으로 전송
+    });
+
+    // HTTP 상태 코드 확인
+    if (!ai_res.ok) {
+      throw new Error(`HTTP error! status: ${ai_res.status}`);
+    }
+
+    const ai_res_json = await ai_res.json();
+
+    // 응답 데이터 검증
+    if (!ai_res_json || !ai_res_json.attack || !ai_res_json.yara) {
+      throw new Error("AI 응답 데이터가 올바르지 않습니다.");
+    }
+
+    // AI 응답을 샘플 텍스트에 적용
+    aiSampleTexts.threatAnalysis = ai_res_json.attack;
+    aiSampleTexts.yaraRule = ai_res_json.yara;
 
     if (tabType === "db") {
       setDiagnosisDBSAI({ show: true, loading: false });
@@ -1489,7 +1529,6 @@ export default function TechConsultingPanel() {
       </div>
     );
   };
-
   return (
     <>
       <Card className="flex flex-col h-full">
