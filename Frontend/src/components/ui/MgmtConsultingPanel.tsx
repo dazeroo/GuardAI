@@ -31,7 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./tooltip";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 // 구분 열 통합 및 진단결과 열 분리 구조
 const summaryResults = [
