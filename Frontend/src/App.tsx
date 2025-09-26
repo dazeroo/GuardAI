@@ -12,7 +12,16 @@ export default function App() {
         <div className="max-w-full mx-auto">
           {/* 헤더(그대로 유지) */}
           <div className="mb-8">
-            <h1 className="mb-2">Gaurd AI 로고 | AI 기반 보안 컨설팅 및 위협 탐지</h1>
+           <h1 className="mb-2 flex items-center space-x-2">
+              <img
+                src="/image.png"
+                alt="Guard AI 로고"
+                style={{ width: 100, height: 80 }}
+              />
+              <span className="text-4xl font-bold">
+                AI 기반 보안 컨설팅 및 위협 탐지
+              </span>
+              </h1>  
             <p className="text-muted-foreground">
               Gaurd AI 통합 컨설팅 보고서는 크게 기술 컨설팅 서비스와 관리 컨설팅 서비스가 있습니다.
               <br /><br />
