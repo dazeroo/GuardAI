@@ -15,6 +15,20 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* 라이트 모드일 때 테이블 헤더 스타일 */
+  table > thead {
+    /* --muted 변수의 색상값인 #ececf0를 RGBA로 변환하여 80% 투명도 적용 */
+    background-color: rgba(236, 236, 240, 0.8);
+    -webkit-backdrop-filter: blur(8px); /* backdrop-blur 효과 */
+    backdrop-filter: blur(8px);
+  }
+
+  /* 다크 모드일 때 테이블 헤더 스타일 */
+  .dark table > thead {
+    /* --muted 변수의 oklch 색상값에 직접 80% 투명도 적용 */
+    background-color: oklch(0.269 0 0 / 0.8);
+  }
 }
 
 
