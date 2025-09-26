@@ -1846,45 +1846,48 @@ export default function MgmtConsultingPanel() {
                     <h3 className="mb-3">취약점 대응방안</h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
-                        <div className="border rounded-lg overflow-hidden min-w-full">
-                          <div className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
-                            <div className="grid grid-cols-2 gap-0 border-b">
-                              <div className="p-4 border-r font-medium text-sm">
-                                취약 항목
-                              </div>
-                              <div className="p-4 font-medium text-sm">
-                                대응방안
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-white">
-                            {/* UI 렌더링 수정: 동적 vulnerabilityDetails 배열 사용 */}
-                            {(hasExcelData
-                              ? dynamicVulnerabilityDetails
-                              : vulnerabilityDetails
-                            ).length > 0 ? (
-                              (hasExcelData
+                        <div className="border rounded-lg overflow-hidden">
+                          <table className="w-full border-collapse">
+                            <thead className="sticky top-0 z-10">
+                              <tr>
+                                <th className="p-3 border-b border-r font-medium text-left text-sm">
+                                  취약 항목
+                                </th>
+                                <th className="p-3 border-b font-medium text-left text-sm">
+                                  대응방안
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(hasExcelData
                                 ? dynamicVulnerabilityDetails
                                 : vulnerabilityDetails
-                              ).map((item, index) => (
-                                <div
-                                  key={item.id}
-                                  className={`grid grid-cols-2 gap-0 ${index % 2 === 0 ? "bg-white" : "bg-muted/10"} hover:bg-muted/20 border-b transition-colors`}
-                                >
-                                  <div className="p-4 border-r text-sm leading-relaxed">
-                                    {item.vulnerability}
-                                  </div>
-                                  <div className="p-4 text-sm leading-relaxed">
-                                    {item.countermeasure}
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="p-8 text-center text-muted-foreground">
-                                취약점이 발견되지 않았습니다.
-                              </div>
-                            )}
-                          </div>
+                              ).length > 0 ? (
+                                (hasExcelData
+                                  ? dynamicVulnerabilityDetails
+                                  : vulnerabilityDetails
+                                ).map((item, index) => (
+                                  <tr
+                                    key={item.id}
+                                    className={`${index % 2 === 0 ? "bg-white" : "bg-muted/10"} hover:bg-muted/20 border-b transition-colors`}
+                                  >
+                                    <td className="p-4 border-r text-sm leading-relaxed">
+                                      {item.vulnerability}
+                                    </td>
+                                    <td className="p-4 text-sm leading-relaxed">
+                                      {item.countermeasure}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={2} className="p-8 text-center text-muted-foreground">
+                                    취약점이 발견되지 않았습니다.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
                         </div>
                       </ScrollArea>
                     </div>
