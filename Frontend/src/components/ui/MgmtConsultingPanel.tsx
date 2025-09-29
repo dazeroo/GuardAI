@@ -986,7 +986,7 @@ export default function MgmtConsultingPanel() {
       setProgress(35);
 
       // Flask 백엔드 API 호출
-      const response = await fetch('http://127.0.0.1:3001', {
+      const response = await fetch('http://127.0.0.1:3001/api/diagnose', {
         method: 'POST',
         body: formData,
       });
