@@ -634,6 +634,47 @@ export default function MgmtConsultingPanel() {
     }>
   >([]);
 
+  // ✅ 여기에 mapDiagnosisDataToSummary 함수 추가
+  const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
+    const newSummaryResults = JSON.parse(JSON.stringify(summaryResults));
+    const newVulnerabilityDetails: Array<{
+      id: number;
+      vulnerability: string;
+      countermeasure: string;
+    }> = [];
+    let vulnerabilityIdCounter = 1;
+    let dataIndex = 0;
+    
+    for (const group of newSummaryResults) {
+      for (const field of group.fields) {
+        field.rating = "-";
+        
+        if (field.subItems) {
+          for (const subItem of field.subItems) {
+            if (dataIndex < diagnosisData.length) {
+              const item = diagnosisData[dataIndex];
+              subItem.rating = item.rating || "N";
+              
+              if (item.rating === "N" && item.reason) {
+                newVulnerabilityDetails.push({
+                  id: vulnerabilityIdCounter++,
+                  vulnerability: item.name || subItem.name,
+                  countermeasure: item.reason || "개선 필요",
+                });
+              }
+              dataIndex++;
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      summaryData: newSummaryResults,
+      vulnerabilityData: newVulnerabilityDetails,
+    };
+  };
+
   const showModalMessage = (
     title: string,
     message: string,
@@ -929,7 +970,7 @@ export default function MgmtConsultingPanel() {
     setShowSummaryCompleteModal(true);
   };
 
-  const startDiagnosis = async () => {
+  const startDiagnosis = async (file: File) => {
     setUploading(true);
     setProgress(15);
     showModalMessage(
@@ -938,84 +979,87 @@ export default function MgmtConsultingPanel() {
       "info",
     );
 
-    const steps = [35, 55, 80, 100];
-    for (const p of steps) {
-      await new Promise((r) => setTimeout(r, 400));
-      setProgress(p);
-    }
+    try {
+      // FormData 생성
+      const formData = new FormData();
+      formData.append('guideline', file);
+      setProgress(35);
 
-    setUploading(false);
-    setDiagnosisGenerated(true);
-    setShowDiagnosisCompleteModal(true);
-  };
+      // Flask 백엔드 API 호출
+      const response = await fetch('http://localhost:3001/api/diagnose', {
+        method: 'POST',
+        body: formData,
+      });
+      setProgress(55);
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // 파일 확장자 검증
-      const fileName = file.name.toLowerCase();
-      if (
-        !fileName.endsWith(".xlsx") &&
-        !fileName.endsWith(".xls")
-      ) {
-        showModalMessage(
-          "파일 형식 오류",
-          "엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.",
-          "error",
-        );
-        return;
+      if (!response.ok) {
+        throw new Error('진단 요청 실패');
       }
 
-      setUploadedFile(file);
+      const diagnosisData = await response.json();
+      setProgress(80);
+
+      // 백엔드 응답 데이터를 summaryResults 구조에 매핑
+      const mappedData = mapDiagnosisDataToSummary(diagnosisData);
+      setParsedExcelData(mappedData.summaryData);
+      setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
+      setHasExcelData(true);
+
+      setProgress(100);
+      setUploading(false);
+      setDiagnosisGenerated(true);
+      setShowDiagnosisCompleteModal(true);
+    } catch (error) {
+      console.error('자동 진단 중 오류:', error);
+      setUploading(false);
       showModalMessage(
-        "파일 업로드",
-        `${file.name} 파일이 업로드되었습니다!`,
-        "success",
-      );
-
-      try {
-        // handleFileUpload 함수에서 processExcelData가 반환한 객체를 받아 처리
-        const processedData = await processExcelData(file);
-
-        // summaryData는 parsedExcelData 상태에, vulnerabilityData는 dynamicVulnerabilityDetails 상태에 각각 저장
-        setParsedExcelData(processedData.summaryData);
-        setDynamicVulnerabilityDetails(
-          processedData.vulnerabilityData,
-        );
-
-        // 파일이 성공적으로 처리되었으므로 setHasExcelData(true) 호출
-        setHasExcelData(true);
-
-        // 보고서 요약 프로세스 시작
-        await startSummary();
-      } catch (error) {
-        console.error("엑셀 파일 처리 실패:", error);
-        showModalMessage(
-          "파일 처리 오류",
-          "엑셀 파일 처리 중 오류가 발생했습니다.",
-          "error",
-        );
-      }
+        "진단 오류",
+        "자동 진단 중 오류가 발생했습니다. 다시 시도해주세요.",
+        "error");
     }
   };
 
+
+  // 3. handleDiagnosisFileUpload 수정
   const handleDiagnosisFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (file) {
       setDiagnosisFile(file);
-      showModalMessage(
-        "파일 업로드",
-        `${file.name} 파일이 업로드되었습니다!`,
-        "success",
-      );
-      await startDiagnosis();
+      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
+      await startDiagnosis(file); // file 파라미터 전달
     }
   };
 
+  // ✅ 여기에 handleFileUpload 추가
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const fileName = file.name.toLowerCase();
+      if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+        showModalMessage("파일 형식 오류", "엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.", "error");
+        return;
+      }
+
+      setUploadedFile(file);
+      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
+
+      try {
+        const processedData = await processExcelData(file);
+        setParsedExcelData(processedData.summaryData);
+        setDynamicVulnerabilityDetails(processedData.vulnerabilityData);
+        setHasExcelData(true);
+        await startSummary();
+      } catch (error) {
+        console.error("엑셀 파일 처리 실패:", error);
+        showModalMessage("파일 처리 오류", "엑셀 파일 처리 중 오류가 발생했습니다.", "error");
+      }
+    }
+  };
+  
   return (
     <>
       <Card className="flex flex-col h-full">
