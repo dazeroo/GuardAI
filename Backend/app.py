@@ -4,9 +4,13 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import google.generativeai as genai
+import logging
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
 
 # Flask 앱 초기화
 app = Flask(__name__)
@@ -14,21 +18,30 @@ app = Flask(__name__)
 CORS(app) 
 
 # Gemini API 설정
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-#model = genai.GenerativeModel('gemini-1.5-pro-latest')
+try:
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_api_key:
+        raise ValueError("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
+    genai.configure(api_key=gemini_api_key)
+except Exception as e:
+    app.logger.error(f"Gemini API 설정 중 오류 발생: {e}")
 
 # 자동 진단 API 엔드포인트
 @app.route("/api/diagnose", methods=["POST"])
 def diagnose():
     # 파일이 요청에 포함되어 있는지 확인
     if 'guideline' not in request.files:
+        app.logger.warning("파일이 업로드되지 않았습니다.")
         return jsonify({"error": "파일이 업로드되지 않았습니다."}), 400
 
-    file = request.files['guideline']
+    if file.filename == '':
+        app.logger.warning("빈 파일 이름이 제출되었습니다.")
+        return jsonify({"error": "파일이 선택되지 않았습니다."}), 400
     
     try:
         # 업로드된 파일의 내용을 텍스트로 변환
         guideline_text = file.read().decode('utf-8')
+        app.logger.info(f"파일 '{file.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
 
         # Gemini API에 보낼 프롬프트 정의 (Express 예제와 동일)
         prompt = f"""
@@ -53,27 +66,39 @@ def diagnose():
           ---
         """
         
-        # Gemini API 호출
-        response = genai.generate_text(
-        model='models/gemini-pro', # 모델 이름 앞에 'models/'가 붙습니다.
-        prompt=prompt,
-        temperature=0.7 # 필요한 경우 다른 파라미터 추가
-        )
+        app.logger.info("Gemini API 호출 시작")
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(prompt)
         
+        # API 응답에서 텍스트 추출
+        response_text = response.text
+        app.logger.info("Gemini API 응답 수신 완료")
+
         # 생성된 텍스트에서 JSON 부분만 추출
-        response_text = response.result
+        # 마크다운 코드 블록(` ```json ... ``` `)을 제거
+        if '```json' in response_text:
+            response_text = response_text.split('```json')[1].split('```')[0]
+        
         json_start = response_text.find('[')
         json_end = response_text.rfind(']') + 1
+        
+        if json_start == -1 or json_end == 0:
+            app.logger.error("API 응답에서 유효한 JSON 배열을 찾지 못했습니다.")
+            app.logger.debug(f"전체 응답 텍스트: {response_text}")
+            return jsonify({"error": "진단 결과에서 유효한 형식을 찾지 못했습니다."}), 500
+            
         json_response = response_text[json_start:json_end]
         
         # JSON 파싱 및 클라이언트에 전송
         diagnosis_data = json.loads(json_response)
+        app.logger.info("JSON 파싱 성공, 클라이언트에 데이터 전송")
         return jsonify(diagnosis_data)
 
     except Exception as e:
-        print(f"오류 발생: {e}")
-        return jsonify({"error": "진단 보고서 생성 중 오류가 발생했습니다."}), 500
+        app.logger.error(f"진단 보고서 생성 중 오류 발생: {e}", exc_info=True)
+        return jsonify({"error": "진단 보고서 생성 중 서버 오류가 발생했습니다."}), 500
 
 # 서버 실행
 if __name__ == "__main__":
+    # 0.0.0.0으로 호스트를 설정하여 외부에서도 접속 가능하도록 함
     app.run(host='0.0.0.0', port=3001, debug=True)
