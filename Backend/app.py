@@ -55,7 +55,7 @@ def diagnose():
         
         # Gemini API 호출
         response = genai.generate_text(
-        model='models/gemini-1.5-pro-latest', # 모델 이름 앞에 'models/'가 붙습니다.
+        model='models/gemini-pro', # 모델 이름 앞에 'models/'가 붙습니다.
         prompt=prompt,
         temperature=0.7 # 필요한 경우 다른 파라미터 추가
         )
