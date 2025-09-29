@@ -14,8 +14,8 @@ app = Flask(__name__)
 CORS(app) 
 
 # Gemini API 설정
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-pro-latest')
+genai.configure(api_key=os.getenv("AIzaSyC4iFggbh0l4oozDQjE_Mc5NK-p_GxjMTE"))
+#model = genai.GenerativeModel('gemini-1.5-pro-latest')
 
 # 자동 진단 API 엔드포인트
 @app.route("/api/diagnose", methods=["POST"])
@@ -54,10 +54,14 @@ def diagnose():
         """
         
         # Gemini API 호출
-        response = model.generate_content(prompt)
+        response = genai.generate_text(
+        model='models/gemini-1.5-pro-latest', # 모델 이름 앞에 'models/'가 붙습니다.
+        prompt=prompt,
+        temperature=0.7 # 필요한 경우 다른 파라미터 추가
+        )
         
         # 생성된 텍스트에서 JSON 부분만 추출
-        response_text = response.text
+        response_text = response.result
         json_start = response_text.find('[')
         json_end = response_text.rfind(']') + 1
         json_response = response_text[json_start:json_end]
