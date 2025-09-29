@@ -14,7 +14,7 @@ app = Flask(__name__)
 CORS(app) 
 
 # Gemini API 설정
-genai.configure(api_key=os.getenv("AIzaSyC4iFggbh0l4oozDQjE_Mc5NK-p_GxjMTE"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 #model = genai.GenerativeModel('gemini-1.5-pro-latest')
 
 # 자동 진단 API 엔드포인트
