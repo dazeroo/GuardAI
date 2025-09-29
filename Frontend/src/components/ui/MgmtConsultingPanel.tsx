@@ -1485,13 +1485,13 @@ export default function MgmtConsultingPanel() {
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
                         <div className="border rounded-lg overflow-hidden">
-                          <table className="w-full border-collapse">
+                          <table className="w-full border-collapse table-fixed">
                             <thead className="sticky top-0 z-10">
                               <tr>
-                                <th className="p-3 border-b border-r font-medium text-left text-sm">
+                                <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
                                   취약 항목
                                 </th>
-                                <th className="p-3 border-b font-medium text-left text-sm">
+                                <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
                                   대응방안
                                 </th>
                               </tr>
