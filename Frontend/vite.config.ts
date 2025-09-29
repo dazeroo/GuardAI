@@ -8,7 +8,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
-
+  },
 
   server: {
     proxy: {
@@ -21,5 +21,5 @@ export default defineConfig({
     // watch: {
     //   usePolling: true,
     //  },
-  },
+ // },
 })
