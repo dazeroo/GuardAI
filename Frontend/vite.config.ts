@@ -8,5 +8,18 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
+
+
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://192.168.0.63:3001',
+        changeOrigin: true,
+      },
+    },
+    // ✨ 파일 변경 감지를 위해 Polling 방식을 사용하도록 설정합니다.
+    // watch: {
+    //   usePolling: true,
+    //  },
   },
 })
