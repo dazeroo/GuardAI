@@ -90,11 +90,13 @@ def diagnose():
         """
         
         app.logger.info("Gemini API 호출 시작")
-        model = genai.GenerativeModel('gemini-pro')
-        response = model.generate_content(prompt)
         
-        # API 응답에서 텍스트 추출
-        response_text = response.text
+        response = genai.generate_text(
+            model='models/gemini-pro', # 구버전에서는 모델 이름에 'models/'가 필요합니다.
+            prompt=prompt
+        )
+        response_text = response.result # .text가 아니라 .result에 결과가 담겨있습니다.
+        
         app.logger.info("Gemini API 응답 수신 완료")
 
         # 생성된 텍스트에서 JSON 부분만 추출
