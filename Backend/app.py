@@ -91,7 +91,7 @@ def diagnose():
         
         app.logger.info("Gemini API 호출 시작")
         
-        model = genai.GenerativeModel('gemini-1.0-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         response_text = response.text
         
