@@ -9,4 +9,3 @@ if api_key:
     print(f"  첫 10자: {api_key[:10]}...")
 else:
     print("✗ API 키가 설정되지 않았습니다")
-EOF
