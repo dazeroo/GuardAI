@@ -1909,10 +1909,10 @@ export default function MgmtConsultingPanel() {
                           <table className="w-full border-collapse">
                             <thead className="sticky top-0 z-10">
                               <tr>
-                                <th className="p-3 border-b border-r font-medium text-left text-sm">
+                                <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
                                   취약 항목
                                 </th>
-                                <th className="p-3 border-b font-medium text-left text-sm">
+                                <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
                                   대응방안
                                 </th>
                               </tr>
