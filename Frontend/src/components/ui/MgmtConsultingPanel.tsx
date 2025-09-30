@@ -636,6 +636,8 @@ export default function MgmtConsultingPanel() {
 
   // ✅ 여기에 mapDiagnosisDataToSummary 함수 추가
   const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
+    console.log("백엔드 응답 데이터:", diagnosisData);
+
     const newSummaryResults = JSON.parse(JSON.stringify(summaryResults));
     const newVulnerabilityDetails: Array<{
       id: number;
@@ -653,13 +655,21 @@ export default function MgmtConsultingPanel() {
           for (const subItem of field.subItems) {
             if (dataIndex < diagnosisData.length) {
               const item = diagnosisData[dataIndex];
+              console.log(`매핑 중: ${item.id} - ${item.name} (${item.rating})`);
+              
               subItem.rating = item.rating || "N";
               
-              if (item.rating === "N" && item.reason) {
+              // N 등급인 항목을 취약점으로 추가
+              if (item.rating === "N") {
+                const vulnerability = item.name || subItem.name;
+                const countermeasure = item.reason || "개선이 필요합니다.";
+                
+                console.log(`취약점 발견: ${vulnerability}`);
+                
                 newVulnerabilityDetails.push({
                   id: vulnerabilityIdCounter++,
-                  vulnerability: item.name || subItem.name,
-                  countermeasure: item.reason || "개선 필요",
+                  vulnerability: vulnerability,
+                  countermeasure: countermeasure,
                 });
               }
               dataIndex++;
