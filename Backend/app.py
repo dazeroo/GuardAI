@@ -34,6 +34,8 @@ def diagnose():
         app.logger.warning("파일이 업로드되지 않았습니다.")
         return jsonify({"error": "파일이 업로드되지 않았습니다."}), 400
 
+    file = request.files['guideline']
+
     if file.filename == '':
         app.logger.warning("빈 파일 이름이 제출되었습니다.")
         return jsonify({"error": "파일이 선택되지 않았습니다."}), 400
