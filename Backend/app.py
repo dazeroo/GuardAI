@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 import logging
 import pandas as pd
+import docx
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -50,6 +51,10 @@ def diagnose():
             df = pd.read_excel(file, engine='openpyxl')
             # 엑셀의 모든 셀 내용을 하나의 긴 텍스트로 합침
             guideline_text = ' '.join(df.astype(str).stack())
+        elif file.filename.endswith('.docx'):
+              app.logger.info("워드 문서(.docx) 파일로 처리 시작")
+              doc = docx.Document(file)
+              guideline_text = "\n".join([para.text for para in doc.paragraphs])
         else:
             app.logger.info("일반 텍스트 파일로 처리 시작")
             # 텍스트 파일인 경우, 오류를 무시하고 UTF-8로 디코딩
