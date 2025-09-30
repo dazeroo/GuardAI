@@ -42,7 +42,7 @@ def diagnose():
     
     try:
         # 업로드된 파일의 내용을 텍스트로 변환
-        guideline_text = file.read().decode('utf-8')
+        guideline_text = file.read().decode('cp949')
         app.logger.info(f"파일 '{file.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
 
         # Gemini API에 보낼 프롬프트 정의 (Express 예제와 동일)
