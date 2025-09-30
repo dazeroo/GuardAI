@@ -92,10 +92,10 @@ def diagnose():
         app.logger.info("Gemini API 호출 시작")
         
         response = genai.generate_text(
-            model='models/gemini-pro', # 구버전에서는 모델 이름에 'models/'가 필요합니다.
+            model='gemini-pro', 
             prompt=prompt
         )
-        response_text = response.result # .text가 아니라 .result에 결과가 담겨있습니다.
+        response_text = response.text 
         
         app.logger.info("Gemini API 응답 수신 완료")
 
