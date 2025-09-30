@@ -542,7 +542,7 @@ const summaryResults = [
   },
 ];
 
-// 취약점 상세 데��터
+// 취약점 상세 데이터
 const vulnerabilityDetails = [
   {
     id: 1,
@@ -637,7 +637,8 @@ export default function MgmtConsultingPanel() {
   // ✅ 여기에 mapDiagnosisDataToSummary 함수 추가
   const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
     console.log("백엔드 응답 데이터:", diagnosisData);
-
+    console.log("데이터 개수:", diagnosisData.length);
+    
     const newSummaryResults = JSON.parse(JSON.stringify(summaryResults));
     const newVulnerabilityDetails: Array<{
       id: number;
@@ -645,26 +646,37 @@ export default function MgmtConsultingPanel() {
       countermeasure: string;
     }> = [];
     let vulnerabilityIdCounter = 1;
-    let dataIndex = 0;
+
     
+    // 1단계: 백엔드 데이터를 id 기반으로 맵핑
+    const dataMap = new Map();
+    diagnosisData.forEach((item: any) => {
+      if (item.id) {
+        dataMap.set(item.id, item);
+      }
+    });
+    
+    console.log("🗺️ 데이터 맵 생성 완료:", dataMap.size, "개 항목");
+    
+    // 2단계: summaryResults 구조를 순회하면서 매핑
     for (const group of newSummaryResults) {
       for (const field of group.fields) {
         field.rating = "-";
         
         if (field.subItems) {
           for (const subItem of field.subItems) {
-            if (dataIndex < diagnosisData.length) {
-              const item = diagnosisData[dataIndex];
-              console.log(`매핑 중: ${item.id} - ${item.name} (${item.rating})`);
-              
-              subItem.rating = item.rating || "N";
+            const backendItem = dataMap.get(subItem.id);
+            
+            if (backendItem) {
+              subItem.rating = backendItem.rating || "N";
+              console.log(`✓ 매핑: ${subItem.id} - ${subItem.name} (${subItem.rating})`);
               
               // N 등급인 항목을 취약점으로 추가
-              if (item.rating === "N") {
-                const vulnerability = item.name || subItem.name;
-                const countermeasure = item.reason || "개선이 필요합니다.";
+              if (backendItem.rating === "N") {
+                const vulnerability = backendItem.name || subItem.name;
+                const countermeasure = backendItem.reason || "개선이 필요합니다.";
                 
-                console.log(`취약점 발견: ${vulnerability}`);
+                console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
                 
                 newVulnerabilityDetails.push({
                   id: vulnerabilityIdCounter++,
@@ -672,12 +684,16 @@ export default function MgmtConsultingPanel() {
                   countermeasure: countermeasure,
                 });
               }
-              dataIndex++;
+            } else {
+              console.warn(`⚠️ 매핑 실패: ${subItem.id} - 백엔드 데이터 없음`);
             }
           }
         }
       }
     }
+
+    console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 취약점 발견`);
+    console.log("취약점 목록:", newVulnerabilityDetails);
 
     return {
       summaryData: newSummaryResults,
