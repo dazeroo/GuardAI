@@ -5,6 +5,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import google.generativeai as genai
 import logging
+import pandas as pd
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -41,10 +42,25 @@ def diagnose():
         return jsonify({"error": "파일이 선택되지 않았습니다."}), 400
     
     try:
-        # 업로드된 파일의 내용을 텍스트로 변환
-        guideline_text = file.read().decode('cp949')
-        app.logger.info(f"파일 '{file.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
+        guideline_text = ""
+        # 파일 이름이 .xlsx로 끝나는지 확인하여 엑셀 파일인지 판별
+        if file.filename.endswith('.xlsx'):
+            app.logger.info("엑셀 파일로 처리 시작")
+            # pandas를 사용해 엑셀 파일의 모든 데이터를 읽어옴
+            df = pd.read_excel(file, engine='openpyxl')
+            # 엑셀의 모든 셀 내용을 하나의 긴 텍스트로 합침
+            guideline_text = ' '.join(df.astype(str).stack())
+        else:
+            app.logger.info("일반 텍스트 파일로 처리 시작")
+            # 텍스트 파일인 경우, 오류를 무시하고 UTF-8로 디코딩
+            guideline_text = file.read().decode('utf-8', errors='ignore')
 
+        if not guideline_text.strip():
+            app.logger.warning("파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
+            return jsonify({"error": "파일이 비어있거나 읽을 수 있는 텍스트가 없습니다."}), 400
+
+        app.logger.info(f"파일 '{file.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
+        
         # Gemini API에 보낼 프롬프트 정의 (Express 예제와 동일)
         prompt = f"""
           당신은 ISMS-P 인증 심사 전문가입니다.
