@@ -1155,12 +1155,13 @@ export default function MgmtConsultingPanel() {
                   <Progress value={progress} />
                 </div>
               ) : !summaryGenerated ? (
-                <div className="space-y-4">
-                  <div className="text-center py-8 space-y-2">
-                    <p className="text-muted-foreground">
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="space-y-4">
+                   <div className="text-center py-8 space-y-2">
+                     <p className="text-muted-foreground">
                       보고서를 업로드하면 자동으로 요약해
                       드립니다. 
-                    </p>
+                     </p>
                   </div>
                   <div className="flex justify-center">
                     <Button
@@ -1180,7 +1181,8 @@ export default function MgmtConsultingPanel() {
                     </Button>
                   </div>
                 </div>
-              ) : null}
+              </div>  
+            ) : null}
 
               {summaryGenerated && (
                 <div className="flex-1 flex flex-col space-y-4">
@@ -1573,18 +1575,19 @@ export default function MgmtConsultingPanel() {
                   <Progress value={progress} />
                 </div>
               ) : !diagnosisGenerated ? (
-                <div className="space-y-4">
-                  <div className="text-center py-8 space-y-2">
-                    <p className="text-muted-foreground">
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="space-y-4">
+                    <div className="text-center py-8 space-y-2">
+                      <p className="text-muted-foreground">
                       지침서를 업로드하면 자동 진단해드립니다.
-                    </p>
-                  </div>
-                  <div className="flex justify-center">
-                    <Button
+                      </p>
+                    </div>
+                    <div className="flex justify-center">
+                      <Button
                       variant="outline"
                       className="gap-2"
                       asChild
-                    >
+                      >
                       <label>
                         지침서 업로드
                         <input
@@ -1597,7 +1600,8 @@ export default function MgmtConsultingPanel() {
                     </Button>
                   </div>
                 </div>
-              ) : (
+              </div>
+             ) : (
                 <div className="flex-1 flex flex-col space-y-4">
                   <div className="flex justify-start">
                     <Button
