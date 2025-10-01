@@ -1180,10 +1180,16 @@ export default function MgmtConsultingPanel() {
                     </Button>
                   </div>
                 </div>
-              ) : (
+              ) : null}
+
+              {summaryGenerated && (
                 <div className="flex-1 flex flex-col space-y-4">
                   <div className="flex justify-start">
-                    <Button variant="outline" className="gap-2" asChild>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      asChild
+                    >
                       <label>
                         보고서 재업로드
                         <input
@@ -1195,14 +1201,13 @@ export default function MgmtConsultingPanel() {
                       </label>
                     </Button>
                   </div>
+
                   {uploadedFile && (
                     <p className="text-sm text-muted-foreground">
                       업로드된 파일: {uploadedFile.name}
                     </p>
                   )}
-                </div>
-              )}
-            </TabsContent>
+
                   {/* 테이블 구조 */}
                   <div className="flex-1 min-h-0">
                     <div className="border rounded-lg overflow-hidden h-[500px]">
@@ -1569,14 +1574,15 @@ export default function MgmtConsultingPanel() {
                 </div>
               ) : !diagnosisGenerated ? (
                 <div className="space-y-4">
-                  {/* 안내 텍스트 */}
-                  <div className="text-center py-8 space-y-2">
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-8 text-muted-foreground">
                     지침서를 업로드하면 자동 진단해드립니다.
-                    </p>
                   </div>
                   <div className="flex justify-center">
-                    <Button variant="outline" className="gap-2" asChild>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      asChild
+                    >
                       <label>
                         지침서 업로드
                         <input
@@ -1592,7 +1598,11 @@ export default function MgmtConsultingPanel() {
               ) : (
                 <div className="flex-1 flex flex-col space-y-4">
                   <div className="flex justify-start">
-                    <Button variant="outline" className="gap-2" asChild>
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      asChild
+                    >
                       <label>
                         지침서 재업로드
                         <input
@@ -1604,14 +1614,6 @@ export default function MgmtConsultingPanel() {
                       </label>
                     </Button>
                   </div>
-                  {diagnosisFile && (
-                    <p className="text-sm text-muted-foreground">
-                      업로드된 파일: {diagnosisFile.name}
-                    </p>
-                  )}
-                </div>
-              )}
-            </TabsContent>
 
                   {diagnosisFile && (
                     <p className="text-sm text-muted-foreground">
