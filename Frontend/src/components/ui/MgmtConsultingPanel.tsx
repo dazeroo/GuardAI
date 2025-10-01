@@ -1159,8 +1159,7 @@ export default function MgmtConsultingPanel() {
                   <div className="space-y-4">
                    <div className="text-center space-y-2">
                      <p className="text-muted-foreground">
-                      보고서를 업로드하면 자동으로 요약해
-                      드립니다. 
+                      보고서를 업로드하면 자동으로 요약해드립니다. 
                      </p>
                   </div>
                   <div className="flex justify-center">
