@@ -1955,7 +1955,8 @@ export default function MgmtConsultingPanel() {
                                       {item.countermeasure}
                                     </td>
                                   </tr>
-                                ))
+                                )
+                              )
                               ) : (
                                 <tr>
                                   <td colSpan={2} className="p-8 text-center text-muted-foreground">
