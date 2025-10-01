@@ -1145,7 +1145,7 @@ export default function MgmtConsultingPanel() {
             {/* 보고서 요약 */}
             <TabsContent
               value="summary"
-              className="flex-1 flex flex-col items-center justify-center
+              className="flex-1 flex flex-col items-center justify-center"
             >
               {isUploading ? (
                 <div className="space-y-2">
