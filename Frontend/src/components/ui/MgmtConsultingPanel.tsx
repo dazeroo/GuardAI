@@ -1574,10 +1574,8 @@ export default function MgmtConsultingPanel() {
                 </div>
               ) : !diagnosisGenerated ? (
                 <div className="space-y-4">
-                  <div className="text-center py-8 space-y-2">
-                    <p className="text-muted-foreground">
-                      지침서를 업로드하면 자동 진단해드립니다.
-                    </p>
+                  <div className="text-center py-8 text-muted-foreground">
+                    지침서를 업로드하면 자동 진단해드립니다.
                   </div>
                   <div className="flex justify-center">
                     <Button
