@@ -1563,7 +1563,7 @@ export default function MgmtConsultingPanel() {
             {/* 자동 진단 */}
             <TabsContent
               value="auto"
-              className="flex-1 flex flex-col items-center justify-center"
+              className="flex-1 flex flex-col space-y-4"
             >
               {isUploading ? (
                 <div className="space-y-2">
