@@ -1159,7 +1159,7 @@ export default function MgmtConsultingPanel() {
                   <div className="text-center py-8 space-y-2">
                     <p className="text-muted-foreground">
                       보고서를 업로드하면 자동으로 요약해
-                      드립니다.
+                      드립니다. 
                     </p>
                   </div>
                   <div className="flex justify-center">
@@ -1563,7 +1563,7 @@ export default function MgmtConsultingPanel() {
             {/* 자동 진단 */}
             <TabsContent
               value="auto"
-              className="flex-1 flex flex-col space-y-4"
+              className="flex-1 flex flex-col items-center justify-center"
             >
               {isUploading ? (
                 <div className="space-y-2">
