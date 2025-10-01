@@ -1145,7 +1145,7 @@ export default function MgmtConsultingPanel() {
             {/* 보고서 요약 */}
             <TabsContent
               value="summary"
-              className="flex-1 flex flex-col space-y-4"
+              className="flex-1 flex flex-col items-center justify-center
             >
               {isUploading ? (
                 <div className="space-y-2">
@@ -1563,7 +1563,7 @@ export default function MgmtConsultingPanel() {
             {/* 자동 진단 */}
             <TabsContent
               value="auto"
-              className="flex-1 flex flex-col space-y-4"
+              className="flex-1 flex flex-col items-center justify-center"
             >
               {isUploading ? (
                 <div className="space-y-2">
