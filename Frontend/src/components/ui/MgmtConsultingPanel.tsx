@@ -673,7 +673,7 @@ export default function MgmtConsultingPanel() {
               
               // N 등급인 항목을 취약점으로 추가
               if (backendItem.rating === "N") {
-                const vulnerability = backendItem.name || subItem.name;
+                const vulnerability = subItem.name;
                 const countermeasure = backendItem.reason || "개선이 필요합니다.";
                 
                 console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
