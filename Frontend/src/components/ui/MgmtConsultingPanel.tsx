@@ -1157,7 +1157,7 @@ export default function MgmtConsultingPanel() {
               ) : !summaryGenerated ? (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="space-y-4">
-                   <div className="text-center py-8 space-y-2">
+                   <div className="text-center space-y-2">
                      <p className="text-muted-foreground">
                       보고서를 업로드하면 자동으로 요약해
                       드립니다. 
