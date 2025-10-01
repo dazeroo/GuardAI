@@ -1597,7 +1597,7 @@ export default function MgmtConsultingPanel() {
                     </Button>
                   </div>
                 </div>
-              ) : (
+              ) : null}
                 <div className="flex-1 flex flex-col space-y-4">
                   <div className="flex justify-start">
                     <Button
