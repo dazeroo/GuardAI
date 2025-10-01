@@ -1156,7 +1156,7 @@ export default function MgmtConsultingPanel() {
                 </div>
               ) : !summaryGenerated ? (
                 <div className="space-y-4">
-                  <div className="text-center py-8 space-y-2 pt-24">
+                  <div className="text-center py-8 space-y-2">
                     <p className="text-muted-foreground">
                       보고서를 업로드하면 자동으로 요약해
                       드립니다. 
@@ -1574,8 +1574,10 @@ export default function MgmtConsultingPanel() {
                 </div>
               ) : !diagnosisGenerated ? (
                 <div className="space-y-4">
-                  <div className="text-center py-8 text-muted-foreground pt-24">
-                    지침서를 업로드하면 자동 진단해드립니다.
+                  <div className="text-center py-8 space-y-2">
+                    <p className="text-muted-foreground">
+                      지침서를 업로드하면 자동 진단해드립니다.
+                    </p>
                   </div>
                   <div className="flex justify-center">
                     <Button
