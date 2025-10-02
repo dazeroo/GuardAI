@@ -1155,7 +1155,7 @@ export default function MgmtConsultingPanel() {
                   <Progress value={progress} />
                 </div>
               ) : !summaryGenerated ? (
-                <div className="flex-1 flex items-center justify-center pt-90">
+                <div className="flex-1 flex items-center justify-center pt-96">
                   <div className="space-y-4">
                    <div className="text-center space-y-2">
                      <p className="text-muted-foreground">
