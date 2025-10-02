@@ -45,16 +45,12 @@ const summaryResults = [
         count: 6,
         rating: "Y",
         subItems: [
-          { id: "1.1.1", name: "경영진의 참여", rating: "Y" },
-          {
-            id: "1.1.2",
-            name: "최고책임자의 지정",
-            rating: "P",
-          },
+          { id: "1.1.1", name: "1.1.1 경영진의 참여", rating: "Y" },
+          { id: "1.1.2", name: "1.1.2 최고책임자의 지정", rating: "P",},
           { id: "1.1.3", name: "1.1.3 조직 구성", rating: "Y" },
-          { id: "1.1.4", name: "범위 설정", rating: "N" },
-          { id: "1.1.5", name: "정책 수립", rating: "Y" },
-          { id: "1.1.6", name: "자원 할당", rating: "P" },
+          { id: "1.1.4", name: "1.1.4 범위 설정", rating: "N" },
+          { id: "1.1.5", name: "1.1.5 정책 수립", rating: "Y" },
+          { id: "1.1.6", name: "1.1.6 자원 할당", rating: "P" },
         ],
       },
       {
@@ -62,14 +58,10 @@ const summaryResults = [
         count: 4,
         rating: "P",
         subItems: [
-          { id: "1.2.1", name: "정보자산 식별", rating: "Y" },
-          {
-            id: "1.2.2",
-            name: "현황 및 흐름분석",
-            rating: "P",
-          },
-          { id: "1.2.3", name: "위험 평가", rating: "N" },
-          { id: "1.2.4", name: "보호대책 선정", rating: "P" },
+          { id: "1.2.1", name: "1.2.1 정보자산 식별", rating: "Y" },
+          { id: "1.2.2", name: "1.2.2 현황 및 흐름분석", rating: "P",},
+          { id: "1.2.3", name: "1.2.3 위험 평가", rating: "N" },
+          { id: "1.2.4", name: "1.2.4 보호대책 선정", rating: "P" },
         ],
       },
       {
@@ -77,9 +69,9 @@ const summaryResults = [
         count: 3,
         rating: "N",
         subItems: [
-          { id: "1.3.1", name: "보호대책 구현", rating: "P" },
-          { id: "1.3.2", name: "보호대책 공유", rating: "N" },
-          { id: "1.3.3", name: "운영현황 관리", rating: "Y" },
+          { id: "1.3.1", name: "1.3.1 보호대책 구현", rating: "P" },
+          { id: "1.3.2", name: "1.3.2 보호대책 공유", rating: "N" },
+          { id: "1.3.3", name: "1.3.3 운영현황 관리", rating: "Y" },
         ],
       },
       {
@@ -87,13 +79,9 @@ const summaryResults = [
         count: 3,
         rating: "Y",
         subItems: [
-          {
-            id: "1.4.1",
-            name: "법적 요구사항 준수 검토",
-            rating: "Y",
-          },
-          { id: "1.4.2", name: "관리체계 점검", rating: "P" },
-          { id: "1.4.3", name: "관리체계 개선", rating: "Y" },
+          {id: "1.4.1",name: "1.4.1 법적 요구사항 준수 검토", rating: "Y",},
+          { id: "1.4.2", name: "1.4.2 관리체계 점검", rating: "P" },
+          { id: "1.4.3", name: "1.4.3 관리체계 개선", rating: "Y" },
         ],
       },
     ],
@@ -108,9 +96,9 @@ const summaryResults = [
         count: 3,
         rating: "P",
         subItems: [
-          { id: "2.1.1", name: "정책의 유지관리", rating: "Y" },
-          { id: "2.1.2", name: "조직의 유지관리", rating: "P" },
-          { id: "2.1.3", name: "정보자산 관리", rating: "N" },
+          { id: "2.1.1", name: "2.1.1 정책의 유지관리", rating: "Y" },
+          { id: "2.1.2", name: "2.1.2 조직의 유지관리", rating: "P" },
+          { id: "2.1.3", name: "2.1.3 정보자산 관리", rating: "N" },
         ],
       },
       {
@@ -118,28 +106,12 @@ const summaryResults = [
         count: 6,
         rating: "Y",
         subItems: [
-          {
-            id: "2.2.1",
-            name: "주요 직무자 지정 및 관리",
-            rating: "Y",
-          },
-          { id: "2.2.2", name: "직무 분리", rating: "P" },
-          { id: "2.2.3", name: "보안 서약", rating: "Y" },
-          {
-            id: "2.2.4",
-            name: "인식제고 및 교육훈련",
-            rating: "N",
-          },
-          {
-            id: "2.2.5",
-            name: "퇴직 및 직무변경 관리",
-            rating: "Y",
-          },
-          {
-            id: "2.2.6",
-            name: "보안 위반 시 조치",
-            rating: "P",
-          },
+          {id: "2.2.1",name: "2.2.1 주요 직무자 지정 및 관리",rating: "Y",},
+          { id: "2.2.2", name: "2.2.2 직무 분리", rating: "P" },
+          { id: "2.2.3", name: "2.2.3 보안 서약", rating: "Y" },
+          {id: "2.2.4", name: "2.2.4 인식제고 및 교육훈련", rating: "N",},
+          {id: "2.2.5",name: "2.2.5 퇴직 및 직무변경 관리",rating: "Y",},
+          {id: "2.2.6",name: "2.2.6 보안 위반 시 조치", rating: "P",},
         ],
       },
       {
@@ -147,26 +119,10 @@ const summaryResults = [
         count: 4,
         rating: "N",
         subItems: [
-          {
-            id: "2.3.1",
-            name: "외부자 현황 관리",
-            rating: "N",
-          },
-          {
-            id: "2.3.2",
-            name: "외부자 계약 시 보안",
-            rating: "P",
-          },
-          {
-            id: "2.3.3",
-            name: "외부자 보안 이행 관리",
-            rating: "N",
-          },
-          {
-            id: "2.3.4",
-            name: "외부자 계약 변경 및 만료 시 보안",
-            rating: "Y",
-          },
+          {id: "2.3.1", name: "2.3.1 외부자 현황 관리",rating: "N",},
+          {id: "2.3.2",name: "2.3.2 외부자 계약 시 보안", rating: "P",},
+          {id: "2.3.3",name: "2.3.3 외부자 보안 이행 관리",rating: "N",},
+          { id: "2.3.4",name: "2.3.4 외부자 계약 변경 및 만료 시 보안", rating: "Y", },
         ],
       },
       {
@@ -174,21 +130,13 @@ const summaryResults = [
         count: 7,
         rating: "P",
         subItems: [
-          { id: "2.4.1", name: "보호구역 지정", rating: "Y" },
-          { id: "2.4.2", name: "출입통제", rating: "P" },
-          { id: "2.4.3", name: "정보시스템 보호", rating: "Y" },
-          { id: "2.4.4", name: "보호설비 운영", rating: "N" },
-          {
-            id: "2.4.5",
-            name: "보호구역 내 작업",
-            rating: "P",
-          },
-          {
-            id: "2.4.6",
-            name: "반출입 기기 통제",
-            rating: "Y",
-          },
-          { id: "2.4.7", name: "업무환경 보안", rating: "P" },
+          { id: "2.4.1", name: "2.4.1 보호구역 지정", rating: "Y" },
+          { id: "2.4.2", name: "2.4.2 출입통제", rating: "P" },
+          { id: "2.4.3", name: "2.4.3 정보시스템 보호", rating: "Y" },
+          { id: "2.4.4", name: "2.4.4 보호설비 운영", rating: "N" },
+          {id: "2.4.5",name: "2.4.5 보호구역 내 작업",rating: "P", },
+          {id: "2.4.6",name: "2.4.6 반출입 기기 통제",rating: "Y",},
+          { id: "2.4.7", name: "2.4.7 업무환경 보안", rating: "P" },
         ],
       },
       {
@@ -196,20 +144,12 @@ const summaryResults = [
         count: 6,
         rating: "Y",
         subItems: [
-          {
-            id: "2.5.1",
-            name: "사용자 계정 관리",
-            rating: "Y",
-          },
-          { id: "2.5.2", name: "사용자 식별", rating: "P" },
-          { id: "2.5.3", name: "사용자 인증", rating: "Y" },
-          { id: "2.5.4", name: "비밀번호 관리", rating: "N" },
-          {
-            id: "2.5.5",
-            name: "특수 계정 및 권한 관리",
-            rating: "Y",
-          },
-          { id: "2.5.6", name: "접근권한 검토", rating: "P" },
+          { id: "2.5.1",name: "2.5.1 사용자 계정 관리", rating: "Y",},
+          { id: "2.5.2", name: "2.5.2 사용자 식별", rating: "P" },
+          { id: "2.5.3", name: "2.5.3 사용자 인증", rating: "Y" },
+          { id: "2.5.4", name: "2.5.4 비밀번호 관리", rating: "N" },
+          {id: "2.5.5",name: "2.5.5 특수 계정 및 권한 관리",rating: "Y",},
+          { id: "2.5.6", name: "2.5.6 접근권한 검토", rating: "P" },
         ],
       },
       {
@@ -217,29 +157,13 @@ const summaryResults = [
         count: 7,
         rating: "N",
         subItems: [
-          { id: "2.6.1", name: "네트워크 접근", rating: "N" },
-          { id: "2.6.2", name: "정보시스템 접근", rating: "P" },
-          {
-            id: "2.6.3",
-            name: "응용프로그램 접근",
-            rating: "Y",
-          },
-          {
-            id: "2.6.4",
-            name: "데이터베이스 접근",
-            rating: "N",
-          },
-          {
-            id: "2.6.5",
-            name: "무선 네트워크 접근",
-            rating: "P",
-          },
-          { id: "2.6.6", name: "원격접근 통제", rating: "N" },
-          {
-            id: "2.6.7",
-            name: "인터넷 접속 통제",
-            rating: "Y",
-          },
+          { id: "2.6.1", name: "2.6.1 네트워크 접근", rating: "N" },
+          { id: "2.6.2", name: "2.6.2 정보시스템 접근", rating: "P" },
+          {id: "2.6.3", name: "2.6.3 응용프로그램 접근", rating: "Y", },
+          { id: "2.6.4", name: "2.6.4 데이터베이스 접근", rating: "N",},
+          { id: "2.6.5", name: "2.6.5 무선 네트워크 접근", rating: "P",  },
+          { id: "2.6.6", name: "2.6.6 원격접근 통제", rating: "N" },
+          { id: "2.6.7", name: "2.6.7 인터넷 접속 통제", rating: "Y",},
         ],
       },
       {
@@ -247,8 +171,8 @@ const summaryResults = [
         count: 2,
         rating: "P",
         subItems: [
-          { id: "2.7.1", name: "암호정책 적용", rating: "P" },
-          { id: "2.7.2", name: "암호키 관리", rating: "N" },
+          { id: "2.7.1", name: "2.7.1 암호정책 적용", rating: "P" },
+          { id: "2.7.2", name: "2.7.2 암호키 관리", rating: "N" },
         ],
       },
       {
@@ -256,32 +180,12 @@ const summaryResults = [
         count: 6,
         rating: "Y",
         subItems: [
-          {
-            id: "2.8.1",
-            name: "보안 요구사항 정의",
-            rating: "Y",
-          },
-          {
-            id: "2.8.2",
-            name: "보안 요구사항 검토 및 시험",
-            rating: "P",
-          },
-          {
-            id: "2.8.3",
-            name: "시험과 운영 환경 분리",
-            rating: "Y",
-          },
-          {
-            id: "2.8.4",
-            name: "시험 데이터 보안",
-            rating: "N",
-          },
-          {
-            id: "2.8.5",
-            name: "소스 프로그램 관리",
-            rating: "Y",
-          },
-          { id: "2.8.6", name: "운영환경 이관", rating: "P" },
+          {id: "2.8.1",name: "2.8.1 보안 요구사항 정의", rating: "Y", },
+          {id: "2.8.2", name: "2.8.2 보안 요구사항 검토 및 시험", rating: "P", },
+          {id: "2.8.3", name: "2.8.3 시험과 운영 환경 분리", rating: "Y",},
+          {id: "2.8.4", name: "2.8.4 시험 데이터 보안", rating: "N", },
+          {id: "2.8.5", name: "2.8.5 소스 프로그램 관리", rating: "Y", },
+          { id: "2.8.6", name: "2.8.6 운영환경 이관", rating: "P" },
         ],
       },
       {
@@ -289,33 +193,13 @@ const summaryResults = [
         count: 7,
         rating: "N",
         subItems: [
-          { id: "2.9.1", name: "변경관리", rating: "N" },
-          {
-            id: "2.9.2",
-            name: "성능 및 장애관리",
-            rating: "P",
-          },
-          {
-            id: "2.9.3",
-            name: "백업 및 복구관리",
-            rating: "Y",
-          },
-          {
-            id: "2.9.4",
-            name: "로그 및 접속기록 관리",
-            rating: "N",
-          },
-          {
-            id: "2.9.5",
-            name: "로그 및 접속기록 점검",
-            rating: "P",
-          },
-          { id: "2.9.6", name: "시간 동기화", rating: "Y" },
-          {
-            id: "2.9.7",
-            name: "정보자산의 재사용 및 폐기",
-            rating: "N",
-          },
+          { id: "2.9.1", name: "2.9.1 변경관리", rating: "N" },
+          { id: "2.9.2", name: "2.9.2 성능 및 장애관리", rating: "P", },
+          { id: "2.9.3", name: "2.9.3 백업 및 복구관리",rating: "Y", },
+          { id: "2.9.4", name: "로그 및 접속기록 관리", rating: "N",},
+          {id: "2.9.5", name: "로그 및 접속기록 점검", rating: "P",},
+          {id: "2.9.6", name: "시간 동기화", rating: "Y" },
+          {id: "2.9.7",name: "정보자산의 재사용 및 폐기", rating: "N",},
         ],
       },
       {
@@ -323,31 +207,15 @@ const summaryResults = [
         count: 9,
         rating: "P",
         subItems: [
-          {
-            id: "2.10.1",
-            name: "보안시스템 운영",
-            rating: "Y",
-          },
-          { id: "2.10.2", name: "클라우드 보안", rating: "P" },
-          { id: "2.10.3", name: "공개서버 보안", rating: "N" },
-          {
-            id: "2.10.4",
-            name: "전자거래 및 핀테크 보안",
-            rating: "P",
-          },
-          { id: "2.10.5", name: "정보전송 보안", rating: "Y" },
-          {
-            id: "2.10.6",
-            name: "업무용 단말기기 보안",
-            rating: "P",
-          },
-          {
-            id: "2.10.7",
-            name: "보조저장매체 관리",
-            rating: "N",
-          },
-          { id: "2.10.8", name: "패치관리", rating: "P" },
-          { id: "2.10.9", name: "악성코드 통제", rating: "Y" },
+          {id: "2.10.1",name: "2.10.1 보안시스템 운영",rating: "Y", },
+          { id: "2.10.2", name: "2.10.2 클라우드 보안", rating: "P" },
+          { id: "2.10.3", name: "2.10.3 공개서버 보안", rating: "N" },
+          { id: "2.10.4", name: "2.10.4 전자거래 및 핀테크 보안", rating: "P", },
+          { id: "2.10.5", name: "2.10.5 정보전송 보안", rating: "Y" },
+          {id: "2.10.6", name: "2.10.6 업무용 단말기기 보안",rating: "P",},
+          { id: "2.10.7",name: "2.10.7 보조저장매체 관리", rating: "N",},
+          { id: "2.10.8", name: "2.10.8 패치관리", rating: "P" },
+          { id: "2.10.9", name: "2.10.9 악성코드 통제", rating: "Y" },
         ],
       },
       {
@@ -355,31 +223,11 @@ const summaryResults = [
         count: 5,
         rating: "Y",
         subItems: [
-          {
-            id: "2.11.1",
-            name: "사고 예방 및 대응체계 구축",
-            rating: "Y",
-          },
-          {
-            id: "2.11.2",
-            name: "취약점 점검 및 조치",
-            rating: "P",
-          },
-          {
-            id: "2.11.3",
-            name: "이상행위 분석 및 모니터링",
-            rating: "Y",
-          },
-          {
-            id: "2.11.4",
-            name: "사고 대응 훈련 및 개선",
-            rating: "N",
-          },
-          {
-            id: "2.11.5",
-            name: "사고 대응 및 복구",
-            rating: "Y",
-          },
+          {id: "2.11.1",name: "2.11.1 사고 예방 및 대응체계 구축",rating: "Y", },
+          {id: "2.11.2", name: "2.11.2 취약점 점검 및 조치",rating: "P", },
+          {id: "2.11.3",name: "2.11.3 이상행위 분석 및 모니터링",  rating: "Y", },
+          {id: "2.11.4", name: "2.11.4 사고 대응 훈련 및 개선", rating: "N", },
+          {id: "2.11.5", name: "2.11.5 사고 대응 및 복구", rating: "Y", },
         ],
       },
       {
@@ -387,16 +235,8 @@ const summaryResults = [
         count: 2,
         rating: "N",
         subItems: [
-          {
-            id: "2.12.1",
-            name: "재해·재난 대비 안전조치",
-            rating: "N",
-          },
-          {
-            id: "2.12.2",
-            name: "재해 복구 시험 및 개선",
-            rating: "P",
-          },
+          {id: "2.12.1", name: "2.12.1 재해·재난 대비 안전조치", rating: "N",},
+          {id: "2.12.2",name: "2.12.2 재해 복구 시험 및 개선", rating: "P", },
         ],
       },
     ],
@@ -411,41 +251,13 @@ const summaryResults = [
         count: 7,
         rating: "P",
         subItems: [
-          {
-            id: "3.1.1",
-            name: "개인정보 수집.이용",
-            rating: "P",
-          },
-          {
-            id: "3.1.2",
-            name: "개인정보의 수집 제한",
-            rating: "Y",
-          },
-          {
-            id: "3.1.3",
-            name: "주민등록번호 처리 제한",
-            rating: "N",
-          },
-          {
-            id: "3.1.4",
-            name: "민감정보 및 고유식별정보의 처리 제한",
-            rating: "P",
-          },
-          {
-            id: "3.1.5",
-            name: "간접수집 보호조치",
-            rating: "Y",
-          },
-          {
-            id: "3.1.6",
-            name: "영상정보처리기기 설치·운영",
-            rating: "N",
-          },
-          {
-            id: "3.1.7",
-            name: "마케팅 목적의 개인정보 수집.이용",
-            rating: "P",
-          },
+          {id: "3.1.1", name: "3.1.1 개인정보 수집.이용", rating: "P", },
+          {id: "3.1.2", name: "3.1.2 개인정보의 수집 제한", rating: "Y", },
+          {id: "3.1.3",name: "3.1.3 주민등록번호 처리 제한", rating: "N", },
+          {id: "3.1.4", name: "3.1.4 민감정보 및 고유식별정보의 처리 제한",  rating: "P", },
+          { id: "3.1.5", name: "3.1.5 간접수집 보호조치", rating: "Y", },
+          { id: "3.1.6",name: "3.1.6 영상정보처리기기 설치·운영", rating: "N", },
+          { id: "3.1.7",name: "3.1.7" 마케팅 목적의 개인정보 수집.이용",  rating: "P", },
         ],
       },
       {
@@ -453,27 +265,11 @@ const summaryResults = [
         count: 5,
         rating: "Y",
         subItems: [
-          {
-            id: "3.2.1",
-            name: "개인정보 현황관리",
-            rating: "Y",
-          },
-          {
-            id: "3.2.2",
-            name: "개인정보 품질보장",
-            rating: "P",
-          },
-          {
-            id: "3.2.3",
-            name: "이용자 단말기 접근 보호",
-            rating: "Y",
-          },
-          {
-            id: "3.2.4",
-            name: "개인정보 목적 외 이용 및 제공",
-            rating: "N",
-          },
-          { id: "3.2.5", name: "가명정보 처리", rating: "Y" },
+          {id: "3.2.1",name: "3.2.1 개인정보 현황관리",rating: "Y", },
+          {id: "3.2.2",name: "3.2.2 개인정보 품질보장",rating: "P",},
+          {id: "3.2.3", name: "3.2.3 이용자 단말기 접근 보호", rating: "Y",},
+          {id: "3.2.4", name: "3.2.4 개인정보 목적 외 이용 및 제공", rating: "N", },
+          { id: "3.2.5", name: "3.2.5 가명정보 처리", rating: "Y" },
         ],
       },
       {
@@ -481,26 +277,10 @@ const summaryResults = [
         count: 4,
         rating: "N",
         subItems: [
-          {
-            id: "3.3.1",
-            name: "개인정보 제3자 제공",
-            rating: "N",
-          },
-          {
-            id: "3.3.2",
-            name: "개인정보 처리 업무 위탁",
-            rating: "P",
-          },
-          {
-            id: "3.3.3",
-            name: "영업의 양수 등에 따른 개인정보의 이전",
-            rating: "Y",
-          },
-          {
-            id: "3.3.4",
-            name: "개인정보의 국외이전",
-            rating: "N",
-          },
+          {id: "3.3.1",name: "3.3.1 개인정보 제3자 제공", rating: "N",},
+          {id: "3.3.2",name: "3.3.2 개인정보 처리 업무 위탁", rating: "P",},
+          {id: "3.3.3", name: "3.3.3 영업의 양수 등에 따른 개인정보의 이전",  rating: "Y", },
+          {id: "3.3.4",name: "3.3.4 개인정보의 국외이전",rating: "N",},
         ],
       },
       {
@@ -508,12 +288,8 @@ const summaryResults = [
         count: 2,
         rating: "P",
         subItems: [
-          { id: "3.4.1", name: "개인정보의 파기", rating: "P" },
-          {
-            id: "3.4.2",
-            name: "처리목적 달성 후 보유 시 조치",
-            rating: "N",
-          },
+          { id: "3.4.1", name: "3.4.1 개인정보의 파기", rating: "P" },
+          { id: "3.4.2", name: "3.4.2 처리목적 달성 후 보유 시 조치", rating: "N", },
         ],
       },
       {
@@ -521,21 +297,9 @@ const summaryResults = [
         count: 3,
         rating: "Y",
         subItems: [
-          {
-            id: "3.5.1",
-            name: "개인정보처리방침 공개",
-            rating: "Y",
-          },
-          {
-            id: "3.5.2",
-            name: "정보주체 권리보장",
-            rating: "P",
-          },
-          {
-            id: "3.5.3",
-            name: "정보주체에 대한 통지",
-            rating: "Y",
-          },
+          { id: "3.5.1", name: "개인정보처리방침 공개",  rating: "Y", },
+          { id: "3.5.2", name: "정보주체 권리보장", rating: "P",},
+          { id: "3.5.3", name: "정보주체에 대한 통지", rating: "Y", },
         ],
       },
     ],
