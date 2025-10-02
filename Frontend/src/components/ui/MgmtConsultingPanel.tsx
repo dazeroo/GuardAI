@@ -51,7 +51,7 @@ const summaryResults = [
             name: "최고책임자의 지정",
             rating: "P",
           },
-          { id: "1.1.3", name: "조직 구성", rating: "Y" },
+          { id: "1.1.3", name: "1.1.3 조직 구성", rating: "Y" },
           { id: "1.1.4", name: "범위 설정", rating: "N" },
           { id: "1.1.5", name: "정책 수립", rating: "Y" },
           { id: "1.1.6", name: "자원 할당", rating: "P" },
