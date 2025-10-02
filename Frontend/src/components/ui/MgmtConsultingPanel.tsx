@@ -196,7 +196,7 @@ const summaryResults = [
           { id: "2.9.1", name: "2.9.1 변경관리", rating: "N" },
           { id: "2.9.2", name: "2.9.2 성능 및 장애관리", rating: "P", },
           { id: "2.9.3", name: "2.9.3 백업 및 복구관리",rating: "Y", },
-          { id: "2.9.4", name: "로그 및 접속기록 관리", rating: "N",},
+          { id: "2.9.4", name: "2.9.4 로그 및 접속기록 관리", rating: "N",},
           {id: "2.9.5", name: "2.9.5 로그 및 접속기록 점검", rating: "P",},
           {id: "2.9.6", name: "2.9.6 시간 동기화", rating: "Y" },
           {id: "2.9.7",name: "2.9.7 정보자산의 재사용 및 폐기", rating: "N",},
