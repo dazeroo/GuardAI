@@ -1574,7 +1574,7 @@ export default function MgmtConsultingPanel() {
                   <Progress value={progress} />
                 </div>
               ) : !diagnosisGenerated ? (
-                <div className="flex-1 flex items-center justify-center pb-95">
+                <div className="flex-1 flex items-center justify-center pb-90">
                   <div className="space-y-4">
                     <div className="text-center space-y-2">
                       <p className="text-muted-foreground">
