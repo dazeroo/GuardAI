@@ -769,51 +769,51 @@ export default function MgmtConsultingPanel() {
     setDiagnosisStep("📄 지침서 분석 중...");
     showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
 
-  try {
-    // FormData 생성
-    const formData = new FormData();
-    formData.append('guideline', file);
-    
-    setProgress(25);
-    setDiagnosisStep("🔍 ISMS-P 101개 항목 검토 중...");
-    
-    await new Promise(r => setTimeout(r, 500)); // 단계 표시 시간
-    setProgress(35);
-
-    // Flask 백엔드 API 호출
-    setDiagnosisStep("⚙️ AI 기반 진단 수행 중...");
-    const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
-      method: 'POST',
-      body: formData,
-    });
-    setProgress(65);
-
-    if (!response.ok) {
-      throw new Error('진단 요청 실패');
+    try {
+      // FormData 생성
+      const formData = new FormData();
+      formData.append('guideline', file);
+      
+      setProgress(25);
+      setDiagnosisStep("🔍 ISMS-P 101개 항목 검토 중...");
+      
+      await new Promise(r => setTimeout(r, 500)); // 단계 표시 시간
+      setProgress(35);
+  
+      // Flask 백엔드 API 호출
+      setDiagnosisStep("⚙️ AI 기반 진단 수행 중...");
+      const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
+        method: 'POST',
+        body: formData,
+      });
+      setProgress(65);
+  
+      if (!response.ok) {
+        throw new Error('진단 요청 실패');
+      }
+  
+      setDiagnosisStep("📊 진단 결과 생성 중...");
+      const diagnosisData = await response.json();
+      setProgress(85);
+  
+      // 백엔드 응답 데이터를 summaryResults 구조에 매핑
+      setDiagnosisStep("✅ 곧 완료됩니다...");
+      const mappedData = mapDiagnosisDataToSummary(diagnosisData);
+      setParsedExcelData(mappedData.summaryData);
+      setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
+      setHasExcelData(true);
+  
+      setProgress(100);
+      await new Promise(r => setTimeout(r, 300));
+      
+      setUploading(false);
+      setDiagnosisStep("");
+      setDiagnosisGenerated(true);
+      setShowDiagnosisCompleteModal(true);
+    } catch (error) {
+      // ... 에러 처리
     }
-
-    setDiagnosisStep("📊 진단 결과 생성 중...");
-    const diagnosisData = await response.json();
-    setProgress(85);
-
-    // 백엔드 응답 데이터를 summaryResults 구조에 매핑
-    setDiagnosisStep("✅ 곧 완료됩니다...");
-    const mappedData = mapDiagnosisDataToSummary(diagnosisData);
-    setParsedExcelData(mappedData.summaryData);
-    setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
-    setHasExcelData(true);
-
-    setProgress(100);
-    await new Promise(r => setTimeout(r, 300));
-    
-    setUploading(false);
-    setDiagnosisStep("");
-    setDiagnosisGenerated(true);
-    setShowDiagnosisCompleteModal(true);
-  } catch (error) {
-    // ... 에러 처리
-  }
-};
+  };
 
     try {
       // FormData 생성
