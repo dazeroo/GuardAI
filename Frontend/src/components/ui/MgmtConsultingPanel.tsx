@@ -360,6 +360,7 @@ const vulnerabilityDetails = [
 ];
 
 export default function MgmtConsultingPanel() {
+  const [diagnosisStep, setDiagnosisStep] = useState<string>("");
   const [isUploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [summaryGenerated, setSummaryGenerated] =
@@ -765,11 +766,54 @@ export default function MgmtConsultingPanel() {
   const startDiagnosis = async (file: File) => {
     setUploading(true);
     setProgress(15);
-    showModalMessage(
-      "자동 진단",
-      "자동 진단을 시작합니다...",
-      "info",
-    );
+    setDiagnosisStep("📄 지침서 분석 중...");
+    showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
+
+  try {
+    // FormData 생성
+    const formData = new FormData();
+    formData.append('guideline', file);
+    
+    setProgress(25);
+    setDiagnosisStep("🔍 ISMS-P 101개 항목 검토 중...");
+    
+    await new Promise(r => setTimeout(r, 500)); // 단계 표시 시간
+    setProgress(35);
+
+    // Flask 백엔드 API 호출
+    setDiagnosisStep("⚙️ AI 기반 진단 수행 중...");
+    const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
+      method: 'POST',
+      body: formData,
+    });
+    setProgress(65);
+
+    if (!response.ok) {
+      throw new Error('진단 요청 실패');
+    }
+
+    setDiagnosisStep("📊 진단 결과 생성 중...");
+    const diagnosisData = await response.json();
+    setProgress(85);
+
+    // 백엔드 응답 데이터를 summaryResults 구조에 매핑
+    setDiagnosisStep("✅ 곧 완료됩니다...");
+    const mappedData = mapDiagnosisDataToSummary(diagnosisData);
+    setParsedExcelData(mappedData.summaryData);
+    setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
+    setHasExcelData(true);
+
+    setProgress(100);
+    await new Promise(r => setTimeout(r, 300));
+    
+    setUploading(false);
+    setDiagnosisStep("");
+    setDiagnosisGenerated(true);
+    setShowDiagnosisCompleteModal(true);
+  } catch (error) {
+    // ... 에러 처리
+  }
+};
 
     try {
       // FormData 생성
@@ -1332,13 +1376,19 @@ export default function MgmtConsultingPanel() {
               value="auto"
               className="flex-1 flex flex-col space-y-4"
             >
-              {isUploading ? (
-                <div className="space-y-2">
+            {isUploading ? (
+              <div className="space-y-4">
+                <div className="text-center space-y-3">
+                  <p className="text-lg font-medium">{diagnosisStep}</p>
                   <p className="text-sm text-muted-foreground">
-                    자동 진단 수행 중…
+                    지침서를 상세히 분석하여 101개 항목에 대한 평가를 준비하고 있습니다.
                   </p>
-                  <Progress value={progress} />
                 </div>
+                <Progress value={progress} />
+                <p className="text-xs text-center text-muted-foreground">
+                  예상 대기 시간: 2-3분 | 창을 닫지 마세요.
+                </p>
+              </div>
               ) : !diagnosisGenerated ? (
                 <div className="flex-1 flex items-center justify-center pb-96">
                   <div className="space-y-4">
