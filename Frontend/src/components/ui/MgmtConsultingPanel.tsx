@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
+import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
 import {
   Card,
   CardHeader,
@@ -1355,7 +1357,7 @@ export default function MgmtConsultingPanel() {
                         지침서 업로드
                         <input
                           type="file"
-                          accept=".xlsx,.xls"
+                          accept=".doc,.docx,.pdf"
                           onChange={handleDiagnosisFileUpload}
                           className="hidden"
                         />
