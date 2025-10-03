@@ -231,7 +231,7 @@ async def diagnose(guideline: UploadFile = File(...)):
         
         logger.info("Gemini API 호출 시작")
         
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
         response_text = response.text
         
