@@ -401,8 +401,11 @@ export default function MgmtConsultingPanel() {
     }>
   >([]);
 
-  // ✅ 여기에 mapDiagnosisDataToSummary 함수 추가
+  //  mapDiagnosisDataToSummary 함수 추가
   const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
+    console.log("--- 백엔드로부터 받은 Raw 데이터 ---");
+    console.log(JSON.stringify(diagnosisData, null, 2));
+    
     console.log("백엔드 응답 데이터:", diagnosisData);
     console.log("데이터 개수:", diagnosisData.length);
     
