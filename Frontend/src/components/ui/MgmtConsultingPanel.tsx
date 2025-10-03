@@ -767,65 +767,64 @@ export default function MgmtConsultingPanel() {
     setUploading(true);
     setDiagnosisGenerated(false);
     showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
-    
-    // 표시할 메시지 목록을 배열로 정의합니다.
-    const progressMessages = [
-      "🔍 ISMS-P 101개 항목 검토 중...",
-      "⚙️ AI 모델이 지침서를 학습하고 있습니다...",
-      "📖 주요 개인정보 처리 방침을 확인하는 중...",
-      "🔐 기술적 보호조치를 분석하고 있습니다...",
-      "⏳ 거의 다 되었습니다. 잠시만 기다려주세요...",
+  
+    // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
+    const progressSteps = [
+      { text: "📄 지침서 분석 중...", progress: 15 },
+      { text: "🔍 ISMS-P 101개 항목 검토 중...", progress: 30 },
+      { text: "⚙️ AI 모델이 지침서를 학습하고 있습니다...", progress: 45 },
+      { text: "📖 주요 개인정보 처리 방침을 확인하는 중...", progress: 60 },
+      { text: "🔐 기술적 보호조치를 분석하고 있습니다...", progress: 75 },
+      { text: "⏳ 거의 다 되었습니다. 잠시만 기다려주세요...", progress: 80 },
     ];
-    let messageIndex = 0;
-    
+    let stepIndex = 0;
+  
     // 타이머 ID를 저장할 변수
     let intervalId: NodeJS.Timeout | null = null;
   
     try {
-      // FormData 생성
       const formData = new FormData();
       formData.append('guideline', file);
-      
-      setProgress(15);
-      setDiagnosisStep("📄 지침서 분석 중...");
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // 초기 메시지를 보여주기 위한 짧은 대기
   
-      // 첫 번째 진행 메시지를 즉시 설정
-      setProgress(30);
-      setDiagnosisStep(progressMessages[messageIndex]);
+      // 첫 번째 메시지와 진행률을 즉시 설정
+      setDiagnosisStep(progressSteps[stepIndex].text);
+      setProgress(progressSteps[stepIndex].progress);
   
-      // 30초마다 메시지를 변경하는 타이머 시작
+      // 30초마다 다음 단계의 메시지와 진행률을 업데이트하는 타이머 시작
       intervalId = setInterval(() => {
-        messageIndex = (messageIndex + 1) % progressMessages.length; // 다음 메시지로 순환
-        setDiagnosisStep(progressMessages[messageIndex]);
-      }, 30000);
+        // 2. 마지막 메시지에 도달하면 더 이상 인덱스를 증가시키지 않습니다.
+        if (stepIndex < progressSteps.length - 1) {
+          stepIndex++;
+          setDiagnosisStep(progressSteps[stepIndex].text);
+          setProgress(progressSteps[stepIndex].progress);
+        }
+      }, 30000); // 30초 간격
   
       // --- 실제 백엔드 API 호출 ---
       const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
         method: 'POST',
         body: formData,
       });
-      
+  
       // API 호출이 끝나면 즉시 타이머를 중지합니다.
       if (intervalId) clearInterval(intervalId);
   
       if (!response.ok) {
         throw new Error('진단 요청 실패');
       }
-      
+  
       // --- 결과 처리 ---
-      setProgress(85);
+      setProgress(90); // 결과를 받아온 후 진행률을 90%로 설정
       setDiagnosisStep("📊 진단 결과 생성 중...");
       const diagnosisData = await response.json();
-      
-      setDiagnosisStep("✅ 곧 완료됩니다...");
-      await new Promise(r => setTimeout(r, 1000)); // 마지막 메시지를 잠시 보여주기 위한 대기
+      await new Promise(r => setTimeout(r, 1000)); 
   
+      setDiagnosisStep("✅ 곧 완료됩니다...");
       const mappedData = mapDiagnosisDataToSummary(diagnosisData);
       setParsedExcelData(mappedData.summaryData);
       setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
       setHasExcelData(true);
-      
+  
       // --- 최종 완료 ---
       setProgress(100);
       setUploading(false);
