@@ -44,35 +44,32 @@ except Exception as e:
 async def diagnose(guideline: UploadFile = File(...)):
     """
     ISMS-P 자동 진단 API
-    
+
     - **guideline**: 진단할 지침서 파일 (.xlsx, .docx, .txt)
     """
-    
+
     # 파일 이름 확인
     if not guideline.filename:
         logger.warning("빈 파일 이름이 제출되었습니다.")
         raise HTTPException(status_code=400, detail="파일이 선택되지 않았습니다.")
-    
+
     try:
         guideline_text = ""
         file_content = await guideline.read()
-        
+
         # 파일 형식에 따른 처리
         if guideline.filename.endswith('.xlsx'):
             logger.info("엑셀 파일로 처리 시작")
-            # pandas를 사용해 엑셀 파일의 모든 데이터를 읽어옴
             df = pd.read_excel(BytesIO(file_content), engine='openpyxl')
-            # 엑셀의 모든 셀 내용을 하나의 긴 텍스트로 합침
             guideline_text = ' '.join(df.astype(str).stack())
-            
+
         elif guideline.filename.endswith('.docx'):
             logger.info("워드 문서(.docx) 파일로 처리 시작")
             doc = docx.Document(BytesIO(file_content))
             guideline_text = "\n".join([para.text for para in doc.paragraphs])
-            
+
         else:
             logger.info("일반 텍스트 파일로 처리 시작")
-            # 텍스트 파일인 경우, 오류를 무시하고 UTF-8로 디코딩
             guideline_text = file_content.decode('utf-8', errors='ignore')
 
         if not guideline_text.strip():
@@ -80,7 +77,7 @@ async def diagnose(guideline: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
 
         logger.info(f"파일 '{guideline.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
-        
+
         # Gemini API에 보낼 프롬프트 정의
         prompt = f"""
         당신은 ISMS-P 인증 심사 전문가입니다.
@@ -209,7 +206,7 @@ async def diagnose(guideline: UploadFile = File(...)):
           예시:
           {{"id": "2.6.4", "name": "데이터베이스 접근", "rating": "N", "reason": "데이터베이스 접근 통제 관련 내용..."}}
           {{"id": "2.7.1", "name": "암호정책 적용", "rating": "N", "reason": "암호화 정책 관련 내용..."}}
-            
+          
           절대로 reason 내용을 다른 항목과 섞지 마세요.
 
           결과는 반드시 아래와 같은 JSON 형식으로만 응답해야 합니다.
@@ -229,28 +226,38 @@ async def diagnose(guideline: UploadFile = File(...)):
           {guideline_text}
           ---
         """
-        
+
         logger.info("Gemini API 호출 시작")
-        
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        response = model.generate_content(prompt)
-        response_text = response.text
-        
+
+        # [수정 1] 모델 이름 변경: 'gemini-2.5-flash' -> 'gemini-1.5-flash'
+        model = genai.GenerativeModel('gemini-1.5-flash')
+
+        # [수정 2] generation_config 정의
         generation_config = {
-            "temperature": 0.2, # 일관성 있는 출력을 위해 온도를 낮춤
-            "max_output_tokens": 8192, # 최대 출력 토큰을 넉넉하게 설정 (최대값)
+            "temperature": 0.2,
+            "max_output_tokens": 8192,
+        }
+        
+        # [수정 3] safety_settings 정의
+        safety_settings = {
+            'HARM_CATEGORY_HARASSMENT': 'BLOCK_MEDIUM_AND_ABOVE',
+            'HARM_CATEGORY_HATE_SPEECH': 'BLOCK_MEDIUM_AND_ABOVE',
+            'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'BLOCK_MEDIUM_AND_ABOVE',
+            'HARM_CATEGORY_DANGEROUS_CONTENT': 'BLOCK_MEDIUM_AND_ABOVE',
         }
 
+        # [수정 4] API 호출을 한 번으로 정리하고, 정의된 설정들을 함께 전달
         response = model.generate_content(
-            prompt, 
-            generation_config=generation_config, # 생성 설정 추가
+            prompt,
+            generation_config=generation_config,
             safety_settings=safety_settings
         )
+        
+        response_text = response.text
         
         logger.info("Gemini API 응답 수신 완료")
 
         # 생성된 텍스트에서 JSON 부분만 추출
-        # 마크다운 코드 블록(` ```json ... ``` `)을 제거
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0]
         
