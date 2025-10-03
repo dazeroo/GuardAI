@@ -768,6 +768,7 @@ export default function MgmtConsultingPanel() {
     setProgress(15);
     setDiagnosisStep("📄 지침서 분석 중...");
     showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
+    await new Promise((resolve) => setTimeout(resolve, 30000)); // 30초 대기
 
     try {
       // FormData 생성
@@ -776,12 +777,14 @@ export default function MgmtConsultingPanel() {
       
       setProgress(25);
       setDiagnosisStep("🔍 ISMS-P 101개 항목 검토 중...");
+      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30초 대기
       
       await new Promise(r => setTimeout(r, 500)); // 단계 표시 시간
       setProgress(35);
   
       // Flask 백엔드 API 호출
       setDiagnosisStep("⚙️ AI 기반 진단 수행 중...");
+      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30초 대기
       const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
         method: 'POST',
         body: formData,
