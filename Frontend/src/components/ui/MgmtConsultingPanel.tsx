@@ -811,15 +811,16 @@ export default function MgmtConsultingPanel() {
       setDiagnosisGenerated(true);
       setShowDiagnosisCompleteModal(true);
     } catch (error) {
-      // ... 에러 처리
+      console.error('자동 진단 중 오류:', error);
+      setUploading(false);
+      setDiagnosisStep("");
+      showModalMessage(
+        "진단 오류",
+        "자동 진단 중 오류가 발생했습니다. 다시 시도해주세요.",
+        "error"
+      );
     }
   };
-
-    try {
-      // FormData 생성
-      const formData = new FormData();
-      formData.append('guideline', file);
-      setProgress(35);
 
       // Flask 백엔드 API 호출
       const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
