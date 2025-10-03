@@ -84,12 +84,12 @@ async def diagnose(guideline: UploadFile = File(...)):
         # Gemini API에 보낼 프롬프트 정의
         prompt = f"""
         당신은 ISMS-P 인증 심사 전문가입니다.
-        아래에 제공되는 회사의 내부 지침서 내용을 분석하여, ISMS-P의 각 통제 항목을 만족하는지 진단해주세요.
+        아래 제공되는 회사의 내부 지침서 내용을 분석하여, ISMS-P의 모든 통제 항목(1.1.1부터 3.5.3까지 총 101개)을 만족하는지 진단해주세요.
         
         ★★★ 매우 중요한 지시사항 ★★★
-        1. 반드시 101개 항목 전체에 대해 순서대로 응답하세요.
-        2. 각 항목의 id, name, rating, reason은 반드시 해당 항목에만 해당하는 내용이어야 합니다.
-        3. reason 내용이 다른 항목과 섞이지 않도록 각 항목을 독립적으로 평가하세요.
+        1.  **당신의 임무는 ISMS-P 통제항목 1.1.1부터 3.5.3까지 101개 전체에 대해 순서대로 빠짐없이 평가하는 것입니다. 응답이 중간에 끊기거나 일부 항목이 누락되면 실패입니다.**
+        2.  각 항목의 id, name, rating, reason은 해당 항목에 대한 독립적인 분석 결과여야 합니다.
+        3.  reason 내용은 다른 항목과 절대 섞이지 않도록 주의하세요.
         
         **평가 기준:**
         - 'Y'(양호): 지침서에 해당 항목에 대한 명확한 내용이 있음
@@ -100,6 +100,7 @@ async def diagnose(guideline: UploadFile = File(...)):
         - 반드시 해당 항목 ID와 name에 직접적으로 관련된 내용만 작성
         - 다른 항목의 내용을 절대 포함하지 말 것
         - 지침서에 내용이 없으면: "지침서에 [항목명]에 대한 내용이 명시되어 있지 않음"
+        - 그 외의 경우, 평가에 대한 구체적인 근거를 지침서 내용 기반으로 간결하게 작성하세요.
         
         **101개 항목 목록 (반드시 이 순서대로):**
         
@@ -234,6 +235,17 @@ async def diagnose(guideline: UploadFile = File(...)):
         model = genai.GenerativeModel('gemini-2.5-flash')
         response = model.generate_content(prompt)
         response_text = response.text
+        
+        generation_config = {
+            "temperature": 0.2, # 일관성 있는 출력을 위해 온도를 낮춤
+            "max_output_tokens": 8192, # 최대 출력 토큰을 넉넉하게 설정 (최대값)
+        }
+
+        response = model.generate_content(
+            prompt, 
+            generation_config=generation_config, # 생성 설정 추가
+            safety_settings=safety_settings
+        )
         
         logger.info("Gemini API 응답 수신 완료")
 
