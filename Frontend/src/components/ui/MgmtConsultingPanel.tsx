@@ -772,9 +772,9 @@ export default function MgmtConsultingPanel() {
     const progressSteps = [
       { text: "📄 지침서 분석 중...", progress: 15 },
       { text: "🔍 ISMS-P 101개 항목 검토 중...", progress: 30 },
-      { text: "⚙️ AI 모델이 지침서를 학습하고 있습니다...", progress: 45 },
+      { text: "⚙️ AI 기반 진단 수행 중...", progress: 45 },
       { text: "📖 주요 개인정보 처리 방침을 확인하는 중...", progress: 60 },
-      { text: "🔐 기술적 보호조치를 분석하고 있습니다...", progress: 75 },
+      { text: "🔐 관리적 보호조치를 분석하고 있습니다...", progress: 75 },
       { text: "⏳ 거의 다 되었습니다. 잠시만 기다려주세요...", progress: 80 },
     ];
     let stepIndex = 0;
@@ -859,7 +859,7 @@ export default function MgmtConsultingPanel() {
     }
   };
 
-  // ✅ 여기에 handleFileUpload 추가
+  // handleFileUpload 추가
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
