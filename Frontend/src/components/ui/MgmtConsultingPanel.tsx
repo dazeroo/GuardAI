@@ -765,55 +765,78 @@ export default function MgmtConsultingPanel() {
 
   const startDiagnosis = async (file: File) => {
     setUploading(true);
-    setProgress(15);
-    setDiagnosisStep("📄 지침서 분석 중...");
+    setDiagnosisGenerated(false);
     showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
-    await new Promise((resolve) => setTimeout(resolve, 30000)); // 30초 대기
-
+    
+    // 표시할 메시지 목록을 배열로 정의합니다.
+    const progressMessages = [
+      "🔍 ISMS-P 101개 항목 검토 중...",
+      "⚙️ AI 모델이 지침서를 학습하고 있습니다...",
+      "📖 주요 개인정보 처리 방침을 확인하는 중...",
+      "🔐 기술적 보호조치를 분석하고 있습니다...",
+      "⏳ 거의 다 되었습니다. 잠시만 기다려주세요...",
+    ];
+    let messageIndex = 0;
+    
+    // 타이머 ID를 저장할 변수
+    let intervalId: NodeJS.Timeout | null = null;
+  
     try {
       // FormData 생성
       const formData = new FormData();
       formData.append('guideline', file);
       
-      setProgress(25);
-      setDiagnosisStep("🔍 ISMS-P 101개 항목 검토 중...");
-      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30초 대기
-      
-      await new Promise(r => setTimeout(r, 500)); // 단계 표시 시간
-      setProgress(35);
+      setProgress(15);
+      setDiagnosisStep("📄 지침서 분석 중...");
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // 초기 메시지를 보여주기 위한 짧은 대기
   
-      // Flask 백엔드 API 호출
-      setDiagnosisStep("⚙️ AI 기반 진단 수행 중...");
-      await new Promise((resolve) => setTimeout(resolve, 30000)); // 30초 대기
+      // 첫 번째 진행 메시지를 즉시 설정
+      setProgress(30);
+      setDiagnosisStep(progressMessages[messageIndex]);
+  
+      // 30초마다 메시지를 변경하는 타이머 시작
+      intervalId = setInterval(() => {
+        messageIndex = (messageIndex + 1) % progressMessages.length; // 다음 메시지로 순환
+        setDiagnosisStep(progressMessages[messageIndex]);
+      }, 30000);
+  
+      // --- 실제 백엔드 API 호출 ---
       const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
         method: 'POST',
         body: formData,
       });
-      setProgress(65);
+      
+      // API 호출이 끝나면 즉시 타이머를 중지합니다.
+      if (intervalId) clearInterval(intervalId);
   
       if (!response.ok) {
         throw new Error('진단 요청 실패');
       }
-  
+      
+      // --- 결과 처리 ---
+      setProgress(85);
       setDiagnosisStep("📊 진단 결과 생성 중...");
       const diagnosisData = await response.json();
-      setProgress(85);
-  
-      // 백엔드 응답 데이터를 summaryResults 구조에 매핑
+      
       setDiagnosisStep("✅ 곧 완료됩니다...");
+      await new Promise(r => setTimeout(r, 1000)); // 마지막 메시지를 잠시 보여주기 위한 대기
+  
       const mappedData = mapDiagnosisDataToSummary(diagnosisData);
       setParsedExcelData(mappedData.summaryData);
       setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
       setHasExcelData(true);
-  
-      setProgress(100);
-      await new Promise(r => setTimeout(r, 300));
       
+      // --- 최종 완료 ---
+      setProgress(100);
       setUploading(false);
       setDiagnosisStep("");
       setDiagnosisGenerated(true);
       setShowDiagnosisCompleteModal(true);
+  
     } catch (error) {
+      // 오류 발생 시에도 반드시 타이머를 중지합니다.
+      if (intervalId) clearInterval(intervalId);
+      
       console.error('자동 진단 중 오류:', error);
       setUploading(false);
       setDiagnosisStep("");
@@ -824,7 +847,6 @@ export default function MgmtConsultingPanel() {
       );
     }
   };
-
 
   // 3. handleDiagnosisFileUpload 수정
   const handleDiagnosisFileUpload = async (
