@@ -822,40 +822,6 @@ export default function MgmtConsultingPanel() {
     }
   };
 
-      // Flask 백엔드 API 호출
-      const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
-        method: 'POST',
-        body: formData,
-      });
-      setProgress(55);
-
-      if (!response.ok) {
-        throw new Error('진단 요청 실패');
-      }
-
-      const diagnosisData = await response.json();
-      setProgress(80);
-
-      // 백엔드 응답 데이터를 summaryResults 구조에 매핑
-      const mappedData = mapDiagnosisDataToSummary(diagnosisData);
-      setParsedExcelData(mappedData.summaryData);
-      setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
-      setHasExcelData(true);
-
-      setProgress(100);
-      setUploading(false);
-      setDiagnosisGenerated(true);
-      setShowDiagnosisCompleteModal(true);
-    } catch (error) {
-      console.error('자동 진단 중 오류:', error);
-      setUploading(false);
-      showModalMessage(
-        "진단 오류",
-        "자동 진단 중 오류가 발생했습니다. 다시 시도해주세요.",
-        "error");
-    }
-  };
-
 
   // 3. handleDiagnosisFileUpload 수정
   const handleDiagnosisFileUpload = async (
