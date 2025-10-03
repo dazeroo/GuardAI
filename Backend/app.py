@@ -274,6 +274,7 @@ async def diagnose(guideline: UploadFile = File(...)):
         # JSON 파싱 및 클라이언트에 전송
         diagnosis_data = json.loads(json_response)
         logger.info("JSON 파싱 성공, 클라이언트에 데이터 전송")
+        logger.info(f"클라이언트로 전송할 최종 데이터 개수: {len(diagnosis_data)}")
         return diagnosis_data
 
     except HTTPException:
