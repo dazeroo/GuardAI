@@ -173,7 +173,7 @@ async def diagnose(guideline: UploadFile = File(...)):
         logger.info(f"파일 '{guideline.filename}' 처리 완료. Gemini API로 101개 항목 진단 시작...")
 
         # [수정] 비동기 처리를 위한 모델 생성
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         # [수정] 101개 항목에 대한 비동기 작업 생성
         tasks = [diagnose_item_async(item, guideline_text, model) for item in ISMS_P_CONTROLS]
