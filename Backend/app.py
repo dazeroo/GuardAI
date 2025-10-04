@@ -51,10 +51,14 @@ def diagnose():
             df = pd.read_excel(file, engine='openpyxl')
             # 엑셀의 모든 셀 내용을 하나의 긴 텍스트로 합침
             guideline_text = ' '.join(df.astype(str).stack())
+        
+        # .docx 파일 처리
         elif file.filename.endswith('.docx'):
-              app.logger.info("워드 문서(.docx) 파일로 처리 시작")
-              doc = docx.Document(file)
-              guideline_text = "\n".join([para.text for para in doc.paragraphs])
+            app.logger.info("워드 문서(.docx) 파일로 처리 시작")
+            doc = docx.Document(file)
+            # 문서의 모든 문단(paragraph)을 순회하며 텍스트를 추출하고, 줄바꿈으로 합칩니다.
+            guideline_text = "\n".join([para.text for para in doc.paragraphs])
+            
         else:
             app.logger.info("일반 텍스트 파일로 처리 시작")
             # 텍스트 파일인 경우, 오류를 무시하고 UTF-8로 디코딩
@@ -66,7 +70,7 @@ def diagnose():
 
         app.logger.info(f"파일 '{file.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
         
-        # Gemini API에 보낼 프롬프트 정의 (Express 예제와 동일)
+        # Gemini API에 보낼 프롬프트 정의
         prompt = f"""
         당신은 ISMS-P 인증 심사 전문가입니다.
         아래에 제공되는 회사의 내부 지침서 내용을 분석하여, ISMS-P의 각 통제 항목을 만족하는지 진단해주세요.
@@ -216,7 +220,7 @@ def diagnose():
         
         app.logger.info("Gemini API 호출 시작")
         
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-pro')
         response = model.generate_content(prompt)
         response_text = response.text
         
