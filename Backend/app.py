@@ -39,7 +39,7 @@ try:
 except Exception as e:
     logger.error(f"Gemini API 설정 중 오류 발생: {e}")
 
-# [수정] ISMS-P 통제항목 101개를 파이썬 리스트로 정의 (Source of Truth)
+# ISMS-P 통제항목 101개
 ISMS_P_CONTROLS = [
     {"id": "1.1.1", "name": "경영진의 참여"}, {"id": "1.1.2", "name": "최고책임자의 지정"},
     {"id": "1.1.3", "name": "조직 구성"}, {"id": "1.1.4", "name": "범위 설정"},
@@ -94,60 +94,102 @@ ISMS_P_CONTROLS = [
     {"id": "3.5.3", "name": "정보주체에 대한 통지"}
 ]
 
-# [수정] 단일 항목을 비동기적으로 진단하는 함수
-async def diagnose_item_async(item, guideline_text, model):
-    """단일 ISMS-P 항목을 진단하는 비동기 함수"""
-    try:
-        # [수정] 매우 단순하고 명확한 프롬프트
-        prompt = f"""
-        당신은 ISMS-P 인증 심사 전문가입니다. 주어진 [회사 지침서] 내용을 보고, 아래 [평가 항목]을 만족하는지 평가해주세요.
+# Batch Rate Limiter 클래스 추가 (배치 단위로 처리)
+class BatchRateLimiter:
+    def __init__(self, batch_size=10, batch_delay=7):
+        self.batch_size = batch_size
+        self.batch_delay = batch_delay  # 각 배치 사이의 대기 시간 (초)
+        self.current_batch_count = 0
+        self.lock = asyncio.Lock()
+    
+    async def acquire(self):
+        async with self.lock:
+            # 배치 크기에 도달하면 대기
+            if self.current_batch_count > 0 and self.current_batch_count % self.batch_size == 0:
+                logger.info(f"배치 {self.current_batch_count // self.batch_size} 완료. {self.batch_delay}초 대기 중...")
+                await asyncio.sleep(self.batch_delay)
+            
+            self.current_batch_count += 1
 
-        [회사 지침서]
-        {guideline_text[:10000]}
+# 전역 rate limiter 인스턴스 (10개씩 배치 처리, 배치당 7초 대기)
+rate_limiter = BatchRateLimiter(batch_size=10, batch_delay=7)
 
-        [평가 항목]
-        - 항목 ID: {item['id']}
-        - 항목명: {item['name']}
+# 단일 항목을 비동기적으로 진단하는 함수 (Batch Rate Limit 적용)
+async def diagnose_item_async(item, guideline_text, model, retry_count=2):
+    """단일 ISMS-P 항목을 진단하는 비동기 함수 (재시도 로직 포함)"""
+    for attempt in range(retry_count):
+        try:
+            # Batch Rate Limiter 통과 대기
+            await rate_limiter.acquire()
+            
+            prompt = f"""
+당신은 ISMS-P 인증 심사 전문가입니다. 주어진 [회사 지침서] 내용을 보고, 아래 [평가 항목]을 만족하는지 평가해주세요.
 
-        [평가 기준]
-        - 'Y'(양호): 지침서에 [평가 항목]에 대한 명확한 내용이 있음
-        - 'P'(부분충족): 지침서에 일부 내용만 있거나 불완전함
-        - 'N'(미흡): 지침서에 해당 내용이 없거나 매우 부족함
+[회사 지침서]
+{guideline_text[:10000]}
 
-        [응답 형식]
-        반드시 아래와 같은 JSON 형식으로만 응답해주세요. 다른 설명은 절대 추가하지 마세요.
-        {{"rating": "Y/P/N 중 하나", "reason": "평가 근거를 2~3문장으로 요약"}}
-        """
+[평가 항목]
+- 항목 ID: {item['id']}
+- 항목명: {item['name']}
 
-        generation_config = {"temperature": 0.1}
-        
-        response = await model.generate_content_async(prompt, generation_config=generation_config)
-        
-        response_text = response.text.strip()
-        
-        # AI 응답에서 JSON만 추출
-        if '```json' in response_text:
-            response_text = response_text.split('```json')[1].split('```')[0].strip()
-        
-        # JSON 파싱
-        diagnosis_result = json.loads(response_text)
-        
-        # 최종 결과 객체 생성
-        return {
-            "id": item["id"],
-            "name": item["name"],
-            "rating": diagnosis_result.get("rating", "N"),
-            "reason": diagnosis_result.get("reason", "AI 응답 파싱 오류")
-        }
+[평가 기준]
+- 'Y'(양호): 지침서에 [평가 항목]에 대한 명확한 내용이 있음
+- 'P'(부분충족): 지침서에 일부 내용만 있거나 불완전함
+- 'N'(미흡): 지침서에 해당 내용이 없거나 매우 부족함
 
-    except Exception as e:
-        logger.error(f"항목 {item['id']} 진단 중 오류: {e}")
-        return {
-            "id": item["id"],
-            "name": item["name"],
-            "rating": "N",
-            "reason": f"진단 중 오류 발생: {e}"
-        }
+[응답 형식]
+반드시 아래와 같은 JSON 형식으로만 응답해주세요. 다른 설명은 절대 추가하지 마세요.
+{{"rating": "Y/P/N 중 하나", "reason": "평가 근거를 2~3문장으로 요약"}}
+"""
+
+            generation_config = {"temperature": 0.1}
+            response = await model.generate_content_async(prompt, generation_config=generation_config)
+            response_text = response.text.strip()
+            
+            # JSON 추출
+            if '```json' in response_text:
+                response_text = response_text.split('```json')[1].split('```')[0].strip()
+            
+            diagnosis_result = json.loads(response_text)
+            
+            logger.info(f"✓ 항목 {item['id']} 진단 완료")
+            
+            return {
+                "id": item["id"],
+                "name": item["name"],
+                "rating": diagnosis_result.get("rating", "N"),
+                "reason": diagnosis_result.get("reason", "AI 응답 파싱 오류")
+            }
+
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                # Rate Limit 에러인 경우
+                if attempt < retry_count - 1:
+                    wait_time = 15  # 15초 대기
+                    logger.warning(f"항목 {item['id']} Rate Limit 에러. {wait_time}초 후 재시도")
+                    await asyncio.sleep(wait_time)
+                    continue
+                else:
+                    logger.error(f"항목 {item['id']} 최대 재시도 횟수 초과")
+            else:
+                logger.error(f"항목 {item['id']} 진단 중 오류: {e}")
+            
+            # 최종 실패 시
+            return {
+                "id": item["id"],
+                "name": item["name"],
+                "rating": "N",
+                "reason": f"진단 중 오류 발생: {error_msg[:100]}"
+            }
+    
+    # 모든 재시도 실패
+    return {
+        "id": item["id"],
+        "name": item["name"],
+        "rating": "N",
+        "reason": "진단 실패: 최대 재시도 횟수 초과"
+    }
 
 # 자동 진단 API 엔드포인트
 @app.post("/api/diagnose")
@@ -158,6 +200,7 @@ async def diagnose(guideline: UploadFile = File(...)):
     try:
         file_content = await guideline.read()
         guideline_text = ""
+        
         if guideline.filename.endswith('.xlsx'):
             df = pd.read_excel(BytesIO(file_content), engine='openpyxl')
             guideline_text = ' '.join(df.astype(str).stack())
@@ -170,18 +213,18 @@ async def diagnose(guideline: UploadFile = File(...)):
         if not guideline_text.strip():
             raise HTTPException(status_code=400, detail="파일이 비어있습니다.")
 
-        logger.info(f"파일 '{guideline.filename}' 처리 완료. Gemini API로 101개 항목 진단 시작...")
+        logger.info(f"파일 '{guideline.filename}' 처리 완료. 101개 항목 진단 시작...")
+        logger.info(f"배치 처리: 10개씩 묶어서 처리, 각 배치 사이 7초 대기 (예상 소요 시간: 약 5분)")
 
-        # [수정] 비동기 처리를 위한 모델 생성
         model = genai.GenerativeModel('gemini-2.5-flash')
         
-        # [수정] 101개 항목에 대한 비동기 작업 생성
+        # 101개 항목에 대한 비동기 작업 생성
         tasks = [diagnose_item_async(item, guideline_text, model) for item in ISMS_P_CONTROLS]
         
-        # [수정] asyncio.gather를 사용하여 모든 작업을 동시에 실행
+        # 모든 작업 동시 실행 (Rate Limiter가 자동으로 속도 조절)
         diagnosis_results = await asyncio.gather(*tasks)
         
-        logger.info(f"101개 항목 진단 완료. 결과 개수: {len(diagnosis_results)}")
+        logger.info(f"✅ 101개 항목 진단 완료. 결과 개수: {len(diagnosis_results)}")
         
         return diagnosis_results
 
