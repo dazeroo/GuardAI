@@ -773,12 +773,12 @@ export default function MgmtConsultingPanel() {
   
     // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
     const progressSteps = [
-      { text: "📄 지침서 분석 중...", progress: 15 },
-      { text: "🔍 ISMS-P 101개 항목 검토 중...", progress: 30 },
-      { text: "⚙️ AI 기반 진단 수행 중...", progress: 45 },
-      { text: "📖 주요 개인정보 처리 방침을 확인하는 중...", progress: 60 },
-      { text: "🔐 관리적 보호조치를 분석하고 있습니다...", progress: 75 },
-      { text: "⏳ 거의 다 되었습니다. 잠시만 기다려주세요...", progress: 80 },
+      { text: "📄 지침서 내용을 분석하고 있습니다...", progress: 15 },
+      { text: "🔍 ISMS-P 101개 항목과의 적합성을 검토 중입니다...", progress: 30 },
+      { text: "⚙️ AI 진단 엔진이 자동 분석을 수행하고 있습니다...", progress: 45 },
+      { text: "📖 취약 항목을 식별하고 있습니다...", progress: 60 },
+      { text: "🔐 개선 및 대응 방안을 도출하고 있습니다...", progress: 75 },
+      { text: "⏳ 진단 결과를 정리 중입니다. 잠시만 기다려주세요...", progress: 80 },
     ];
     let stepIndex = 0;
   
