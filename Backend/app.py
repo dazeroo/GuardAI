@@ -59,8 +59,8 @@ def create_optimized_prompt(guideline_text, batch_items):
     """최적화된 프롬프트 생성 (배치 단위)"""
     items_str = "\n".join([f"- {item}" for item in batch_items])
     
-    # 지침서 텍스트를 50,000자로 늘림 (더 많은 컨텍스트)
-    truncated_text = guideline_text[:50000]
+    # 지침서 텍스트를 25,000자로 제한 (토큰 제한 고려)
+    truncated_text = guideline_text[:25000]
     
     return f"""당신은 ISMS-P 인증 심사 전문가입니다.
 아래 지침서를 분석하여 각 항목을 평가하세요.
