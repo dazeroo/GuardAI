@@ -1380,7 +1380,7 @@ export default function MgmtConsultingPanel() {
                 </div>
                 <Progress value={progress} />
                 <p className="text-xs text-center text-muted-foreground">
-                  예상 대기 시간: 4-5분 | 창을 닫지 마세요.
+                  예상 대기 시간: 3-4분 | 창을 닫지 마세요.
                 </p>
               </div>
               ) : !diagnosisGenerated ? (
