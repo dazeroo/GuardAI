@@ -801,7 +801,7 @@ export default function MgmtConsultingPanel() {
           setDiagnosisStep(progressSteps[stepIndex].text);
           setProgress(progressSteps[stepIndex].progress);
         }
-      }, 30000); // 30초 간격
+      }, 40000); // 40초 간격
   
       // --- 실제 백엔드 API 호출 ---
       const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
@@ -1380,7 +1380,7 @@ export default function MgmtConsultingPanel() {
                 </div>
                 <Progress value={progress} />
                 <p className="text-xs text-center text-muted-foreground">
-                  예상 대기 시간: 2-3분 | 창을 닫지 마세요.
+                  예상 대기 시간: 4-5분 | 창을 닫지 마세요.
                 </p>
               </div>
               ) : !diagnosisGenerated ? (
