@@ -10,17 +10,13 @@ import pandas as pd
 import docx
 from io import BytesIO
 
-# .env 파일에서 환경 변수 로드
 load_dotenv()
 
-# 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# FastAPI 앱 초기화
 app = FastAPI(title="ISMS-P 진단 API", version="1.0.0")
 
-# CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,7 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Gemini API 설정
 try:
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:
@@ -39,7 +34,6 @@ try:
 except Exception as e:
     logger.error(f"Gemini API 설정 중 오류 발생: {e}")
 
-# ISMS-P 통제항목 101개
 ISMS_P_CONTROLS = [
     {"id": "1.1.1", "name": "경영진의 참여"}, {"id": "1.1.2", "name": "최고책임자의 지정"},
     {"id": "1.1.3", "name": "조직 구성"}, {"id": "1.1.4", "name": "범위 설정"},
@@ -94,34 +88,10 @@ ISMS_P_CONTROLS = [
     {"id": "3.5.3", "name": "정보주체에 대한 통지"}
 ]
 
-# Batch Rate Limiter 클래스 추가 (배치 단위로 처리)
-class BatchRateLimiter:
-    def __init__(self, batch_size=10, batch_delay=7):
-        self.batch_size = batch_size
-        self.batch_delay = batch_delay  # 각 배치 사이의 대기 시간 (초)
-        self.current_batch_count = 0
-        self.lock = asyncio.Lock()
-    
-    async def acquire(self):
-        async with self.lock:
-            # 배치 크기에 도달하면 대기
-            if self.current_batch_count > 0 and self.current_batch_count % self.batch_size == 0:
-                logger.info(f"배치 {self.current_batch_count // self.batch_size} 완료. {self.batch_delay}초 대기 중...")
-                await asyncio.sleep(self.batch_delay)
-            
-            self.current_batch_count += 1
-
-# 전역 rate limiter 인스턴스 (10개씩 배치 처리, 배치당 7초 대기)
-rate_limiter = BatchRateLimiter(batch_size=10, batch_delay=7)
-
-# 단일 항목을 비동기적으로 진단하는 함수 (Batch Rate Limit 적용)
-async def diagnose_item_async(item, guideline_text, model, retry_count=2):
-    """단일 ISMS-P 항목을 진단하는 비동기 함수 (재시도 로직 포함)"""
+async def diagnose_item_async(item, guideline_text, model, retry_count=3):
+    """단일 ISMS-P 항목을 진단하는 비동기 함수"""
     for attempt in range(retry_count):
         try:
-            # Batch Rate Limiter 통과 대기
-            await rate_limiter.acquire()
-            
             prompt = f"""
 당신은 ISMS-P 인증 심사 전문가입니다. 주어진 [회사 지침서] 내용을 보고, 아래 [평가 항목]을 만족하는지 평가해주세요.
 
@@ -146,7 +116,6 @@ async def diagnose_item_async(item, guideline_text, model, retry_count=2):
             response = await model.generate_content_async(prompt, generation_config=generation_config)
             response_text = response.text.strip()
             
-            # JSON 추출
             if '```json' in response_text:
                 response_text = response_text.split('```json')[1].split('```')[0].strip()
             
@@ -164,26 +133,21 @@ async def diagnose_item_async(item, guideline_text, model, retry_count=2):
         except Exception as e:
             error_msg = str(e)
             if "429" in error_msg or "quota" in error_msg.lower():
-                # Rate Limit 에러인 경우
                 if attempt < retry_count - 1:
-                    wait_time = 15  # 15초 대기
-                    logger.warning(f"항목 {item['id']} Rate Limit 에러. {wait_time}초 후 재시도")
+                    wait_time = 20  # Rate Limit 에러 시 20초 대기
+                    logger.warning(f"항목 {item['id']} Rate Limit 에러. {wait_time}초 후 재시도 ({attempt + 1}/{retry_count})")
                     await asyncio.sleep(wait_time)
                     continue
-                else:
-                    logger.error(f"항목 {item['id']} 최대 재시도 횟수 초과")
-            else:
-                logger.error(f"항목 {item['id']} 진단 중 오류: {e}")
             
-            # 최종 실패 시
+            logger.error(f"항목 {item['id']} 진단 중 오류: {error_msg[:200]}")
+            
             return {
                 "id": item["id"],
                 "name": item["name"],
                 "rating": "N",
-                "reason": f"진단 중 오류 발생: {error_msg[:100]}"
+                "reason": f"진단 중 오류 발생"
             }
     
-    # 모든 재시도 실패
     return {
         "id": item["id"],
         "name": item["name"],
@@ -191,7 +155,16 @@ async def diagnose_item_async(item, guideline_text, model, retry_count=2):
         "reason": "진단 실패: 최대 재시도 횟수 초과"
     }
 
-# 자동 진단 API 엔드포인트
+async def process_batch(batch, guideline_text, model, batch_num, total_batches):
+    """배치 단위로 처리하는 함수"""
+    logger.info(f"📦 배치 {batch_num}/{total_batches} 시작 ({len(batch)}개 항목)")
+    
+    tasks = [diagnose_item_async(item, guideline_text, model) for item in batch]
+    results = await asyncio.gather(*tasks)
+    
+    logger.info(f"✅ 배치 {batch_num}/{total_batches} 완료")
+    return results
+
 @app.post("/api/diagnose")
 async def diagnose(guideline: UploadFile = File(...)):
     if not guideline.filename:
@@ -214,19 +187,34 @@ async def diagnose(guideline: UploadFile = File(...)):
             raise HTTPException(status_code=400, detail="파일이 비어있습니다.")
 
         logger.info(f"파일 '{guideline.filename}' 처리 완료. 101개 항목 진단 시작...")
-        logger.info(f"배치 처리: 10개씩 묶어서 처리, 각 배치 사이 7초 대기 (예상 소요 시간: 약 5분)")
 
         model = genai.GenerativeModel('gemini-2.5-flash')
         
-        # 101개 항목에 대한 비동기 작업 생성
-        tasks = [diagnose_item_async(item, guideline_text, model) for item in ISMS_P_CONTROLS]
+        # 101개 항목을 8개씩 배치로 나누기 (무료 티어: 분당 10개 제한, 안전하게 8개 사용)
+        BATCH_SIZE = 8
+        BATCH_DELAY = 8  # 배치 사이 8초 대기
         
-        # 모든 작업 동시 실행 (Rate Limiter가 자동으로 속도 조절)
-        diagnosis_results = await asyncio.gather(*tasks)
+        batches = [ISMS_P_CONTROLS[i:i + BATCH_SIZE] for i in range(0, len(ISMS_P_CONTROLS), BATCH_SIZE)]
+        total_batches = len(batches)
         
-        logger.info(f"✅ 101개 항목 진단 완료. 결과 개수: {len(diagnosis_results)}")
+        logger.info(f"배치 처리: {BATCH_SIZE}개씩 {total_batches}개 배치로 나누어 처리 (배치 사이 {BATCH_DELAY}초 대기)")
+        logger.info(f"예상 소요 시간: 약 {(total_batches - 1) * BATCH_DELAY // 60 + 2}분")
         
-        return diagnosis_results
+        all_results = []
+        
+        for idx, batch in enumerate(batches, 1):
+            # 배치 처리
+            batch_results = await process_batch(batch, guideline_text, model, idx, total_batches)
+            all_results.extend(batch_results)
+            
+            # 마지막 배치가 아니면 대기
+            if idx < total_batches:
+                logger.info(f"⏳ {BATCH_DELAY}초 대기 중...")
+                await asyncio.sleep(BATCH_DELAY)
+        
+        logger.info(f"✅ 전체 101개 항목 진단 완료. 결과 개수: {len(all_results)}")
+        
+        return all_results
 
     except Exception as e:
         logger.error(f"진단 프로세스 중 오류 발생: {e}", exc_info=True)
