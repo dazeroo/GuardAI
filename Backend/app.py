@@ -1,6 +1,5 @@
 import os
 import json
-import asyncio
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -56,24 +55,19 @@ ISMS_P_CONTROLS = [
 ]
 
 def create_optimized_prompt(guideline_text, batch_items):
-    """최적화된 프롬프트 생성 (배치 단위)"""
+    """최적화된 프롬프트 생성"""
     items_str = "\n".join([f"- {item}" for item in batch_items])
+    truncated_text = guideline_text[:20000]  # 20,000자로 제한
     
-    # 지침서 텍스트를 25,000자로 제한 (토큰 제한 고려)
-    truncated_text = guideline_text[:25000]
-    
-    return f"""당신은 ISMS-P 인증 심사 전문가입니다.
-아래 지침서를 분석하여 각 항목을 평가하세요.
+    return f"""ISMS-P 인증 심사 전문가로서 지침서를 분석하세요.
 
 [평가 항목]
 {items_str}
 
 [평가 기준]
-- Y: 명확한 내용 있음
-- P: 일부 내용만 있음
-- N: 내용 없음
+Y: 명확한 내용 있음 | P: 일부만 있음 | N: 내용 없음
 
-[응답 형식] 반드시 JSON 배열로만 응답:
+[응답] JSON 배열만 출력:
 [
   {{"id": "1.1.1", "name": "경영진의 참여", "rating": "Y", "reason": "간결한 평가"}},
   ...
@@ -109,11 +103,7 @@ def diagnose():
 
         app.logger.info(f"파일 '{file.filename}' 처리 완료 (길이: {len(guideline_text)})")
         
-        # ★ 핵심: 3개의 배치로 나누어 병렬 처리
-        # 배치 1: 1.1.1 ~ 2.2.6 (약 34개)
-        # 배치 2: 2.3.1 ~ 2.11.5 (약 34개)  
-        # 배치 3: 2.12.1 ~ 3.5.3 (약 33개)
-        
+        # 3개 배치로 분할
         batch_1 = ISMS_P_CONTROLS[:34]
         batch_2 = ISMS_P_CONTROLS[34:68]
         batch_3 = ISMS_P_CONTROLS[68:]
@@ -122,34 +112,50 @@ def diagnose():
         
         app.logger.info("3개 배치로 병렬 처리 시작...")
         
-        # 병렬 처리를 위한 함수
         def process_batch(batch_items, batch_num):
-            app.logger.info(f"배치 {batch_num} 처리 시작 ({len(batch_items)}개 항목)")
-            prompt = create_optimized_prompt(guideline_text, batch_items)
+            try:
+                app.logger.info(f"배치 {batch_num} 시작 ({len(batch_items)}개)")
+                prompt = create_optimized_prompt(guideline_text, batch_items)
+                
+                response = model.generate_content(
+                    prompt,
+                    generation_config={"temperature": 0.1, "max_output_tokens": 8192}
+                )
+                
+                # ★ 핵심: finish_reason 먼저 체크
+                if not response.candidates or response.candidates[0].finish_reason != 1:
+                    reason = response.candidates[0].finish_reason if response.candidates else "unknown"
+                    app.logger.error(f"배치 {batch_num} 비정상 종료: finish_reason={reason}")
+                    return [{"id": item.split()[0], "name": item.split(maxsplit=1)[1], 
+                            "rating": "N", "reason": "AI 응답 생성 실패"} 
+                            for item in batch_items]
+                
+                response_text = response.text.strip()
+                
+                if '```json' in response_text:
+                    response_text = response_text.split('```json')[1].split('```')[0].strip()
+                
+                json_start = response_text.find('[')
+                json_end = response_text.rfind(']') + 1
+                
+                if json_start != -1 and json_end > 0:
+                    json_response = response_text[json_start:json_end]
+                    result = json.loads(json_response)
+                    app.logger.info(f"배치 {batch_num} 완료 ({len(result)}개)")
+                    return result
+                else:
+                    app.logger.error(f"배치 {batch_num} JSON 파싱 실패")
+                    return [{"id": item.split()[0], "name": item.split(maxsplit=1)[1], 
+                            "rating": "N", "reason": "응답 파싱 실패"} 
+                            for item in batch_items]
             
-            response = model.generate_content(
-                prompt,
-                generation_config={"temperature": 0.1, "max_output_tokens": 8192}
-            )
-            
-            response_text = response.text.strip()
-            
-            if '```json' in response_text:
-                response_text = response_text.split('```json')[1].split('```')[0].strip()
-            
-            json_start = response_text.find('[')
-            json_end = response_text.rfind(']') + 1
-            
-            if json_start != -1 and json_end > 0:
-                json_response = response_text[json_start:json_end]
-                result = json.loads(json_response)
-                app.logger.info(f"배치 {batch_num} 완료 ({len(result)}개 결과)")
-                return result
-            else:
-                app.logger.error(f"배치 {batch_num} JSON 파싱 실패")
-                return []
+            except Exception as e:
+                app.logger.error(f"배치 {batch_num} 오류: {str(e)[:100]}")
+                return [{"id": item.split()[0], "name": item.split(maxsplit=1)[1], 
+                        "rating": "N", "reason": "처리 오류"} 
+                        for item in batch_items]
         
-        # ThreadPoolExecutor로 3개 배치 병렬 처리
+        # 병렬 처리
         with ThreadPoolExecutor(max_workers=3) as executor:
             future_1 = executor.submit(process_batch, batch_1, 1)
             future_2 = executor.submit(process_batch, batch_2, 2)
@@ -159,20 +165,18 @@ def diagnose():
             result_2 = future_2.result()
             result_3 = future_3.result()
         
-        # 결과 합치기
         all_results = result_1 + result_2 + result_3
         
-        app.logger.info(f"✅ 전체 처리 완료: {len(all_results)}개 항목")
+        app.logger.info(f"전체 완료: {len(all_results)}/101개 항목")
         
-        # 101개가 아니면 경고
         if len(all_results) != 101:
             app.logger.warning(f"결과 개수 불일치: {len(all_results)}/101")
         
         return jsonify(all_results)
 
     except Exception as e:
-        app.logger.error(f"진단 중 오류 발생: {e}", exc_info=True)
-        return jsonify({"error": "진단 보고서 생성 중 오류가 발생했습니다."}), 500
+        app.logger.error(f"진단 중 오류: {e}", exc_info=True)
+        return jsonify({"error": "진단 중 오류가 발생했습니다."}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=3001, debug=True)
