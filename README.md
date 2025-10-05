@@ -1,4 +1,5 @@
 # GuardAI
+
     GuardAI 통합 보안 컨설팅 서비스는 기술적 컨설팅 서비스와 관리적 컨설팅 서비스를 제공하며,
     각 섹션별로 보고서 요약과 자동 진단 기능이 존재합니다.
 ---
@@ -6,13 +7,13 @@
 ## 전역 환경 설정 
 ```
 sudo apt update
-sudo apt install -y nodejs npm python3 python3-pip python3-venv git curl build-essential   # python3.11 python3.11-venv python3.11-distutils python3-pip
+sudo apt install -y nodejs npm python3 python3-pip python3-venv git build-essential curl
+# sudo apt install -y nodejs npm python3.11 python3.11-venv python3.11-distutils python3-pip git build-essential
 ```
 
 ### 해당 프로젝트에만 python3.11 설치 (pyenv)
 - 전역 환경에 python3.11을 설치한 경우, 아래 pyenv 설정은 하지 않아도 됨.
     ```
-    # 필요한 패키지 먼저 설치
     sudo apt update
     sudo apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
     libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
@@ -25,19 +26,17 @@ sudo apt install -y nodejs npm python3 python3-pip python3-venv git curl build-e
     echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
     echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
     echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-
-    # 변경사항 적용을 위해 쉘 재시작
     exec "$SHELL"
 
     pyenv install 3.11.9
     ```
 
+## Backend Server
 0. 저장소 클론
 ```
 git clone https://github.com/dazeroo/GuardAI.git
 ```
 
-## Backend Server
 1. 의존성 설치
 ```
 cd Backend
