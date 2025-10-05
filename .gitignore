@@ -3,10 +3,6 @@
 .vscode/
 *.code-workspace
 
-# JetBrains (IntelliJ, WebStorm, etc.)
-.idea/
-*.iml
-
 # 민감한 정보 (Secrets)
 # 환경 변수 파일 (API 키, DB 접속 정보 등)
 .env
@@ -30,6 +26,7 @@ node_modules/
 venv/
 .venv/
 __pycache__/
+.python-version
 
 # 빌드 결과물 (Build Output)
 dist/
