@@ -10,11 +10,8 @@ router = APIRouter()
 async def run_ai(req: GenerateRequest):
     try:
         return await generate_ai_response(req)
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=f"Server Error: {e}")
     except Exception as e:
         # 에러 발생 시, 서버 로그에 자세한 내용을 기록합니다.
         # exc_info=True 옵션이 에러의 전체 추적 내용을 보여줍니다.
         logging.error("AI 진단 중 오류 발생:", exc_info=True)
-        # --- 여기까지 수정 ---
         raise HTTPException(status_code=500, detail=f"Server Error: {e}")

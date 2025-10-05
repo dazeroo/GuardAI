@@ -33,11 +33,6 @@ import {
 } from "./tooltip";
 import { toast } from "sonner";
 
-// 이 컴포넌트를 사용하기 전에 터미널에서 exceljs를 설치해주세요:
-// npm install exceljs
-// 또는
-// yarn add exceljs
-
 // 구분 열 통합 및 진단결과 열 분리 구조
 const summaryResults = [
   {
