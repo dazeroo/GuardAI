@@ -30,8 +30,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
-
-// API 응답 데이터 타입을 정의합니다.
 interface AnalysisResultItem {
   id: string;
   name: string;
@@ -49,14 +47,8 @@ interface ChecklistItem {
 }
 
 export default function TechConsultingPanel() {
-  // [삭제] 1-1. 기존의 aiContent state는 모든 탭에서 공유되어 문제가 발생했으므로 삭제합니다.
-  // const [aiContent, setAiContent] = useState({
-  //   threatAnalysis: "생성 버튼을 눌러주세요.",
-  //   yaraRule: "생성 버튼을 눌러주세요.",
-  // });
-
-  // [추가] 1-2. AI 추가 진단 결과를 각 탭(summary-db, summary-web, diagnosis-db, diagnosis-web)별로 독립적으로 저장하기 위한 state 입니다.
-  // 각 탭의 고유 키(예: 'summary-db')를 사용하여 AI 결과를 객체 형태로 관리합니다.
+  // AI 추가 진단 결과를 각 탭(summary-db, summary-web, diagnosis-db, diagnosis-web)별로 독립적으로 저장하기 위한 state 
+  // 각 탭의 고유 키(예: 'summary-db')를 사용하여 AI 결과를 객체 형태로 관리
   const [aiResults, setAiResults] = useState<{
     [key: string]: {
       threatAnalysis: string;
@@ -326,12 +318,8 @@ export default function TechConsultingPanel() {
     }
   };
 
-  // [삭제] 1-3. handleGenerateSummaryAI와 handleGenerateDiagnosisAI 함수는 아래의 handleGenerateAI 함수로 통합되어 삭제합니다.
-  // 코드 중복을 줄이고 유지보수성을 향상시킵니다.
-
-  // [추가] 1-4. 중복되던 AI 생성 함수(handleGenerateSummaryAI, handleGenerateDiagnosisAI)를 하나로 통합하여 코드 간결성을 확보합니다.
+  // AI 생성 함수(handleGenerateSummaryAI, handleGenerateDiagnosisAI)를 하나로 통합
   const handleGenerateAI = async (tabType: "db" | "web", sectionType: "summary" | "diagnosis") => {
-    // 현재 탭과 섹션에 따라 필요한 사전 조건(요약 또는 진단 완료 여부)을 확인합니다.
     const isCompleted = sectionType === 'summary'
         ? (tabType === "db" ? summaryDBGenerated : summaryWebGenerated)
         : (tabType === "db" ? diagnosisDBCompleted : diagnosisWebCompleted);
@@ -342,7 +330,7 @@ export default function TechConsultingPanel() {
         return;
     }
     
-    // 로딩 상태를 설정하는 setter 함수를 동적으로 결정합니다.
+    // 로딩 상태를 설정하는 setter 함수를 동적으로 결정
     const setState = sectionType === 'summary' 
         ? (tabType === 'db' ? setSummaryDBSAI : setSummaryWebAI) 
         : (tabType === 'db' ? setDiagnosisDBSAI : setDiagnosisWebAI);
@@ -362,7 +350,7 @@ export default function TechConsultingPanel() {
             throw new Error("AI 응답 데이터가 올바르지 않습니다.");
         }
         
-        // [수정] 1-5. 탭별로 결과를 저장하기 위해 키(e.g., 'summary-web')를 생성하고 해당 키에 결과를 저장합니다.
+        // 탭별로 결과를 저장하기 위해 키(e.g., 'summary-web')를 생성하고 해당 키에 결과를 저장
         const resultKey = `${sectionType}-${tabType}`;
         setAiResults(prev => ({
             ...prev,
@@ -598,7 +586,7 @@ export default function TechConsultingPanel() {
     showModalMessage("WEB 진단 완료", "WEB 진단이 완료되었습니다.", "success");
   };
   
-  // [수정] 1-6. AIComponent가 탭별로 독립적인 데이터를 표시하도록 threatAnalysis와 yaraRule을 props로 직접 전달받도록 수정합니다.
+  // AIComponent가 탭별로 독립적인 데이터를 표시하도록 threatAnalysis와 yaraRule을 props로 직접 전달받도록 수정
   const AIComponent = ({
     aiState,
     tabType,
@@ -619,7 +607,7 @@ export default function TechConsultingPanel() {
           <Button
             variant="outline"
             size="sm"
-            // [수정] 통합된 handleGenerateAI 함수를 호출합니다.
+            // 통합된 handleGenerateAI 함수를 호출
             onClick={() => handleGenerateAI(tabType, sectionType)}
             disabled={aiState.loading}
             className="gap-2"
@@ -637,7 +625,7 @@ export default function TechConsultingPanel() {
                   <Loader2 className="h-4 w-4 animate-spin" /> 로딩중...
                 </div>
               ) : aiState.show ? (
-                // [수정] Props로 전달받은 threatAnalysis를 렌더링합니다.
+                // Props로 전달받은 threatAnalysis를 렌더링
                 <div className="text-left w-full prose prose-sm dark:prose-invert max-w-none">
                   <ReactMarkdown
                     children={threatAnalysis}
@@ -646,7 +634,7 @@ export default function TechConsultingPanel() {
                   />
                 </div>
               ) : (
-                // [수정] Props로 전달받은 threatAnalysis를 렌더링합니다.
+                // Props로 전달받은 threatAnalysis를 렌더링
                 <div className="text-muted-foreground">{threatAnalysis}</div>
               )}
             </div>
@@ -658,7 +646,7 @@ export default function TechConsultingPanel() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  // [수정] Props로 전달받은 yaraRule을 복사합니다.
+                  // Props로 전달받은 yaraRule을 복사
                   onClick={() => handleCopyText(yaraRule, `${sectionType}-${tabType}-yaraRule`)}
                   className="gap-1 h-8 px-2"
                 >
@@ -671,9 +659,9 @@ export default function TechConsultingPanel() {
                 </Button>
               )}
             </div>
-             {/* [수정] 2-1. YARA Rule 결과란에 세로/가로 스크롤을 적용합니다. */}
-             {/* max-h-[200px]로 최대 높이를 제한하고, overflow-auto로 내용이 넘칠 경우 스크롤을 생성합니다. */}
-             {/* flex, items-center, justify-center 클래스를 제거하여 내용이 좌측 상단부터 표시되도록 합니다. */}
+             {/* YARA Rule 결과란에 세로/가로 스크롤을 적용 */}
+             {/* max-h-[200px]로 최대 높이를 제한하고, overflow-auto로 내용이 넘칠 경우 스크롤을 생성 */}
+             {/* flex, items-center, justify-center 클래스를 제거하여 내용이 좌측 상단부터 표시 */}
             <div className="border rounded-md bg-muted/30 text-sm min-h-[80px] max-h-[200px] overflow-auto">
                 {aiState.loading ? (
                     <div className="flex items-center justify-center w-full h-full min-h-[64px] gap-2 text-muted-foreground">
@@ -786,7 +774,7 @@ export default function TechConsultingPanel() {
                       </div>
                     </div>
                   </div>)}
-                  {/* [수정] 1-7. AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달합니다. */}
+                  {/* AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달 */}
                   {(() => {
                     const aiResult = aiResults['summary-db'] || { threatAnalysis: "생성 버튼을 눌러주세요.", yaraRule: "생성 버튼을 눌러주세요." };
                     return (
@@ -856,7 +844,7 @@ export default function TechConsultingPanel() {
                       </div>
                     </div>
                   </div>)}
-                  {/* [수정] 1-7. AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달합니다. */}
+                  {/* AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달*/}
                   {(() => {
                     const aiResult = aiResults['summary-web'] || { threatAnalysis: "생성 버튼을 눌러주세요.", yaraRule: "생성 버튼을 눌러주세요." };
                     return (
@@ -931,7 +919,7 @@ export default function TechConsultingPanel() {
                       </div>
                     </div>
                   </div>)}
-                  {/* [수정] 1-7. AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달합니다. */}
+                  {/* AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달 */}
                   {(() => {
                     const aiResult = aiResults['diagnosis-db'] || { threatAnalysis: "생성 버튼을 눌러주세요.", yaraRule: "생성 버튼을 눌러주세요." };
                     return (
@@ -996,7 +984,7 @@ export default function TechConsultingPanel() {
                       </div>
                     </div>
                   </div>)}
-                  {/* [수정] 1-7. AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달합니다. */}
+                  {/* AIComponent에 탭에 맞는 AI 결과(threatAnalysis, yaraRule)를 props로 전달 */}
                   {(() => {
                     const aiResult = aiResults['diagnosis-web'] || { threatAnalysis: "생성 버튼을 눌러주세요.", yaraRule: "생성 버튼을 눌러주세요." };
                     return (
