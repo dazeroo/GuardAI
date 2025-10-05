@@ -4,7 +4,7 @@
 > 각 섹션별로 보고서 요약과 자동 진단 기능이 존재합니다.
 ---
 
-## 전역 환경 설정 
+## ✅ 전역 환경 설정 
 ```
 sudo apt update
 sudo apt install -y nodejs npm python3 python3-pip python3-venv git build-essential curl
@@ -32,7 +32,7 @@ sudo apt install -y nodejs npm python3 python3-pip python3-venv git build-essent
     ```
 
 
-## Backend Server
+## ✅ Backend Server
 0. 저장소 클론
 ```
 git clone https://github.com/dazeroo/GuardAI.git
@@ -59,7 +59,7 @@ uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
 
-## Frontend Server
+## ✅ Frontend Server
 1. 의존성 설치
 ```
 cd Frontend
