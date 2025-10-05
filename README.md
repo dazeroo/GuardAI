@@ -1,7 +1,7 @@
 # GuardAI
 
-    GuardAI 통합 보안 컨설팅 서비스는 기술적 컨설팅 서비스와 관리적 컨설팅 서비스를 제공하며,
-    각 섹션별로 보고서 요약과 자동 진단 기능이 존재합니다.
+    > GuardAI 통합 보안 컨설팅 서비스는 기술적 컨설팅 서비스와 관리적 컨설팅 서비스를 제공하며,
+    > 각 섹션별로 보고서 요약과 자동 진단 기능이 존재합니다.
 ---
 
 ## 전역 환경 설정 
@@ -31,6 +31,7 @@ sudo apt install -y nodejs npm python3 python3-pip python3-venv git build-essent
     pyenv install 3.11.9
     ```
 
+
 ## Backend Server
 0. 저장소 클론
 ```
@@ -56,6 +57,7 @@ pip install -r requirements.txt
 ```
 uvicorn app.main:app --reload --host 0.0.0.0
 ```
+
 
 ## Frontend Server
 1. 의존성 설치
