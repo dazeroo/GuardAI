@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.models import init_db
 from app.routers.v2 import items, targets, tech_summary, upload
+from app.routers.v2 import ai
 
 # .env 파일에서 환경변수를 불러옵니다.
 load_dotenv()
@@ -35,7 +36,13 @@ app.add_middleware(
 )
 
 # API 라우터 등록
-app.include_router(items.router, prefix="/routers/v2")
-app.include_router(targets.router, prefix="/routers/v2")
-app.include_router(tech_summary.router, prefix="/routers/v2")
-app.include_router(upload.router, prefix="/routers/v2")
+app.include_router(items.router, prefix="/routers/v2", tags=["items"])
+app.include_router(targets.router, prefix="/routers/v2", tags=["targets"])
+app.include_router(tech_summary.router, prefix="/routers/v2", tags=["summary"])
+app.include_router(upload.router, prefix="/routers/v2", tags=["upload"])
+app.include_router(ai.router, prefix="/routers/v2", tags=["AI"])
+
+
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="localhost", port=8080) # 사용중이라서 8080으로 옮김

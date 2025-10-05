@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.services.v2.tech_summary_service import get_items
 
-router = APIRouter(tags=["items"])
+router = APIRouter()
 
 @router.get("/items")   
 def get_items_endpoint():

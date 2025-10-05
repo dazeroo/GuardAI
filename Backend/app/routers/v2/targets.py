@@ -5,7 +5,7 @@ from app.core.database import get_db
 from app.schemas.schemas import SiteIn, SiteOut, DBCredIn, DBCredOut
 from app.models.models import WebTarget, DBCredential
 
-router = APIRouter(tags=["store"])
+router = APIRouter()
 
 @router.post("/web/targets", response_model=SiteOut)
 def create_site(payload: SiteIn, db: Session = Depends(get_db)):

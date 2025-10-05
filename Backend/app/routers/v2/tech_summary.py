@@ -6,7 +6,7 @@ from app.core.database import get_db
 from app.models.models import File as DBFile
 from app.services.v2.tech_summary_service import parse_report_auto
 
-router = APIRouter(tags=["summary"])
+router = APIRouter()
 
 @router.post("/summary")
 async def summary(

@@ -5,7 +5,7 @@ from app.core.database import get_db
 from app.schemas.schemas import FileOut
 from app.models.models import File
 
-router = APIRouter(tags=["store"])
+router = APIRouter()
 
 @router.post("/files/upload", response_model=FileOut)
 async def upload_file(
