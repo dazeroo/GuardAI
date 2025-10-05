@@ -1,14 +1,11 @@
 # IDE 및 에디터
 # VS Code
 .vscode/
-*.code-workspace
 
 # 민감한 정보 (Secrets)
 # 환경 변수 파일 (API 키, DB 접속 정보 등)
 .env
-.env.local
-.env.*.local
-.db
+*.db
 
 # Private Keys
 *.pem
@@ -27,9 +24,5 @@ node_modules/
 venv/
 .venv/
 __pycache__/
-.python-version
 
-# 빌드 결과물 (Build Output)
-dist/
-build/
-out/
+.python-version
