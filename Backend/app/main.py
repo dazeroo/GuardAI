@@ -1,31 +1,36 @@
 import os
-from dotenv import load_dotenv
-
+import logging
+import google.generativeai as genai
 from fastapi import FastAPI
+from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.models import init_db
-from app.routers.v2 import items, targets, tech_summary, upload
-from app.routers.v2 import ai
+from app.routers.v2 import items, targets, tech_summary, upload, ai, mng_auto_diagnose
 
-# .env 파일에서 환경변수를 불러옵니다.
 load_dotenv()
-
-# 이제 os.environ을 통해 환경변수를 사용할 수 있습니다.
-db_url = os.getenv("DATABASE_URL")
-secret = os.getenv("SECRET_KEY")
+logger = logging.getLogger(__name__)  
 
 app = FastAPI(title="GuardAI API")
 
-# 서버 시작 시 데이터베이스를 초기화하는 이벤트 핸들러
 @app.on_event("startup")
 def on_startup():
     """
-    FastAPI 애플리케이션이 시작될 때 단 한 번 실행되는 함수입니다.
-    이곳에서 init_db()를 호출하여 데이터베이스 테이블을 생성합니다.
+    FastAPI 애플리케이션 시작 시 DB 및 Gemini API 초기화
     """
+    # 1. 데이터베이스 초기화
     print("애플리케이션 시작... 데이터베이스 초기화를 진행합니다.")
-    init_db()
+    init_db()  
     print("데이터베이스 초기화 완료.")
+
+    # 2. Gemini API 설정
+    try:
+        my_key = os.getenv("GENAI_API_KEY") 
+        if not my_key:
+            raise ValueError("GENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
+        genai.configure(api_key=my_key)
+        logger.info("Gemini API 설정이 완료되었습니다.")
+    except Exception as e:
+        logger.error(f"Gemini API 설정 중 오류 발생: {e}")
     
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +46,7 @@ app.include_router(targets.router, prefix="/routers/v2", tags=["targets"])
 app.include_router(tech_summary.router, prefix="/routers/v2", tags=["summary"])
 app.include_router(upload.router, prefix="/routers/v2", tags=["upload"])
 app.include_router(ai.router, prefix="/routers/v2", tags=["AI"])
+app.include_router(mng_auto_diagnose.router, prefix="/routers/v2", tags=["mng"])
 
 
 # if __name__ == "__main__":
