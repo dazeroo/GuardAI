@@ -16,7 +16,7 @@ export default function App() {
               <h1 className="text-[45px] font-bold">[GUARD AI] AI 기반 보안 컨설팅 및 위협 탐지</h1>
             </div>
             <p className="text-muted-foreground mt-7 pl-8">
-              Gaurd AI 통합 컨설팅 보고서는 크게 기술 컨설팅 서비스와 관리 컨설팅 서비스가 있습니다.
+              Gaurd AI 통합 보안 컨설팅 서비스는 크게 기술 컨설팅 서비스와 관리 컨설팅 서비스가 있습니다.
               <br /> 
               각 서비스에서는 보고서 요약 기능과 자동 진단 기능을 제공하고 있습니다.
             </p>
