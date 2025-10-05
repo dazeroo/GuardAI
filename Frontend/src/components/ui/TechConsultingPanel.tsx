@@ -55,7 +55,7 @@ export default function TechConsultingPanel() {
   //   yaraRule: "생성 버튼을 눌러주세요.",
   // });
 
-  // [추가] 1-2. AI 추가진단 결과를 각 탭(summary-db, summary-web, diagnosis-db, diagnosis-web)별로 독립적으로 저장하기 위한 state 입니다.
+  // [추가] 1-2. AI 추가 진단 결과를 각 탭(summary-db, summary-web, diagnosis-db, diagnosis-web)별로 독립적으로 저장하기 위한 state 입니다.
   // 각 탭의 고유 키(예: 'summary-db')를 사용하여 AI 결과를 객체 형태로 관리합니다.
   const [aiResults, setAiResults] = useState<{
     [key: string]: {
@@ -269,18 +269,60 @@ export default function TechConsultingPanel() {
     }
   };
 
-  const handleCopyText = async (text: string, fieldName: string) => {
+  // const handleCopyText = async (text: string, fieldName: string) => {
+  //   if (!text || text.trim() === "") {
+  //       showModalMessage("복사 오류", "복사할 내용이 없습니다.", "error");
+  //       return;
+  //   }
+  //   setCopiedField(fieldName);
+  //   try {
+  //       await navigator.clipboard.writeText(text);
+  //       showModalMessage("복사 완료", "클립보드에 복사되었습니다.", "success");
+  //       setTimeout(() => setCopiedField(null), 2000);
+  //   } catch (err) {
+  //       showModalMessage("복사 실패", "복사에 실패했습니다.", "error");
+  //   }
+  // };
+  const handleCopyText = async (text: string, fieldName: string,) => {
     if (!text || text.trim() === "") {
-        showModalMessage("복사 오류", "복사할 내용이 없습니다.", "error");
-        return;
+      showModalMessage("복사 오류", "복사할 내용이 없습니다.", "error",);
+      return;
     }
+
+    // 복사 성공 표시를 먼저 보여줌
     setCopiedField(fieldName);
-    try {
-        await navigator.clipboard.writeText(text);
-        showModalMessage("복사 완료", "클립보드에 복사되었습니다.", "success");
-        setTimeout(() => setCopiedField(null), 2000);
-    } catch (err) {
-        showModalMessage("복사 실패", "복사에 실패했습니다.", "error");
+    
+    try { // 가장 단순한 방법부터 시도
+      await navigator.clipboard.writeText(text);
+      showModalMessage("복사 완료", "복사되었습니다!", "success",
+      );
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (err) { // 폴백: execCommand 사용
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'absolute';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '0';
+        document.body.appendChild(textArea);
+        
+        textArea.select();
+        textArea.setSelectionRange(0, 99999);
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {showModalMessage("복사 완료", "복사되었습니다!", "success",
+          );
+          setTimeout(() => setCopiedField(null), 2000);
+        } else {
+          throw new Error('execCommand failed');
+        }
+      } catch (fallbackErr) {// 복사 실패 시 알림만 표시
+        setCopiedField(null);
+        showModalMessage("복사 실패", "복사에 실패했습니다. 브라우저가 복사를 지원하지 않습니다.", "error",
+        );
+      }
     }
   };
 
@@ -573,7 +615,7 @@ export default function TechConsultingPanel() {
     return (
       <div className="border-t pt-4 flex-shrink-0 mt-4">
         <div className="flex items-center justify-between mb-4">
-          <h3>AI 추가진단</h3>
+          <h3>AI 추가 진단</h3>
           <Button
             variant="outline"
             size="sm"
@@ -669,14 +711,14 @@ export default function TechConsultingPanel() {
                 보고서 요약
                 <TooltipProvider><Tooltip>
                   <TooltipTrigger asChild><span role="button" tabIndex={0} className="p-0 h-auto bg-transparent border-0 cursor-help" aria-label="정보 아이콘"><Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" /></span></TooltipTrigger>
-                  <TooltipContent side="top"><p className="max-w-xs">요약이 필요한 진단 결과 보고서를 업로드하면 각 진단 항목의 취약 여부를 체크하고, 취약점과 대응방안을 요약합니다.</p></TooltipContent>
+                  <TooltipContent side="top"><p className="max-w-xs">요약이 필요한 진단 결과 보고서를 업로드하면 각 진단 항목의 취약 여부를 체크하고, 취약 항목과 대응 방안을 요약합니다.</p></TooltipContent>
                 </Tooltip></TooltipProvider>
               </TabsTrigger>
               <TabsTrigger value="auto" className="flex items-center gap-2">
                 자동 진단
                 <TooltipProvider><Tooltip>
                   <TooltipTrigger asChild><span role="button" tabIndex={0} className="p-0 h-auto bg-transparent border-0 cursor-help" aria-label="정보 아이콘"><Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" /></span></TooltipTrigger>
-                  <TooltipContent side="top"><p className="max-w-xs">진단 옵션(DB/WEB)을 선택한 후, 진단이 필요한 DB 정보/사이트의 URL을 입력하면 각 항목의 취약 여부를 자동으로 진단하고, 취약점과 대응방안을 요약합니다.</p></TooltipContent>
+                  <TooltipContent side="top"><p className="max-w-xs">진단 옵션(DB/WEB)을 선택한 후, 진단이 필요한 DB 정보/사이트의 URL을 입력하면 각 항목의 취약 여부를 자동으로 진단하고, 취약 항목과 대응 방안을 요약합니다.</p></TooltipContent>
                 </Tooltip></TooltipProvider>
               </TabsTrigger>
             </TabsList>
@@ -728,11 +770,11 @@ export default function TechConsultingPanel() {
                     </ScrollArea>
                   </div>
                   {summaryDBGenerated && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약점 대응방안 ({getSummaryVulnerableItems("db").length}개)</h3>
+                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getSummaryVulnerableItems("db").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약점</div>
-                            <div className="p-3 font-medium">대응방안</div>
+                            <div className="p-3 font-medium">취약 항목</div>
+                            <div className="p-3 font-medium">대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getSummaryVulnerableItems("db").length > 0 ? (getSummaryVulnerableItems("db").map((item, index) => (
@@ -740,7 +782,7 @@ export default function TechConsultingPanel() {
                             <div className="p-3 text-sm">{item.name}</div>
                             <div className="p-3 text-sm">{item.countermeasure}</div>
                           </div>
-                        ))) : (<div className="p-8 text-center text-muted-foreground">취약점이 발견되지 않았습니다.</div>)}
+                        ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
                     </div>
                   </div>)}
@@ -798,11 +840,11 @@ export default function TechConsultingPanel() {
                     </ScrollArea>
                   </div>
                   {summaryWebGenerated && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약점 대응방안 ({getSummaryVulnerableItems("web").length}개)</h3>
+                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getSummaryVulnerableItems("web").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약점</div>
-                            <div className="p-3 font-medium">대응방안</div>
+                            <div className="p-3 font-medium">취약 항목</div>
+                            <div className="p-3 font-medium">대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getSummaryVulnerableItems("web").length > 0 ? (getSummaryVulnerableItems("web").map((item, index) => (
@@ -810,7 +852,7 @@ export default function TechConsultingPanel() {
                             <div className="p-3 text-sm">{item.name}</div>
                             <div className="p-3 text-sm">{item.countermeasure}</div>
                           </div>
-                        ))) : (<div className="p-8 text-center text-muted-foreground">취약점이 발견되지 않았습니다.</div>)}
+                        ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
                     </div>
                   </div>)}
@@ -873,11 +915,11 @@ export default function TechConsultingPanel() {
                     </ScrollArea>
                   </div>
                   {diagnosisDBCompleted && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약점 대응방안 ({getDiagnosisVulnerableItems("db").length}개)</h3>
+                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getDiagnosisVulnerableItems("db").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약점</div>
-                            <div className="p-3 font-medium">대응방안</div>
+                            <div className="p-3 font-medium">취약 항목</div>
+                            <div className="p-3 font-medium">대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getDiagnosisVulnerableItems("db").length > 0 ? (getDiagnosisVulnerableItems("db").map((item, index) => (
@@ -885,7 +927,7 @@ export default function TechConsultingPanel() {
                             <div className="p-3 text-sm">{item.name}</div>
                             <div className="p-3 text-sm">{item.countermeasure}</div>
                           </div>
-                        ))) : (<div className="p-8 text-center text-muted-foreground">취약점이 발견되지 않았습니다.</div>)}
+                        ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
                     </div>
                   </div>)}
@@ -938,11 +980,11 @@ export default function TechConsultingPanel() {
                     </ScrollArea>
                   </div>
                   {diagnosisWebCompleted && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약점 대응방안 ({getDiagnosisVulnerableItems("web").length}개)</h3>
+                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getDiagnosisVulnerableItems("web").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약점</div>
-                            <div className="p-3 font-medium">대응방안</div>
+                            <div className="p-3 font-medium">취약 항목</div>
+                            <div className="p-3 font-medium">대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getDiagnosisVulnerableItems("web").length > 0 ? (getDiagnosisVulnerableItems("web").map((item, index) => (
@@ -950,7 +992,7 @@ export default function TechConsultingPanel() {
                             <div className="p-3 text-sm">{item.name}</div>
                             <div className="p-3 text-sm">{item.countermeasure}</div>
                           </div>
-                        ))) : (<div className="p-8 text-center text-muted-foreground">취약점이 발견되지 않았습니다.</div>)}
+                        ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
                     </div>
                   </div>)}
