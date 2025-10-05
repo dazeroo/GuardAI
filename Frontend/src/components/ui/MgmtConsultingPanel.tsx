@@ -780,7 +780,7 @@ export default function MgmtConsultingPanel() {
       }, 40000); // 40초 간격
   
       // --- 실제 백엔드 API 호출 ---
-      const response = await fetch('/routers/v2/mng_auto_diagnose', {
+      const response = await fetch('/routers/v2/mng-auto-diagnose', {
         method: 'POST',
         body: formData,
       });
