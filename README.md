@@ -1,15 +1,17 @@
 # GuardAI
-
-GuardAI 통합 컨설팅 서비스는 기술적 컨설팅 서비스와 관리적 컨설팅 서비스를 제공하며,
-각 섹션별로 보고서 요약과 자동 진단 기능이 존재합니다.
+    GuardAI 통합 보안 컨설팅 서비스는 기술적 컨설팅 서비스와 관리적 컨설팅 서비스를 제공하며,
+    각 섹션별로 보고서 요약과 자동 진단 기능이 존재합니다.
 ---
 
 ## 전역 환경 설정 
 ```
 sudo apt update
-sudo apt install -y nodejs npm python3 python3-pip python3-venv git curl build-essential   # 전역 환경에 python3.11을 설치할 경우, 아래 pyenv 설정은 하지 않아도 됨.
+sudo apt install -y nodejs npm python3 python3-pip python3-venv git curl build-essential   # python3.11 python3.11-venv python3.11-distutils python3-pip
+```
 
 ### 해당 프로젝트에만 python3.11 설치 (pyenv)
+- 전역 환경에 python3.11을 설치한 경우, 아래 pyenv 설정은 하지 않아도 됨.
+    ```
     # 필요한 패키지 먼저 설치
     sudo apt update
     sudo apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
@@ -19,7 +21,7 @@ sudo apt install -y nodejs npm python3 python3-pip python3-venv git curl build-e
     # pyenv 설치 스크립트 실행
     curl https://pyenv.run | bash
 
-    # 쉘 설정 파일에 pyenv 초기화 스크립트 추가 (.bashrc)
+    # 쉘 설정 파일에 pyenv 초기화 스크립트 없으면 추가 (.bashrc)
     echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
     echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
     echo 'eval "$(pyenv init -)"' >> ~/.bashrc
@@ -28,7 +30,7 @@ sudo apt install -y nodejs npm python3 python3-pip python3-venv git curl build-e
     exec "$SHELL"
 
     pyenv install 3.11.9
-```
+    ```
 
 0. 저장소 클론
 ```
