@@ -1,1615 +1,1221 @@
 import React, { useState } from "react";
-import ExcelJS from "exceljs"; 
+import * as XLSX from "xlsx";
+import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
 } from "./card";
 import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from "./tabs";
 import { Button } from "./button";
 import { Progress } from "./progress";
 import { Checkbox } from "./checkbox";
 import { ScrollArea } from "./scroll-area";
 import {
-  CheckCircle,
-  X,
-  AlertCircle,
-  Clock,
-  ChevronDown,
-  ChevronRight,
-  Info,
+  CheckCircle,
+  X,
+  AlertCircle,
+  Clock,
+  ChevronDown,
+  ChevronRight,
+  Info,
 } from "lucide-react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "./tooltip";
 import { toast } from "sonner";
 
 // 구분 열 통합 및 진단결과 열 분리 구조
 const summaryResults = [
-  {
-    id: 1,
-    division: "ISMS-P", // 통합된 구분 열
-    integratedAuth: "1. 관리체계 수립 및 운영", // 통합인증 열
-    fields: [
-      {
-        name: "1.1 관리체계 기반마련",
-        count: 6,
-        rating: "Y",
-        subItems: [
-          { id: "1.1.1", name: "1.1.1 경영진의 참여", rating: "Y" },
-          { id: "1.1.2", name: "1.1.2 최고책임자의 지정", rating: "P",},
-          { id: "1.1.3", name: "1.1.3 조직 구성", rating: "Y" },
-          { id: "1.1.4", name: "1.1.4 범위 설정", rating: "N" },
-          { id: "1.1.5", name: "1.1.5 정책 수립", rating: "Y" },
-          { id: "1.1.6", name: "1.1.6 자원 할당", rating: "P" },
-        ],
-      },
-      {
-        name: "1.2 위험관리",
-        count: 4,
-        rating: "P",
-        subItems: [
-          { id: "1.2.1", name: "1.2.1 정보자산 식별", rating: "Y" },
-          { id: "1.2.2", name: "1.2.2 현황 및 흐름분석", rating: "P",},
-          { id: "1.2.3", name: "1.2.3 위험 평가", rating: "N" },
-          { id: "1.2.4", name: "1.2.4 보호대책 선정", rating: "P" },
-        ],
-      },
-      {
-        name: "1.3 관리체계 운영",
-        count: 3,
-        rating: "N",
-        subItems: [
-          { id: "1.3.1", name: "1.3.1 보호대책 구현", rating: "P" },
-          { id: "1.3.2", name: "1.3.2 보호대책 공유", rating: "N" },
-          { id: "1.3.3", name: "1.3.3 운영현황 관리", rating: "Y" },
-        ],
-      },
-      {
-        name: "1.4 관리체계 점검 및 개선",
-        count: 3,
-        rating: "Y",
-        subItems: [
-          {id: "1.4.1",name: "1.4.1 법적 요구사항 준수 검토", rating: "Y",},
-          { id: "1.4.2", name: "1.4.2 관리체계 점검", rating: "P" },
-          { id: "1.4.3", name: "1.4.3 관리체계 개선", rating: "Y" },
-        ],
-      },
-    ],
-  },
-  {
-    id: 2,
-    division: "ISMS", // 통합된 구분 열
-    integratedAuth: "2. 보호대책 요구사항", // 통합인증 열
-    fields: [
-      {
-        name: "2.1 정책, 조직, 자산 관리",
-        count: 3,
-        rating: "P",
-        subItems: [
-          { id: "2.1.1", name: "2.1.1 정책의 유지관리", rating: "Y" },
-          { id: "2.1.2", name: "2.1.2 조직의 유지관리", rating: "P" },
-          { id: "2.1.3", name: "2.1.3 정보자산 관리", rating: "N" },
-        ],
-      },
-      {
-        name: "2.2 인적보안",
-        count: 6,
-        rating: "Y",
-        subItems: [
-          {id: "2.2.1",name: "2.2.1 주요 직무자 지정 및 관리",rating: "Y",},
-          { id: "2.2.2", name: "2.2.2 직무 분리", rating: "P" },
-          { id: "2.2.3", name: "2.2.3 보안 서약", rating: "Y" },
-          {id: "2.2.4", name: "2.2.4 인식제고 및 교육훈련", rating: "N",},
-          {id: "2.2.5",name: "2.2.5 퇴직 및 직무변경 관리",rating: "Y",},
-          {id: "2.2.6",name: "2.2.6 보안 위반 시 조치", rating: "P",},
-        ],
-      },
-      {
-        name: "2.3 외부자 보안",
-        count: 4,
-        rating: "N",
-        subItems: [
-          {id: "2.3.1", name: "2.3.1 외부자 현황 관리",rating: "N",},
-          {id: "2.3.2",name: "2.3.2 외부자 계약 시 보안", rating: "P",},
-          {id: "2.3.3",name: "2.3.3 외부자 보안 이행 관리",rating: "N",},
-          { id: "2.3.4",name: "2.3.4 외부자 계약 변경 및 만료 시 보안", rating: "Y", },
-        ],
-      },
-      {
-        name: "2.4 물리보안",
-        count: 7,
-        rating: "P",
-        subItems: [
-          { id: "2.4.1", name: "2.4.1 보호구역 지정", rating: "Y" },
-          { id: "2.4.2", name: "2.4.2 출입통제", rating: "P" },
-          { id: "2.4.3", name: "2.4.3 정보시스템 보호", rating: "Y" },
-          { id: "2.4.4", name: "2.4.4 보호설비 운영", rating: "N" },
-          {id: "2.4.5",name: "2.4.5 보호구역 내 작업",rating: "P", },
-          {id: "2.4.6",name: "2.4.6 반출입 기기 통제",rating: "Y",},
-          { id: "2.4.7", name: "2.4.7 업무환경 보안", rating: "P" },
-        ],
-      },
-      {
-        name: "2.5 인증 및 권한 관리",
-        count: 6,
-        rating: "Y",
-        subItems: [
-          { id: "2.5.1",name: "2.5.1 사용자 계정 관리", rating: "Y",},
-          { id: "2.5.2", name: "2.5.2 사용자 식별", rating: "P" },
-          { id: "2.5.3", name: "2.5.3 사용자 인증", rating: "Y" },
-          { id: "2.5.4", name: "2.5.4 비밀번호 관리", rating: "N" },
-          {id: "2.5.5",name: "2.5.5 특수 계정 및 권한 관리",rating: "Y",},
-          { id: "2.5.6", name: "2.5.6 접근권한 검토", rating: "P" },
-        ],
-      },
-      {
-        name: "2.6 접근통제",
-        count: 7,
-        rating: "N",
-        subItems: [
-          { id: "2.6.1", name: "2.6.1 네트워크 접근", rating: "N" },
-          { id: "2.6.2", name: "2.6.2 정보시스템 접근", rating: "P" },
-          {id: "2.6.3", name: "2.6.3 응용프로그램 접근", rating: "Y", },
-          { id: "2.6.4", name: "2.6.4 데이터베이스 접근", rating: "N",},
-          { id: "2.6.5", name: "2.6.5 무선 네트워크 접근", rating: "P",  },
-          { id: "2.6.6", name: "2.6.6 원격접근 통제", rating: "N" },
-          { id: "2.6.7", name: "2.6.7 인터넷 접속 통제", rating: "Y",},
-        ],
-      },
-      {
-        name: "2.7 암호화 적용",
-        count: 2,
-        rating: "P",
-        subItems: [
-          { id: "2.7.1", name: "2.7.1 암호정책 적용", rating: "P" },
-          { id: "2.7.2", name: "2.7.2 암호키 관리", rating: "N" },
-        ],
-      },
-      {
-        name: "2.8 정보시스템 도입 및 개발 보안",
-        count: 6,
-        rating: "Y",
-        subItems: [
-          {id: "2.8.1",name: "2.8.1 보안 요구사항 정의", rating: "Y", },
-          {id: "2.8.2", name: "2.8.2 보안 요구사항 검토 및 시험", rating: "P", },
-          {id: "2.8.3", name: "2.8.3 시험과 운영 환경 분리", rating: "Y",},
-          {id: "2.8.4", name: "2.8.4 시험 데이터 보안", rating: "N", },
-          {id: "2.8.5", name: "2.8.5 소스 프로그램 관리", rating: "Y", },
-          { id: "2.8.6", name: "2.8.6 운영환경 이관", rating: "P" },
-        ],
-      },
-      {
-        name: "2.9 시스템 및 서비스 운영관리",
-        count: 7,
-        rating: "N",
-        subItems: [
-          { id: "2.9.1", name: "2.9.1 변경관리", rating: "N" },
-          { id: "2.9.2", name: "2.9.2 성능 및 장애관리", rating: "P", },
-          { id: "2.9.3", name: "2.9.3 백업 및 복구관리",rating: "Y", },
-          { id: "2.9.4", name: "2.9.4 로그 및 접속기록 관리", rating: "N",},
-          {id: "2.9.5", name: "2.9.5 로그 및 접속기록 점검", rating: "P",},
-          {id: "2.9.6", name: "2.9.6 시간 동기화", rating: "Y" },
-          {id: "2.9.7",name: "2.9.7 정보자산의 재사용 및 폐기", rating: "N",},
-        ],
-      },
-      {
-        name: "2.10 시스템 및 서비스 보안관리",
-        count: 9,
-        rating: "P",
-        subItems: [
-          {id: "2.10.1",name: "2.10.1 보안시스템 운영",rating: "Y", },
-          { id: "2.10.2", name: "2.10.2 클라우드 보안", rating: "P" },
-          { id: "2.10.3", name: "2.10.3 공개서버 보안", rating: "N" },
-          { id: "2.10.4", name: "2.10.4 전자거래 및 핀테크 보안", rating: "P", },
-          { id: "2.10.5", name: "2.10.5 정보전송 보안", rating: "Y" },
-          {id: "2.10.6", name: "2.10.6 업무용 단말기기 보안",rating: "P",},
-          { id: "2.10.7",name: "2.10.7 보조저장매체 관리", rating: "N",},
-          { id: "2.10.8", name: "2.10.8 패치관리", rating: "P" },
-          { id: "2.10.9", name: "2.10.9 악성코드 통제", rating: "Y" },
-        ],
-      },
-      {
-        name: "2.11 사고 예방 및 대응",
-        count: 5,
-        rating: "Y",
-        subItems: [
-          {id: "2.11.1",name: "2.11.1 사고 예방 및 대응체계 구축",rating: "Y", },
-          {id: "2.11.2", name: "2.11.2 취약점 점검 및 조치",rating: "P", },
-          {id: "2.11.3",name: "2.11.3 이상행위 분석 및 모니터링",  rating: "Y", },
-          {id: "2.11.4", name: "2.11.4 사고 대응 훈련 및 개선", rating: "N", },
-          {id: "2.11.5", name: "2.11.5 사고 대응 및 복구", rating: "Y", },
-        ],
-      },
-      {
-        name: "2.12 재해복구",
-        count: 2,
-        rating: "N",
-        subItems: [
-          {id: "2.12.1", name: "2.12.1 재해·재난 대비 안전조치", rating: "N",},
-          {id: "2.12.2",name: "2.12.2 재해 복구 시험 및 개선", rating: "P", },
-        ],
-      },
-    ],
-  },
-  {
-    id: 3,
-    division: "", // 빈 값으로 ISMS와 병합
-    integratedAuth: "3. 개인정보 처리단계별 요구사항", // 통합인증 열
-    fields: [
-      {
-        name: "3.1 개인정보 수집 시 보호조치",
-        count: 7,
-        rating: "P",
-        subItems: [
-          {id: "3.1.1", name: "3.1.1 개인정보 수집.이용", rating: "P", },
-          {id: "3.1.2", name: "3.1.2 개인정보의 수집 제한", rating: "Y", },
-          {id: "3.1.3",name: "3.1.3 주민등록번호 처리 제한", rating: "N", },
-          {id: "3.1.4", name: "3.1.4 민감정보 및 고유식별정보의 처리 제한",  rating: "P", },
-          { id: "3.1.5", name: "3.1.5 간접수집 보호조치", rating: "Y", },
-          { id: "3.1.6",name: "3.1.6 영상정보처리기기 설치·운영", rating: "N", },
-          { id: "3.1.7",name: "3.1.7 마케팅 목적의 개인정보 수집.이용",  rating: "P", },
-        ],
-      },
-      {
-        name: "3.2 개인정보 보유 및 이용 시 보호조치",
-        count: 5,
-        rating: "Y",
-        subItems: [
-          {id: "3.2.1",name: "3.2.1 개인정보 현황관리",rating: "Y", },
-          {id: "3.2.2",name: "3.2.2 개인정보 품질보장",rating: "P",},
-          {id: "3.2.3", name: "3.2.3 이용자 단말기 접근 보호", rating: "Y",},
-          {id: "3.2.4", name: "3.2.4 개인정보 목적 외 이용 및 제공", rating: "N", },
-          { id: "3.2.5", name: "3.2.5 가명정보 처리", rating: "Y" },
-        ],
-      },
-      {
-        name: "3.3 개인정보 제공 시 보호조치",
-        count: 4,
-        rating: "N",
-        subItems: [
-          {id: "3.3.1",name: "3.3.1 개인정보 제3자 제공", rating: "N",},
-          {id: "3.3.2",name: "3.3.2 개인정보 처리 업무 위탁", rating: "P",},
-          {id: "3.3.3", name: "3.3.3 영업의 양수 등에 따른 개인정보의 이전",  rating: "Y", },
-          {id: "3.3.4",name: "3.3.4 개인정보의 국외이전",rating: "N",},
-        ],
-      },
-      {
-        name: "3.4 개인정보 파기 시 보호조치",
-        count: 2,
-        rating: "P",
-        subItems: [
-          { id: "3.4.1", name: "3.4.1 개인정보의 파기", rating: "P" },
-          { id: "3.4.2", name: "3.4.2 처리목적 달성 후 보유 시 조치", rating: "N", },
-        ],
-      },
-      {
-        name: "3.5 정보주체 권리보호",
-        count: 3,
-        rating: "Y",
-        subItems: [
-          { id: "3.5.1", name: "3.5.1 개인정보처리방침 공개",  rating: "Y", },
-          { id: "3.5.2", name: "3.5.2 정보주체 권리보장", rating: "P",},
-          { id: "3.5.3", name: "3.5.3 정보주체에 대한 통지", rating: "Y", },
-        ],
-      },
-    ],
-  },
+  {
+    id: 1,
+    division: "ISMS-P", // 통합된 구분 열
+    integratedAuth: "1. 관리체계 수립 및 운영", // 통합인증 열
+    fields: [
+      {
+        name: "1.1 관리체계 기반마련",
+        count: 6,
+        rating: "Y",
+        subItems: [
+          { id: "1.1.1", name: "1.1.1 경영진의 참여", rating: "Y" },
+          { id: "1.1.2", name: "1.1.2 최고책임자의 지정", rating: "P",},
+          { id: "1.1.3", name: "1.1.3 조직 구성", rating: "Y" },
+          { id: "1.1.4", name: "1.1.4 범위 설정", rating: "N" },
+          { id: "1.1.5", name: "1.1.5 정책 수립", rating: "Y" },
+          { id: "1.1.6", name: "1.1.6 자원 할당", rating: "P" },
+        ],
+      },
+      {
+        name: "1.2 위험관리",
+        count: 4,
+        rating: "P",
+        subItems: [
+          { id: "1.2.1", name: "1.2.1 정보자산 식별", rating: "Y" },
+          { id: "1.2.2", name: "1.2.2 현황 및 흐름분석", rating: "P",},
+          { id: "1.2.3", name: "1.2.3 위험 평가", rating: "N" },
+          { id: "1.2.4", name: "1.2.4 보호대책 선정", rating: "P" },
+        ],
+      },
+      {
+        name: "1.3 관리체계 운영",
+        count: 3,
+        rating: "N",
+        subItems: [
+          { id: "1.3.1", name: "1.3.1 보호대책 구현", rating: "P" },
+          { id: "1.3.2", name: "1.3.2 보호대책 공유", rating: "N" },
+          { id: "1.3.3", name: "1.3.3 운영현황 관리", rating: "Y" },
+        ],
+      },
+      {
+        name: "1.4 관리체계 점검 및 개선",
+        count: 3,
+        rating: "Y",
+        subItems: [
+          {id: "1.4.1",name: "1.4.1 법적 요구사항 준수 검토", rating: "Y",},
+          { id: "1.4.2", name: "1.4.2 관리체계 점검", rating: "P" },
+          { id: "1.4.3", name: "1.4.3 관리체계 개선", rating: "Y" },
+        ],
+      },
+    ],
+  },
+  {
+    id: 2,
+    division: "ISMS", // 통합된 구분 열
+    integratedAuth: "2. 보호대책 요구사항", // 통합인증 열
+    fields: [
+      {
+        name: "2.1 정책, 조직, 자산 관리",
+        count: 3,
+        rating: "P",
+        subItems: [
+          { id: "2.1.1", name: "2.1.1 정책의 유지관리", rating: "Y" },
+          { id: "2.1.2", name: "2.1.2 조직의 유지관리", rating: "P" },
+          { id: "2.1.3", name: "2.1.3 정보자산 관리", rating: "N" },
+        ],
+      },
+      {
+        name: "2.2 인적보안",
+        count: 6,
+        rating: "Y",
+        subItems: [
+          {id: "2.2.1",name: "2.2.1 주요 직무자 지정 및 관리",rating: "Y",},
+          { id: "2.2.2", name: "2.2.2 직무 분리", rating: "P" },
+          { id: "2.2.3", name: "2.2.3 보안 서약", rating: "Y" },
+          {id: "2.2.4", name: "2.2.4 인식제고 및 교육훈련", rating: "N",},
+          {id: "2.2.5",name: "2.2.5 퇴직 및 직무변경 관리",rating: "Y",},
+          {id: "2.2.6",name: "2.2.6 보안 위반 시 조치", rating: "P",},
+        ],
+      },
+      {
+        name: "2.3 외부자 보안",
+        count: 4,
+        rating: "N",
+        subItems: [
+          {id: "2.3.1", name: "2.3.1 외부자 현황 관리",rating: "N",},
+          {id: "2.3.2",name: "2.3.2 외부자 계약 시 보안", rating: "P",},
+          {id: "2.3.3",name: "2.3.3 외부자 보안 이행 관리",rating: "N",},
+          { id: "2.3.4",name: "2.3.4 외부자 계약 변경 및 만료 시 보안", rating: "Y", },
+        ],
+      },
+      {
+        name: "2.4 물리보안",
+        count: 7,
+        rating: "P",
+        subItems: [
+          { id: "2.4.1", name: "2.4.1 보호구역 지정", rating: "Y" },
+          { id: "2.4.2", name: "2.4.2 출입통제", rating: "P" },
+          { id: "2.4.3", name: "2.4.3 정보시스템 보호", rating: "Y" },
+          { id: "2.4.4", name: "2.4.4 보호설비 운영", rating: "N" },
+          {id: "2.4.5",name: "2.4.5 보호구역 내 작업",rating: "P", },
+          {id: "2.4.6",name: "2.4.6 반출입 기기 통제",rating: "Y",},
+          { id: "2.4.7", name: "2.4.7 업무환경 보안", rating: "P" },
+        ],
+      },
+      {
+        name: "2.5 인증 및 권한 관리",
+        count: 6,
+        rating: "Y",
+        subItems: [
+          { id: "2.5.1",name: "2.5.1 사용자 계정 관리", rating: "Y",},
+          { id: "2.5.2", name: "2.5.2 사용자 식별", rating: "P" },
+          { id: "2.5.3", name: "2.5.3 사용자 인증", rating: "Y" },
+          { id: "2.5.4", name: "2.5.4 비밀번호 관리", rating: "N" },
+          {id: "2.5.5",name: "2.5.5 특수 계정 및 권한 관리",rating: "Y",},
+          { id: "2.5.6", name: "2.5.6 접근권한 검토", rating: "P" },
+        ],
+      },
+      {
+        name: "2.6 접근통제",
+        count: 7,
+        rating: "N",
+        subItems: [
+          { id: "2.6.1", name: "2.6.1 네트워크 접근", rating: "N" },
+          { id: "2.6.2", name: "2.6.2 정보시스템 접근", rating: "P" },
+          {id: "2.6.3", name: "2.6.3 응용프로그램 접근", rating: "Y", },
+          { id: "2.6.4", name: "2.6.4 데이터베이스 접근", rating: "N",},
+          { id: "2.6.5", name: "2.6.5 무선 네트워크 접근", rating: "P",  },
+          { id: "2.6.6", name: "2.6.6 원격접근 통제", rating: "N" },
+          { id: "2.6.7", name: "2.6.7 인터넷 접속 통제", rating: "Y",},
+        ],
+      },
+      {
+        name: "2.7 암호화 적용",
+        count: 2,
+        rating: "P",
+        subItems: [
+          { id: "2.7.1", name: "2.7.1 암호정책 적용", rating: "P" },
+          { id: "2.7.2", name: "2.7.2 암호키 관리", rating: "N" },
+        ],
+      },
+      {
+        name: "2.8 정보시스템 도입 및 개발 보안",
+        count: 6,
+        rating: "Y",
+        subItems: [
+          {id: "2.8.1",name: "2.8.1 보안 요구사항 정의", rating: "Y", },
+          {id: "2.8.2", name: "2.8.2 보안 요구사항 검토 및 시험", rating: "P", },
+          {id: "2.8.3", name: "2.8.3 시험과 운영 환경 분리", rating: "Y",},
+          {id: "2.8.4", name: "2.8.4 시험 데이터 보안", rating: "N", },
+          {id: "2.8.5", name: "2.8.5 소스 프로그램 관리", rating: "Y", },
+          { id: "2.8.6", name: "2.8.6 운영환경 이관", rating: "P" },
+        ],
+      },
+      {
+        name: "2.9 시스템 및 서비스 운영관리",
+        count: 7,
+        rating: "N",
+        subItems: [
+          { id: "2.9.1", name: "2.9.1 변경관리", rating: "N" },
+          { id: "2.9.2", name: "2.9.2 성능 및 장애관리", rating: "P", },
+          { id: "2.9.3", name: "2.9.3 백업 및 복구관리",rating: "Y", },
+          { id: "2.9.4", name: "2.9.4 로그 및 접속기록 관리", rating: "N",},
+          {id: "2.9.5", name: "2.9.5 로그 및 접속기록 점검", rating: "P",},
+          {id: "2.9.6", name: "2.9.6 시간 동기화", rating: "Y" },
+          {id: "2.9.7",name: "2.9.7 정보자산의 재사용 및 폐기", rating: "N",},
+        ],
+      },
+      {
+        name: "2.10 시스템 및 서비스 보안관리",
+        count: 9,
+        rating: "P",
+        subItems: [
+          {id: "2.10.1",name: "2.10.1 보안시스템 운영",rating: "Y", },
+          { id: "2.10.2", name: "2.10.2 클라우드 보안", rating: "P" },
+          { id: "2.10.3", name: "2.10.3 공개서버 보안", rating: "N" },
+          { id: "2.10.4", name: "2.10.4 전자거래 및 핀테크 보안", rating: "P", },
+          { id: "2.10.5", name: "2.10.5 정보전송 보안", rating: "Y" },
+          {id: "2.10.6", name: "2.10.6 업무용 단말기기 보안",rating: "P",},
+          { id: "2.10.7",name: "2.10.7 보조저장매체 관리", rating: "N",},
+          { id: "2.10.8", name: "2.10.8 패치관리", rating: "P" },
+          { id: "2.10.9", name: "2.10.9 악성코드 통제", rating: "Y" },
+        ],
+      },
+      {
+        name: "2.11 사고 예방 및 대응",
+        count: 5,
+        rating: "Y",
+        subItems: [
+          {id: "2.11.1",name: "2.11.1 사고 예방 및 대응체계 구축",rating: "Y", },
+          {id: "2.11.2", name: "2.11.2 취약점 점검 및 조치",rating: "P", },
+          {id: "2.11.3",name: "2.11.3 이상행위 분석 및 모니터링",  rating: "Y", },
+          {id: "2.11.4", name: "2.11.4 사고 대응 훈련 및 개선", rating: "N", },
+          {id: "2.11.5", name: "2.11.5 사고 대응 및 복구", rating: "Y", },
+        ],
+      },
+      {
+        name: "2.12 재해복구",
+        count: 2,
+        rating: "N",
+        subItems: [
+          {id: "2.12.1", name: "2.12.1 재해·재난 대비 안전조치", rating: "N",},
+          {id: "2.12.2",name: "2.12.2 재해 복구 시험 및 개선", rating: "P", },
+        ],
+      },
+    ],
+  },
+  {
+    id: 3,
+    division: "", // 빈 값으로 ISMS와 병합
+    integratedAuth: "3. 개인정보 처리단계별 요구사항", // 통합인증 열
+    fields: [
+      {
+        name: "3.1 개인정보 수집 시 보호조치",
+        count: 7,
+        rating: "P",
+        subItems: [
+          {id: "3.1.1", name: "3.1.1 개인정보 수집.이용", rating: "P", },
+          {id: "3.1.2", name: "3.1.2 개인정보의 수집 제한", rating: "Y", },
+          {id: "3.1.3",name: "3.1.3 주민등록번호 처리 제한", rating: "N", },
+          {id: "3.1.4", name: "3.1.4 민감정보 및 고유식별정보의 처리 제한",  rating: "P", },
+          { id: "3.1.5", name: "3.1.5 간접수집 보호조치", rating: "Y", },
+          { id: "3.1.6",name: "3.1.6 영상정보처리기기 설치·운영", rating: "N", },
+          { id: "3.1.7",name: "3.1.7 마케팅 목적의 개인정보 수집.이용",  rating: "P", },
+        ],
+      },
+      {
+        name: "3.2 개인정보 보유 및 이용 시 보호조치",
+        count: 5,
+        rating: "Y",
+        subItems: [
+          {id: "3.2.1",name: "3.2.1 개인정보 현황관리",rating: "Y", },
+          {id: "3.2.2",name: "3.2.2 개인정보 품질보장",rating: "P",},
+          {id: "3.2.3", name: "3.2.3 이용자 단말기 접근 보호", rating: "Y",},
+          {id: "3.2.4", name: "3.2.4 개인정보 목적 외 이용 및 제공", rating: "N", },
+          { id: "3.2.5", name: "3.2.5 가명정보 처리", rating: "Y" },
+        ],
+      },
+      {
+        name: "3.3 개인정보 제공 시 보호조치",
+        count: 4,
+        rating: "N",
+        subItems: [
+          {id: "3.3.1",name: "3.3.1 개인정보 제3자 제공", rating: "N",},
+          {id: "3.3.2",name: "3.3.2 개인정보 처리 업무 위탁", rating: "P",},
+          {id: "3.3.3", name: "3.3.3 영업의 양수 등에 따른 개인정보의 이전",  rating: "Y", },
+          {id: "3.3.4",name: "3.3.4 개인정보의 국외이전",rating: "N",},
+        ],
+      },
+      {
+        name: "3.4 개인정보 파기 시 보호조치",
+        count: 2,
+        rating: "P",
+        subItems: [
+          { id: "3.4.1", name: "3.4.1 개인정보의 파기", rating: "P" },
+          { id: "3.4.2", name: "3.4.2 처리목적 달성 후 보유 시 조치", rating: "N", },
+        ],
+      },
+      {
+        name: "3.5 정보주체 권리보호",
+        count: 3,
+        rating: "Y",
+        subItems: [
+          { id: "3.5.1", name: "3.5.1 개인정보처리방침 공개",  rating: "Y", },
+          { id: "3.5.2", name: "3.5.2 정보주체 권리보장", rating: "P",},
+          { id: "3.5.3", name: "3.5.3 정보주체에 대한 통지", rating: "Y", },
+        ],
+      },
+    ],
+  },
 ];
 
 // 취약점 상세 데이터
 const vulnerabilityDetails = [
-  {
-    id: 1,
-    vulnerability: "개인정보 수집 절차 미흡",
-    countermeasure:
-      "개인정보 수집 시 명시적 동의 절차 및 최소 수집 원칙 적용",
-  },
-  {
-    id: 2,
-    vulnerability: "개인정보 파기 정책 부재",
-    countermeasure:
-      "개인정보 보유기간 만료 시 자동 파기 시스템 구축",
-  },
-  {
-    id: 3,
-    vulnerability: "정보주체 권리보장 체계 미비",
-    countermeasure:
-      "개인정보 열람, 정정·삭제 요구 처리 절차 수립",
-  },
-  {
-    id: 4,
-    vulnerability: "개인정보 제공 현황 관리 부족",
-    countermeasure:
-      "제3자 제공 현황 관리 대장 작성 및 정기 점검",
-  },
-  {
-    id: 5,
-    vulnerability: "암호화 적용 범위 미흡",
-    countermeasure:
-      "개인정보 및 중요 데이터 암호화 정책 수립 및 적용",
-  },
-  {
-    id: 6,
-    vulnerability: "접근권한 관리 체계 부족",
-    countermeasure:
-      "사용자별 접근권한 설정 및 정기적 권한 검토 체계 구축",
-  },
-  {
-    id: 7,
-    vulnerability: "보안 교육 실시 미흡",
-    countermeasure:
-      "정기적 보안 교육 계획 수립 및 교육 이수 현황 관리",
-  },
-  {
-    id: 8,
-    vulnerability: "물리적 보안 통제 부족",
-    countermeasure: "보안구역 설정 및 출입통제 시스템 강화",
-  },
+  {
+    id: 1,
+    vulnerability: "개인정보 수집 절차 미흡",
+    countermeasure:
+      "개인정보 수집 시 명시적 동의 절차 및 최소 수집 원칙 적용",
+  },
+  {
+    id: 2,
+    vulnerability: "개인정보 파기 정책 부재",
+    countermeasure:
+      "개인정보 보유기간 만료 시 자동 파기 시스템 구축",
+  },
+  {
+    id: 3,
+    vulnerability: "정보주체 권리보장 체계 미비",
+    countermeasure:
+      "개인정보 열람, 정정·삭제 요구 처리 절차 수립",
+  },
+  {
+    id: 4,
+    vulnerability: "개인정보 제공 현황 관리 부족",
+    countermeasure:
+      "제3자 제공 현황 관리 대장 작성 및 정기 점검",
+  },
+  {
+    id: 5,
+    vulnerability: "암호화 적용 범위 미흡",
+    countermeasure:
+      "개인정보 및 중요 데이터 암호화 정책 수립 및 적용",
+  },
+  {
+    id: 6,
+    vulnerability: "접근권한 관리 체계 부족",
+    countermeasure:
+      "사용자별 접근권한 설정 및 정기적 권한 검토 체계 구축",
+  },
+  {
+    id: 7,
+    vulnerability: "보안 교육 실시 미흡",
+    countermeasure:
+      "정기적 보안 교육 계획 수립 및 교육 이수 현황 관리",
+  },
+  {
+    id: 8,
+    vulnerability: "물리적 보안 통제 부족",
+    countermeasure: "보안구역 설정 및 출입통제 시스템 강화",
+  },
 ];
 
-type VulnerabilityDetail = {
-  id: number;
-  vulnerability: string;
-  countermeasure: string;
-};
-
-type ProcessedExcelResult = {
-  summaryData: typeof summaryResults;
-  vulnerabilityData: VulnerabilityDetail[];
-};
-
 export default function MgmtConsultingPanel() {
-  const [diagnosisStep, setDiagnosisStep] = useState<string>("");
-  const [isUploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [summaryGenerated, setSummaryGenerated] =
-    useState(false);
-  const [diagnosisGenerated, setDiagnosisGenerated] =
-    useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(
-    null,
-  );
-  const [diagnosisFile, setDiagnosisFile] =
-    useState<File | null>(null);
-  const [
-    showDiagnosisCompleteModal,
-    setShowDiagnosisCompleteModal,
-  ] = useState(false);
-  const [showSummaryCompleteModal, setShowSummaryCompleteModal] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState({
-    title: "",
-    message: "",
-    type: "info" as "info" | "success" | "error",
-  });
-  const [openFields, setOpenFields] = useState<string[]>([]);
-  // 1. 상태 및 데이터 구조 준비
-  const [hasExcelData, setHasExcelData] = useState(false);
-  const [parsedExcelData, setParsedExcelData] = useState<
-    typeof summaryResults
-  >([]);
-  // 상태 관리 및 데이터 업데이트: 엑셀에서 추출한 취약점 데이터를 저장할 새로운 상태 변수
-  const [
-    dynamicVulnerabilityDetails,
-    setDynamicVulnerabilityDetails,
-  ] = useState<VulnerabilityDetail[]>([]);
+  const [diagnosisStep, setDiagnosisStep] = useState<string>("");
+  const [isUploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [summaryGenerated, setSummaryGenerated] =
+    useState(false);
+  const [diagnosisGenerated, setDiagnosisGenerated] =
+    useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(
+    null,
+  );
+  const [diagnosisFile, setDiagnosisFile] =
+    useState<File | null>(null);
+  const [
+    showDiagnosisCompleteModal,
+    setShowDiagnosisCompleteModal,
+  ] = useState(false);
+  const [showSummaryCompleteModal, setShowSummaryCompleteModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState({
+    title: "",
+    message: "",
+    type: "info" as "info" | "success" | "error",
+  });
+  const [openFields, setOpenFields] = useState<string[]>([]);
+  // 1. 상태 및 데이터 구조 준비
+  const [hasExcelData, setHasExcelData] = useState(false);
+  const [parsedExcelData, setParsedExcelData] = useState<
+    typeof summaryResults
+  >([]);
+  // 상태 관리 및 데이터 업데이트: 엑셀에서 추출한 취약점 데이터를 저장할 새로운 상태 변수
+  const [
+    dynamicVulnerabilityDetails,
+    setDynamicVulnerabilityDetails,
+  ] = useState<
+    Array<{
+      id: number;
+      vulnerability: string;
+      countermeasure: string;
+    }>
+  >([]);
 
-  //  mapDiagnosisDataToSummary 함수 추가
-  const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
-    console.log("--- 백엔드로부터 받은 Raw 데이터 ---");
-    console.log(JSON.stringify(diagnosisData, null, 2));
-    
-    console.log("백엔드 응답 데이터:", diagnosisData);
-    console.log("데이터 개수:", diagnosisData.length);
-    
-    const newSummaryResults = JSON.parse(JSON.stringify(summaryResults));
-    const newVulnerabilityDetails: VulnerabilityDetail[] = [];
-    let vulnerabilityIdCounter = 1;
+  //  mapDiagnosisDataToSummary 함수 추가
+  const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
+    console.log("--- 백엔드로부터 받은 Raw 데이터 ---");
+    console.log(JSON.stringify(diagnosisData, null, 2));
+    
+    console.log("백엔드 응답 데이터:", diagnosisData);
+    console.log("데이터 개수:", diagnosisData.length);
+    
+    const newSummaryResults = JSON.parse(JSON.stringify(summaryResults));
+    const newVulnerabilityDetails: Array<{
+      id: number;
+      vulnerability: string;
+      countermeasure: string;
+    }> = [];
+    let vulnerabilityIdCounter = 1;
 
-    
-    // 1단계: 백엔드 데이터를 id 기반으로 맵핑
-    const dataMap = new Map();
-    diagnosisData.forEach((item: any) => {
-      if (item.id) {
-        dataMap.set(item.id, item);
-      }
-    });
-    
-    console.log("🗺️ 데이터 맵 생성 완료:", dataMap.size, "개 항목");
-    
-    // 2단계: summaryResults 구조를 순회하면서 매핑
-    for (const group of newSummaryResults) {
-      for (const field of group.fields) {
-        field.rating = "-";
-        
-        if (field.subItems) {
-          for (const subItem of field.subItems) {
-            const backendItem = dataMap.get(subItem.id);
-            
-            if (backendItem) {
-              subItem.rating = backendItem.rating || "N";
-              console.log(`✓ 매핑: ${subItem.id} - ${subItem.name} (${subItem.rating})`);
-              
-              // N 등급인 항목을 취약점으로 추가
-              if (backendItem.rating === "N") {
-                const vulnerability = subItem.name;
-                const countermeasure = backendItem.reason || "개선이 필요합니다.";
-                
-                console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
-                
-                newVulnerabilityDetails.push({
-                  id: vulnerabilityIdCounter++,
-                  vulnerability: vulnerability,
-                  countermeasure: countermeasure,
-                });
-              }
-            } else {
-              console.warn(`⚠️ 매핑 실패: ${subItem.id} - 백엔드 데이터 없음`);
-            }
-          }
-        }
-      }
-    }
+    
+    // 1단계: 백엔드 데이터를 id 기반으로 맵핑
+    const dataMap = new Map();
+    diagnosisData.forEach((item: any) => {
+      if (item.id) {
+        dataMap.set(item.id, item);
+      }
+    });
+    
+    console.log("🗺️ 데이터 맵 생성 완료:", dataMap.size, "개 항목");
+    
+    // 2단계: summaryResults 구조를 순회하면서 매핑
+    for (const group of newSummaryResults) {
+      for (const field of group.fields) {
+        field.rating = "-";
+        
+        if (field.subItems) {
+          for (const subItem of field.subItems) {
+            const backendItem = dataMap.get(subItem.id);
+            
+            if (backendItem) {
+              subItem.rating = backendItem.rating || "N";
+              console.log(`✓ 매핑: ${subItem.id} - ${subItem.name} (${subItem.rating})`);
+              
+              // N 등급인 항목을 취약점으로 추가
+              if (backendItem.rating === "N") {
+                const vulnerability = subItem.name;
+                const countermeasure = backendItem.reason || "개선이 필요합니다.";
+                
+                console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
+                
+                newVulnerabilityDetails.push({
+                  id: vulnerabilityIdCounter++,
+                  vulnerability: vulnerability,
+                  countermeasure: countermeasure,
+                });
+              }
+            } else {
+              console.warn(`⚠️ 매핑 실패: ${subItem.id} - 백엔드 데이터 없음`);
+            }
+          }
+        }
+      }
+    }
 
-    console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 취약점 발견`);
-    console.log("취약점 목록:", newVulnerabilityDetails);
+    console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 취약점 발견`);
+    console.log("취약점 목록:", newVulnerabilityDetails);
 
-    return {
-      summaryData: newSummaryResults,
-      vulnerabilityData: newVulnerabilityDetails,
-    };
-  };
+    return {
+      summaryData: newSummaryResults,
+      vulnerabilityData: newVulnerabilityDetails,
+    };
+  };
 
-  const showModalMessage = (
-    title: string,
-    message: string,
-    type: "info" | "success" | "error" = "info",
-  ) => {
-    setModalContent({ title, message, type });
-    setShowModal(true);
-    setTimeout(() => setShowModal(false), 2000);
-  };
+  const showModalMessage = (
+    title: string,
+    message: string,
+    type: "info" | "success" | "error" = "info",
+  ) => {
+    setModalContent({ title, message, type });
+    setShowModal(true);
+    setTimeout(() => setShowModal(false), 2000);
+  };
 
-  const toggleField = (fieldName: string) => {
-    setOpenFields((prev) =>
-      prev.includes(fieldName)
-        ? prev.filter((name) => name !== fieldName)
-        : [...prev, fieldName],
-    );
-  };
-  
-  // 2. 엑셀 데이터 처리 및 매핑 로직 (exceljs 사용)
-  const processExcelData = (
-    file: File,
-  ): Promise<ProcessedExcelResult> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
+  const toggleField = (fieldName: string) => {
+    setOpenFields((prev) =>
+      prev.includes(fieldName)
+        ? prev.filter((name) => name !== fieldName)
+        : [...prev, fieldName],
+    );
+  };
 
-      // reader.onload를 async 함수로 변경
-      reader.onload = async (e) => {
-        try {
-          const data = e.target?.result;
-          if (!data) {
-            throw new Error("파일 데이터를 읽을 수 없습니다.");
-          }
+  // 2. 엑셀 데이터 처리 및 매핑 로직
+  const processExcelData = (
+    file: File,
+  ): Promise<typeof summaryResults> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-          // --- exceljs 로직 시작 ---
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(data as ArrayBuffer);
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          if (!data) {
+            throw new Error("파일 데이터를 읽을 수 없습니다.");
+          }
 
-          if (workbook.worksheets.length === 0) {
-            throw new Error("엑셀 파일에 시트가 없습니다.");
-          }
-          const worksheet = workbook.worksheets[0];
-          
-          const jsonData: any[][] = [];
-          worksheet.eachRow({ includeEmpty: true }, (row, rowNumber) => {
-            // row.values는 [empty, 'A1', 'B1', ...] 형태의 sparse array이므로,
-            // Array.from으로 변환 후 첫 번째 요소를 제거(slice(1))하여 사용합니다.
-//             jsonData[rowNumber - 1] = Array.from(row.values).slice(1);
-             jsonData[rowNumber - 1] = Array.isArray(row.values) ? row.values.slice(1) : Object.values(row.values).slice(1);
-          });
-          // --- exceljs 로직 종료 ---
+          const workbook = XLSX.read(data, { type: "binary" });
+          if (
+            !workbook.SheetNames ||
+            workbook.SheetNames.length === 0
+          ) {
+            throw new Error("엑셀 파일에 시트가 없습니다.");
+          }
 
-          if (!jsonData || jsonData.length === 0) {
-            console.warn("엑셀 파일이 비어있습니다.");
-            toast.error(
-              "엑셀 파일이 비어있습니다. 데이터가 있는 파일을 업로드해주세요.",
-            );
-            const newSummaryResults = JSON.parse(
-              JSON.stringify(summaryResults),
-            );
-            resolve({
-              summaryData: newSummaryResults,
-              vulnerabilityData: [],
-            });
-            return;
-          }
+          const worksheet =
+            workbook.Sheets[workbook.SheetNames[0]];
 
-          // 아래부터는 기존 데이터 처리 로직과 동일합니다.
-          let headerRowIndex = -1;
-          let diagnosisColumnIndex = -1;
-          let itemColumnIndex = -1;
-          let countermeasureColumnIndex = -1;
+          // XLSX.utils.sheet_to_json(worksheet, { header: 1 })을 사용하여 헤더를 포함한 모든 데이터를 배열로 가져오기
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+          }) as any[][];
 
-          for (
-            let i = 0;
-            i < Math.min(10, jsonData.length);
-            i++
-          ) {
-            const row = jsonData[i];
-            if (!row || !Array.isArray(row)) continue;
+          if (!jsonData || jsonData.length === 0) {
+            console.warn("엑셀 파일이 비어있습니다.");
+            toast.error(
+              "엑셀 파일이 비어있습니다. 데이터가 있는 파일을 업로드해주세요.",
+            );
+            // 원본 데이터 불변성 유지: summaryResults의 깊은 복사본을 생성
+            const newSummaryResults = JSON.parse(
+              JSON.stringify(summaryResults),
+            );
+            resolve({
+              summaryData: newSummaryResults,
+              vulnerabilityData: [],
+            });
+            return;
+          }
 
-            for (let j = 0; j < row.length; j++) {
-              const cellValue = String(row[j] || "").trim();
-              if (cellValue.includes("진단결과")) {
-                headerRowIndex = i;
-                diagnosisColumnIndex = j;
-              }
-              if (cellValue.includes("항목")) {
-                itemColumnIndex = j;
-              }
-              if (cellValue.includes("개선방안")) {
-                countermeasureColumnIndex = j;
-              }
-            }
+          // 엑셀 데이터 처리 로직 수정: 헤더 행 찾기 - "진단결과", "항목", "개선방안" 열 모두 찾기
+          let headerRowIndex = -1;
+          let diagnosisColumnIndex = -1;
+          let itemColumnIndex = -1;
+          let countermeasureColumnIndex = -1;
 
-            if (
-              diagnosisColumnIndex !== -1 &&
-              itemColumnIndex !== -1 &&
-              countermeasureColumnIndex !== -1
-            ) {
-              break;
-            }
-          }
+          for (
+            let i = 0;
+            i < Math.min(10, jsonData.length);
+            i++
+          ) {
+            const row = jsonData[i];
+            if (!row || !Array.isArray(row)) continue;
 
-          if (
-            headerRowIndex === -1 ||
-            diagnosisColumnIndex === -1
-          ) {
-            console.warn(
-              '엑셀 파일에서 "진단결과" 컬럼을 찾을 수 없습니다.',
-            );
-            toast.error(
-              '엑셀 파일에 "진단결과", "항목", "개선방안" 컬럼이 포함된 ISMS-P 현황 분석 보고서를 업로드해주세요.',
-            );
-            const newSummaryResults = JSON.parse(
-              JSON.stringify(summaryResults),
-            );
-            resolve({
-              summaryData: newSummaryResults,
-              vulnerabilityData: [],
-            });
-            return;
-          }
+            for (let j = 0; j < row.length; j++) {
+              const cellValue = String(row[j] || "").trim();
+              if (cellValue.includes("진단결과")) {
+                headerRowIndex = i;
+                diagnosisColumnIndex = j;
+              }
+              if (cellValue.includes("항목")) {
+                itemColumnIndex = j;
+              }
+              if (cellValue.includes("개선방안")) {
+                countermeasureColumnIndex = j;
+              }
+            }
 
-          if (itemColumnIndex === -1) {
-            toast.warning(
-              '"항목" 컬럼이 없어 취약점 항목 추출이 제한됩니다.',
-            );
-          }
+            // 모든 필요한 열을 찾았으면 중단
+            if (
+              diagnosisColumnIndex !== -1 &&
+              itemColumnIndex !== -1 &&
+              countermeasureColumnIndex !== -1
+            ) {
+              break;
+            }
+          }
 
-          if (countermeasureColumnIndex === -1) {
-            toast.warning(
-              '"개선방안" 컬럼이 없어 대응 방안 추출이 제한됩니다.',
-            );
-          }
+          // 필수 열들을 찾지 못할 경우
+          if (
+            headerRowIndex === -1 ||
+            diagnosisColumnIndex === -1
+          ) {
+            console.warn(
+              '엑셀 파일에서 "진단결과" 컬럼을 찾을 수 없습니다. 기본 데이터를 사용합니다.',
+            );
+            toast.error(
+              '엑셀 파일에 "진단결과" 컬럼이 없습니다. 파일에 "진단결과", "항목", "개선방안" 컬럼이 포함된 ISMS-P 현황 분석 보고서를 업로드해주세요.',
+            );
+            // 기본 summaryResults의 복사본을 반환하여 기본 테이블을 표시
+            const newSummaryResults = JSON.parse(
+              JSON.stringify(summaryResults),
+            );
+            resolve({
+              summaryData: newSummaryResults,
+              vulnerabilityData: [],
+            });
+            return;
+          }
 
-          const ratingValues: string[] = [];
-          const newVulnerabilityDetails: VulnerabilityDetail[] = [];
-          let vulnerabilityIdCounter = 1;
+          // 선택적 컬럼들에 대한 경고 메시지
+          if (itemColumnIndex === -1) {
+            console.warn(
+              '엑셀 파일에서 "항목" 컬럼을 찾을 수 없습니다. 취약점 항목 추출이 제한됩니다.',
+            );
+            toast.warning(
+              '"항목" 컬럼이 없어 취약점 항목 추출이 제한됩니다.',
+            );
+          }
 
-          for (
-            let i = headerRowIndex + 1;
-            i < jsonData.length;
-            i++
-          ) {
-            const row = jsonData[i];
-            if (
-              row &&
-              row[diagnosisColumnIndex] !== undefined &&
-              row[diagnosisColumnIndex] !== null
-            ) {
-              const ratingValue = String(
-                row[diagnosisColumnIndex],
-              )
-                .trim()
-                .toUpperCase();
-              if (
-                ratingValue &&
-                ["Y", "P", "N"].includes(ratingValue)
-              ) {
-                ratingValues.push(ratingValue);
+          if (countermeasureColumnIndex === -1) {
+            console.warn(
+              '엑셀 파일에서 "개선방안" 컬럼을 찾을 수 없습니다. 대응방안 추출이 제한됩니다.',
+            );
+            toast.warning(
+              '"개선방안" 컬럼이 없어 대응방안 추출이 제한됩니다.',
+            );
+          }
 
-                if (ratingValue === "N") {
-                  const vulnerability =
-                    itemColumnIndex !== -1 &&
-                    row[itemColumnIndex]
-                      ? String(row[itemColumnIndex]).trim()
-                      : "";
-                  const countermeasure =
-                    countermeasureColumnIndex !== -1 &&
-                    row[countermeasureColumnIndex]
-                      ? String(
-                          row[countermeasureColumnIndex],
-                        ).trim()
-                      : "";
+          // 엑셀 데이터 임시 저장: 업로드된 엑셀 파일의 진단결과 열 값만 저장할 임시 배열 생성
+          const ratingValues: string[] = [];
+          const newVulnerabilityDetails: Array<{
+            id: number;
+            vulnerability: string;
+            countermeasure: string;
+          }> = [];
+          let vulnerabilityIdCounter = 1;
 
-                  if (vulnerability && countermeasure) {
-                    newVulnerabilityDetails.push({
-                      id: vulnerabilityIdCounter++,
-                      vulnerability,
-                      countermeasure,
-                    });
-                  }
-                }
-              }
-            }
-          }
+          // rating 값 추출 및 취약점 데이터 추출: 헤더 행 바로 다음 행부터 시작하여 엑셀 데이터의 각 행을 순회
+          for (
+            let i = headerRowIndex + 1;
+            i < jsonData.length;
+            i++
+          ) {
+            const row = jsonData[i];
+            if (
+              row &&
+              row[diagnosisColumnIndex] !== undefined &&
+              row[diagnosisColumnIndex] !== null
+            ) {
+              const ratingValue = String(
+                row[diagnosisColumnIndex],
+              )
+                .trim()
+                .toUpperCase();
+              if (
+                ratingValue &&
+                ["Y", "P", "N"].includes(ratingValue)
+              ) {
+                ratingValues.push(ratingValue);
 
-          const newSummaryResults = JSON.parse(
-            JSON.stringify(summaryResults),
-          );
+                // 진단결과가 'N'인 경우 취약점 데이터로 추출
+                if (ratingValue === "N") {
+                  const vulnerability =
+                    itemColumnIndex !== -1 &&
+                    row[itemColumnIndex]
+                      ? String(row[itemColumnIndex]).trim()
+                      : "";
+                  const countermeasure =
+                    countermeasureColumnIndex !== -1 &&
+                    row[countermeasureColumnIndex]
+                      ? String(
+                          row[countermeasureColumnIndex],
+                        ).trim()
+                      : "";
 
-          let ratingIndex = 0;
-          for (const group of newSummaryResults) {
-            for (const field of group.fields) {
-              field.rating = "-";
-              if (field.subItems) {
-                for (const subItem of field.subItems) {
-                  if (ratingIndex < ratingValues.length) {
-                    subItem.rating = ratingValues[ratingIndex];
-                    ratingIndex++;
-                  }
-                }
-              }
-            }
-          }
+                  // 빈 값이 아닌 경우에만 추가
+                  if (vulnerability && countermeasure) {
+                    newVulnerabilityDetails.push({
+                      id: vulnerabilityIdCounter++,
+                      vulnerability: vulnerability,
+                      countermeasure: countermeasure,
+                    });
+                  }
+                }
+              }
+            }
+          }
 
-          console.log(
-            `엑셀 파일 처리 완료: ${ratingValues.length}개의 rating 값이 매핑되었습니다.`,
-          );
-          console.log(
-            `취약점 데이터 추출 완료: ${newVulnerabilityDetails.length}개의 취약점이 발견되었습니다.`,
-          );
+          // 원본 데이터 불변성 유지: summaryResults의 깊은 복사본을 생성
+          const newSummaryResults = JSON.parse(
+            JSON.stringify(summaryResults),
+          );
 
-          resolve({
-            summaryData: newSummaryResults,
-            vulnerabilityData: newVulnerabilityDetails,
-          });
-        } catch (error) {
-          console.error("엑셀 파일 처리 중 오류:", error);
-          toast.error(
-            "엑셀 파일 처리 중 오류가 발생했습니다. 파일 형식을 확인해주세요.",
-          );
-          const newSummaryResults = JSON.parse(
-            JSON.stringify(summaryResults),
-          );
-          resolve({
-            summaryData: newSummaryResults,
-            vulnerabilityData: [],
-          });
-        }
-      };
+          // 데이터 순차 매핑: newSummaryResults의 모든 field와 subItem을 순서대로 순회
+          let ratingIndex = 0;
 
-      reader.onerror = () => {
-        console.error("파일 읽기 오류");
-        toast.error(
-          "파일 읽기 중 오류가 발생했습니다. 파일이 손상되었을 수 있습니다.",
-        );
-        const newSummaryResults = JSON.parse(
-          JSON.stringify(summaryResults),
-        );
-        resolve({
-          summaryData: newSummaryResults,
-          vulnerabilityData: [],
-        });
-      };
+          for (const group of newSummaryResults) {
+            for (const field of group.fields) {
+              // 1. 부모 항목에 진단 결과 표시하지 않기: field.rating에는 "-"를 할당
+              field.rating = "-";
 
-      // 3. exceljs는 ArrayBuffer가 필요하므로 readAsArrayBuffer를 사용합니다.
-      reader.readAsArrayBuffer(file);
-    });
-  };
+              // 2. 하위 항목에만 진단 결과 표시하기: subItems rating 순차 할당
+              if (field.subItems) {
+                for (const subItem of field.subItems) {
+                  if (ratingIndex < ratingValues.length) {
+                    subItem.rating = ratingValues[ratingIndex];
+                    ratingIndex++;
+                  }
+                }
+              }
+            }
+          }
 
+          console.log(
+            `엑셀 파일 처리 완료: ${ratingValues.length}개의 rating 값이 매핑되었습니다.`,
+          );
+          console.log(
+            `취약점 데이터 추출 완료: ${newVulnerabilityDetails.length}개의 취약점이 발견되었습니다.`,
+          );
 
-  const startSummary = async () => {
-    setUploading(true);
-    setProgress(15);
-    showModalMessage(
-      "보고서 요약",
-      "보고서 요약을 시작합니다...",
-      "info",
-    );
+          // processExcelData 함수가 최종적으로 객체를 반환하도록 수정
+          resolve({
+            summaryData: newSummaryResults,
+            vulnerabilityData: newVulnerabilityDetails,
+          });
+        } catch (error) {
+          console.error("엑셀 파일 처리 중 오류:", error);
+          toast.error(
+            "엑셀 파일 처리 중 오류가 발생했습니다. 파일 형식을 확인해주세요.",
+          );
+          // 오류 발생시에도 기본 데이터 구조를 반환
+          const newSummaryResults = JSON.parse(
+            JSON.stringify(summaryResults),
+          );
+          resolve({
+            summaryData: newSummaryResults,
+            vulnerabilityData: [],
+          });
+        }
+      };
 
-    const steps = [35, 55, 80, 100];
-    for (const p of steps) {
-      await new Promise((r) => setTimeout(r, 400));
-      setProgress(p);
-    }
+      reader.onerror = () => {
+        console.error("파일 읽기 오류");
+        toast.error(
+          "파일 읽기 중 오류가 발생했습니다. 파일이 손상되었을 수 있습니다.",
+        );
+        // 파일 읽기 오류시에도 기본 데이터 구조를 반환
+        const newSummaryResults = JSON.parse(
+          JSON.stringify(summaryResults),
+        );
+        resolve({
+          summaryData: newSummaryResults,
+          vulnerabilityData: [],
+        });
+      };
 
-    setUploading(false);
-    setSummaryGenerated(true);
-    setShowSummaryCompleteModal(true);
-  };
+      reader.readAsBinaryString(file);
+    });
+  };
 
-  const startDiagnosis = async (file: File) => {
-    setUploading(true);
-    setDiagnosisGenerated(false);
-    showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
-  
-    // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
-    const progressSteps = [
-      { text: "📄 지침서 내용을 분석하고 있습니다...", progress: 15 },
-      { text: "🔍 ISMS-P 101개 항목과의 적합성을 검토 중입니다...", progress: 30 },
-      { text: "⚙️ AI 진단 엔진이 자동 분석을 수행하고 있습니다...", progress: 45 },
-      { text: "📖 취약 항목을 식별하고 있습니다...", progress: 60 },
-      { text: "🔐 개선 및 대응 방안을 도출하고 있습니다...", progress: 75 },
-      { text: "⏳ 진단 결과를 정리 중입니다. 잠시만 기다려주세요...", progress: 80 },
-    ];
-    let stepIndex = 0;
-  
-    // 타이머 ID를 저장할 변수
-    let intervalId: NodeJS.Timeout | null = null;
-  
-    try {
-      const formData = new FormData();
-      formData.append('guideline', file);
-  
-      // 첫 번째 메시지와 진행률을 즉시 설정
-      setDiagnosisStep(progressSteps[stepIndex].text);
-      setProgress(progressSteps[stepIndex].progress);
-  
-      // 30초마다 다음 단계의 메시지와 진행률을 업데이트하는 타이머 시작
-      intervalId = setInterval(() => {
-        // 2. 마지막 메시지에 도달하면 더 이상 인덱스를 증가시키지 않습니다.
-        if (stepIndex < progressSteps.length - 1) {
-          stepIndex++;
-          setDiagnosisStep(progressSteps[stepIndex].text);
-          setProgress(progressSteps[stepIndex].progress);
-        }
-      }, 40000); // 40초 간격
-  
-      // --- 실제 백엔드 API 호출 ---
-      const response = await fetch('/routers/v2/mng-auto-diagnose', {
-        method: 'POST',
-        body: formData,
-      });
-  
-      // API 호출이 끝나면 즉시 타이머를 중지합니다.
-      if (intervalId) clearInterval(intervalId);
-  
-      if (!response.ok) {
-        throw new Error('진단 요청 실패');
-      }
-  
-      // --- 결과 처리 ---
-      setProgress(90); // 결과를 받아온 후 진행률을 90%로 설정
-      setDiagnosisStep("📊 진단 결과 생성 중...");
-      const diagnosisData = await response.json();
-      await new Promise(r => setTimeout(r, 1000)); 
-  
-      setDiagnosisStep("✅ 곧 완료됩니다...");
-      const mappedData = mapDiagnosisDataToSummary(diagnosisData);
-      setParsedExcelData(mappedData.summaryData);
-      setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
-      setHasExcelData(true);
-  
-      // --- 최종 완료 ---
-      setProgress(100);
-      setUploading(false);
-      setDiagnosisStep("");
-      setDiagnosisGenerated(true);
-      setShowDiagnosisCompleteModal(true);
-  
-    } catch (error) {
-      // 오류 발생 시에도 반드시 타이머를 중지합니다.
-      if (intervalId) clearInterval(intervalId);
-      
-      console.error('자동 진단 중 오류:', error);
-      setUploading(false);
-      setDiagnosisStep("");
-      showModalMessage(
-        "진단 오류",
-        "자동 진단 중 오류가 발생했습니다. 다시 시도해주세요.",
-        "error"
-      );
-    }
-  };
+  const startSummary = async () => {
+    setUploading(true);
+    setProgress(15);
+    showModalMessage(
+      "보고서 요약",
+      "보고서 요약을 시작합니다...",
+      "info",
+    );
 
-  const handleDiagnosisFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setDiagnosisFile(file);
-      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
-      await startDiagnosis(file);
-    }
-  };
+    const steps = [35, 55, 80, 100];
+    for (const p of steps) {
+      await new Promise((r) => setTimeout(r, 400));
+      setProgress(p);
+    }
 
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const fileName = file.name.toLowerCase();
-      if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
-        showModalMessage("파일 형식 오류", "엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.", "error");
-        return;
-      }
+    setUploading(false);
+    setSummaryGenerated(true);
+    setShowSummaryCompleteModal(true);
+  };
 
-      setUploadedFile(file);
-      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
+  const startDiagnosis = async (file: File) => {
+    setUploading(true);
+    setDiagnosisGenerated(false);
+    showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
+  
+    // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
+    const progressSteps = [
+      { text: "📄 지침서 내용을 분석하고 있습니다...", progress: 15 },
+      { text: "🔍 ISMS-P 101개 항목과의 적합성을 검토 중입니다...", progress: 30 },
+      { text: "⚙️ AI 진단 엔진이 자동 분석을 수행하고 있습니다...", progress: 45 },
+      { text: "📖 취약 항목을 식별하고 있습니다...", progress: 60 },
+      { text: "🔐 개선 및 대응 방안을 도출하고 있습니다...", progress: 75 },
+      { text: "⏳ 진단 결과를 정리 중입니다. 잠시만 기다려주세요...", progress: 80 },
+    ];
+    let stepIndex = 0;
+  
+    // 타이머 ID를 저장할 변수
+    let intervalId: NodeJS.Timeout | null = null;
+  
+    try {
+      const formData = new FormData();
+      formData.append('guideline', file);
+  
+      // 첫 번째 메시지와 진행률을 즉시 설정
+      setDiagnosisStep(progressSteps[stepIndex].text);
+      setProgress(progressSteps[stepIndex].progress);
+  
+      // 30초마다 다음 단계의 메시지와 진행률을 업데이트하는 타이머 시작
+      intervalId = setInterval(() => {
+        // 2. 마지막 메시지에 도달하면 더 이상 인덱스를 증가시키지 않습니다.
+        if (stepIndex < progressSteps.length - 1) {
+          stepIndex++;
+          setDiagnosisStep(progressSteps[stepIndex].text);
+          setProgress(progressSteps[stepIndex].progress);
+        }
+      }, 40000); // 40초 간격
+  
+      // --- 실제 백엔드 API 호출 ---
+      const response = await fetch('/routers/v2/mng-auto-diagnose', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      // API 호출이 끝나면 즉시 타이머를 중지합니다.
+      if (intervalId) clearInterval(intervalId);
+  
+      if (!response.ok) {
+        throw new Error('진단 요청 실패');
+      }
+  
+      // --- 결과 처리 ---
+      setProgress(90); // 결과를 받아온 후 진행률을 90%로 설정
+      setDiagnosisStep("📊 진단 결과 생성 중...");
+      const diagnosisData = await response.json();
+      await new Promise(r => setTimeout(r, 1000)); 
+  
+      setDiagnosisStep("✅ 곧 완료됩니다...");
+      const mappedData = mapDiagnosisDataToSummary(diagnosisData);
+      setParsedExcelData(mappedData.summaryData);
+      setDynamicVulnerabilityDetails(mappedData.vulnerabilityData);
+      setHasExcelData(true);
+  
+      // --- 최종 완료 ---
+      setProgress(100);
+      setUploading(false);
+      setDiagnosisStep("");
+      setDiagnosisGenerated(true);
+      setShowDiagnosisCompleteModal(true);
+  
+    } catch (error) {
+      // 오류 발생 시에도 반드시 타이머를 중지합니다.
+      if (intervalId) clearInterval(intervalId);
+      
+      console.error('자동 진단 중 오류:', error);
+      setUploading(false);
+      setDiagnosisStep("");
+      showModalMessage(
+        "진단 오류",
+        "자동 진단 중 오류가 발생했습니다. 다시 시도해주세요.",
+        "error"
+      );
+    }
+  };
 
-      try {
-        const processedData = await processExcelData(file);
-        setParsedExcelData(processedData.summaryData);
-        setDynamicVulnerabilityDetails(processedData.vulnerabilityData);
-        setHasExcelData(true);
-        await startSummary();
-      } catch (error) {
-        console.error("엑셀 파일 처리 실패:", error);
-        showModalMessage("파일 처리 오류", "엑셀 파일 처리 중 오류가 발생했습니다.", "error");
-      }
-    }
-  };
-  
-  return (
-    <>
-      <Card className="flex flex-col h-full">
-        <CardHeader>
-          <CardTitle>관리 컨설팅</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col">
-          <Tabs
-            defaultValue="summary"
-            className="flex-1 flex flex-col"
-          >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger
-                value="summary"
-                className="flex items-center gap-2"
-              >
-                보고서 요약
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="p-0 h-auto cursor-help inline-flex">
-                      <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p className="max-w-xs">
-                      진단을 원하시는 기업의 ISMS-P 현황 분석
-                      보고서를 업로드하면 각 진단 항목을 ISMS,
-                      ISMS-P의 만족 여부를 확인하고, 취약 항목과
-                      그 대응 방안을 제시합니다.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TabsTrigger>
-              <TabsTrigger
-                value="auto"
-                className="flex items-center gap-2"
-              >
-                자동 진단
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="p-0 h-auto cursor-help inline-flex">
-                      <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p className="max-w-xs">
-                      진단이 필요한 기업의 내규 지침서를
-                      업로드하면 ISMS, ISMS-P의 항목을 자동으로
-                      진단하고, 취약 항목과 대응 방안을
-                      요약합니다.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TabsTrigger>
-            </TabsList>
+  // 3. handleDiagnosisFileUpload 수정
+  const handleDiagnosisFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setDiagnosisFile(file);
+      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
+      await startDiagnosis(file); // file 파라미터 전달
+    }
+  };
 
-            {/* 보고서 요약 */}
-            <TabsContent
-              value="summary"
-              className="flex-1 flex flex-col space-y-4"
-            >
-              {isUploading ? (
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    보고서 요약 중…
-                  </p>
-                  <Progress value={progress} />
-                </div>
-              ) : !summaryGenerated ? (
-                <div className="flex-1 flex items-center justify-center pt-96">
-                  <div className="space-y-4">
-                   <div className="text-center space-y-2">
-                     <p className="text-muted-foreground">
-                      보고서를 업로드하면 자동으로 요약해드립니다. 
-                     </p>
-                  </div>
-                  <div className="flex justify-center">
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      asChild
-                    >
-                      <label>
-                        ISMS-P 현황 분석 보고서 업로드
-                        <input
-                          type="file"
-                          accept=".xlsx,.xls"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </Button>
-                  </div>
-                </div>
-              </div>  
-            ) : null}
+  // handleFileUpload 추가
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const fileName = file.name.toLowerCase();
+      if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+        showModalMessage("파일 형식 오류", "엑셀 파일(.xlsx, .xls)만 업로드 가능합니다.", "error");
+        return;
+      }
 
-              {summaryGenerated && (
-                <div className="flex-1 flex flex-col space-y-4">
-                  <div className="flex justify-start">
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      asChild
-                    >
-                      <label>
-                        보고서 재업로드
-                        <input
-                          type="file"
-                          accept=".xlsx,.xls"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </Button>
-                  </div>
+      setUploadedFile(file);
+      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
 
-                  {uploadedFile && (
-                    <p className="text-sm text-muted-foreground">
-                      업로드된 파일: {uploadedFile.name}
-                    </p>
-                  )}
+      try {
+        const processedData = await processExcelData(file);
+        setParsedExcelData(processedData.summaryData);
+        setDynamicVulnerabilityDetails(processedData.vulnerabilityData);
+        setHasExcelData(true);
+        await startSummary();
+      } catch (error) {
+        console.error("엑셀 파일 처리 실패:", error);
+        showModalMessage("파일 처리 오류", "엑셀 파일 처리 중 오류가 발생했습니다.", "error");
+      }
+    }
+  };
+  
+  return (
+    <>
+      <Card className="flex flex-col h-full">
+        <CardHeader>
+          <CardTitle>관리 컨설팅</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex flex-col">
+          <Tabs
+            defaultValue="summary"
+            className="flex-1 flex flex-col"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger
+                value="summary"
+                className="flex items-center gap-2"
+              >
+                보고서 요약
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="p-0 h-auto cursor-help inline-flex">
+                      <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="max-w-xs">
+                      진단을 원하시는 기업의 ISMS-P 현황 분석
+                      보고서를 업로드하면 각 진단 항목을 ISMS,
+                      ISMS-P의 만족 여부를 확인하고, 취약 항목과
+                      그 대응 방안을 제시합니다.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TabsTrigger>
+              <TabsTrigger
+                value="auto"
+                className="flex items-center gap-2"
+              >
+                자동 진단
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="p-0 h-auto cursor-help inline-flex">
+                      <Info className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <p className="max-w-xs">
+                      진단이 필요한 기업의 내규 지침서를
+                      업로드하면 ISMS, ISMS-P의 항목을 자동으로
+                      진단하고, 취약 항목과 대응방안을
+                      요약합니다.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TabsTrigger>
+            </TabsList>
 
-                  {/* 테이블 구조 */}
-                  <div className="flex-1 min-h-0">
-                    <div className="border rounded-lg overflow-hidden h-[500px]">
-                      <ScrollArea className="h-full w-full">
-                        <table className="w-full border-collapse">
-                          {/* 테이블 헤더 - 2단계 구조 */}
-                          <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
-                            {/* 첫 번째 헤더 행 */}
-                            <tr>
-                              <th
-                                colSpan={2}
-                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px]"
-                              >
-                                구분
-                              </th>
-                              <th
-                                rowSpan={2}
-                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px] align-middle"
-                              >
-                                통합인증
-                              </th>
-                              <th
-                                rowSpan={2}
-                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[300px] align-middle"
-                              >
-                                분야(인증 개수)
-                              </th>
-                              <th
-                                rowSpan={2}
-                                className="p-3 border-b font-medium text-center text-sm min-w-[100px] align-middle"
-                              >
-                                진단결과
-                              </th>
-                            </tr>
-                            {/* 두 번째 헤더 행 */}
-                            <tr>
-                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
-                                ISMS-P
-                              </th>
-                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
-                                ISMS
-                              </th>
-                            </tr>
-                          </thead>
+            {/* 보고서 요약 */}
+            <TabsContent
+              value="summary"
+              className="flex-1 flex flex-col space-y-4"
+            >
+              {isUploading ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    보고서 요약 중…
+                  </p>
+                  <Progress value={progress} />
+                </div>
+              ) : !summaryGenerated ? (
+                <div className="flex-1 flex items-center justify-center pt-96">
+                  <div className="space-y-4">
+                   <div className="text-center space-y-2">
+                     <p className="text-muted-foreground">
+                      보고서를 업로드하면 자동으로 요약해드립니다. 
+                     </p>
+                  </div>
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      asChild
+                    >
+                      <label>
+                        ISMS-P 현황 분석 보고서 업로드
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </Button>
+                  </div>
+                </div>
+              </div>  
+            ) : null}
 
-                          {/* 테이블 내용 */}
-                          <tbody className="bg-white">
-                            {(hasExcelData
-                              ? parsedExcelData
-                              : summaryResults
-                            ).map((group, groupIndex) => {
-                              return (
-                                <React.Fragment key={group.id}>
-                                  {/* 카테고리 헤더 행 */}
-                                  <tr
-                                    className={`hover:bg-muted/30 border-b`}
-                                  >
-                                    {/* ISMS-P열 */}
-                                    <td
-                                      rowSpan={
-                                        group.fields.length +
-                                        1 +
-                                        group.fields
-                                          .filter(
-                                            (f) =>
-                                              f.subItems &&
-                                              openFields.includes(
-                                                f.name,
-                                              ),
-                                          )
-                                          .reduce(
-                                            (acc, f) =>
-                                              acc +
-                                              (f.subItems
-                                                ?.length || 0),
-                                            0,
-                                          )
-                                      }
-                                      className="p-3 border-r text-center font-medium text-sm"
-                                    >
-                                      ISMS-P
-                                    </td>
+              {summaryGenerated && (
+                <div className="flex-1 flex flex-col space-y-4">
+                  <div className="flex justify-start">
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      asChild
+                    >
+                      <label>
+                        보고서 재업로드
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </Button>
+                  </div>
 
-                                    {/* ISMS열 */}
-                                    <td
-                                      rowSpan={
-                                        group.fields.length +
-                                        1 +
-                                        group.fields
-                                          .filter(
-                                            (f) =>
-                                              f.subItems &&
-                                              openFields.includes(
-                                                f.name,
-                                              ),
-                                          )
-                                          .reduce(
-                                            (acc, f) =>
-                                              acc +
-                                              (f.subItems
-                                                ?.length || 0),
-                                            0,
-                                          )
-                                      }
-                                      className="p-3 border-r text-center font-medium text-sm"
-                                    >
-                                      {groupIndex === 2
-                                        ? "-"
-                                        : "ISMS"}
-                                    </td>
+                  {uploadedFile && (
+                    <p className="text-sm text-muted-foreground">
+                      업로드된 파일: {uploadedFile.name}
+                    </p>
+                  )}
 
-                                    {/* 통합인증 열 */}
-                                    <td
-                                      rowSpan={
-                                        group.fields.length +
-                                        1 +
-                                        group.fields
-                                          .filter(
-                                            (f) =>
-                                              f.subItems &&
-                                              openFields.includes(
-                                                f.name,
-                                              ),
-                                          )
-                                          .reduce(
-                                            (acc, f) =>
-                                              acc +
-                                              (f.subItems
-                                                ?.length || 0),
-                                            0,
-                                          )
-                                      }
-                                      className="p-3 border-r text-sm font-medium align-top"
-                                    >
-                                      {group.integratedAuth}
-                                    </td>
-                                  </tr>
+                  {/* 테이블 구조 */}
+                  <div className="flex-1 min-h-0">
+                    <div className="border rounded-lg overflow-hidden h-[500px]">
+                      <ScrollArea className="h-full w-full">
+                        <table className="w-full border-collapse">
+                          {/* 테이블 헤더 - 2단계 구조 */}
+                          <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
+                            {/* 첫 번째 헤더 행 */}
+                            <tr>
+                              <th
+                                colSpan={2}
+                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px]"
+                              >
+                                구분
+                              </th>
+                              <th
+                                rowSpan={2}
+                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px] align-middle"
+                              >
+                                통합인증
+                              </th>
+                              <th
+                                rowSpan={2}
+                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[300px] align-middle"
+                              >
+                                분야(인증 개수)
+                              </th>
+                              <th
+                                rowSpan={2}
+                                className="p-3 border-b font-medium text-center text-sm min-w-[100px] align-middle"
+                              >
+                                진단결과
+                              </th>
+                            </tr>
+                            {/* 두 번째 헤더 행 */}
+                            <tr>
+                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
+                                ISMS-P
+                              </th>
+                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
+                                ISMS
+                              </th>
+                            </tr>
+                          </thead>
 
-                                  {/* 세부 항목들 */}
-                                  {group.fields.map(
-                                    (field, fieldIndex) => (
-                                      <React.Fragment
-                                        key={fieldIndex}
-                                      >
-                                        {field.subItems &&
-                                        field.subItems.length >
-                                          0 ? (
-                                          <React.Fragment>
-                                            {/* 메인 항목 행 */}
-                                            <tr
-                                              className={`${groupIndex % 2 === 0 ? "bg-muted/5" : "bg-muted/15"} border-b hover:bg-muted/25`}
-                                            >
-                                              <td
-                                                className="p-3 border-r text-sm pl-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                                                onClick={() =>
-                                                  toggleField(
-                                                    field.name,
-                                                  )
-                                                }
-                                              >
-                                                <div className="flex items-center gap-2">
-                                                  {openFields.includes(
-                                                    field.name,
-                                                  ) ? (
-                                                    <ChevronDown className="h-4 w-4" />
-                                                  ) : (
-                                                    <ChevronRight className="h-4 w-4" />
-                                                  )}
-                                                  {field.name}(
-                                                  {field.count})
-                                                </div>
-                                              </td>
-                                              <td className="p-3 text-center">
-                                                {/* 1,2,3번 그룹 모든 항목들은 rating 표시하지 않음 */}
-                                                {!field.name.startsWith(
-                                                  "1.",
-                                                ) &&
-                                                !field.name.startsWith(
-                                                  "2.",
-                                                ) &&
-                                                !field.name.startsWith(
-                                                  "3.",
-                                                ) ? (
-                                                  <div
-                                                    className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
-                                                      field.rating ===
-                                                      "P"
-                                                        ? "bg-yellow-500"
-                                                        : field.rating ===
-                                                            "Y"
-                                                          ? "bg-green-500"
-                                                          : "bg-red-500"
-                                                    }`}
-                                                  >
-                                                    {
-                                                      field.rating
-                                                    }
-                                                  </div>
-                                                ) : (
-                                                  <span className="text-muted-foreground text-sm">
-                                                    -
-                                                  </span>
-                                                )}
-                                              </td>
-                                            </tr>
-                                            {/* 세부 항목들 (조건부 렌더링) */}
-                                            {openFields.includes(
-                                              field.name,
-                                            ) &&
-                                              field.subItems.map(
-                                                (subItem) => (
-                                                  <tr
-                                                    key={
-                                                      subItem.id
-                                                    }
-                                                    className={`${groupIndex % 2 === 0 ? "bg-muted/10" : "bg-muted/20"} border-b hover:bg-muted/30`}
-                                                  >
-                                                    <td className="p-3 border-r text-sm pl-8 text-muted-foreground">
-                                                      {
-                                                        subItem.name
-                                                      }
-                                                    </td>
-                                                    <td className="p-3 text-center">
-                                                      <div
-                                                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
-                                                          subItem.rating ===
-                                                          "P"
-                                                            ? "bg-yellow-500"
-                                                            : subItem.rating ===
-                                                                "Y"
-                                                              ? "bg-green-500"
-                                                              : "bg-red-500"
-                                                        }`}
-                                                      >
-                                                        {
-                                                          subItem.rating
-                                                        }
-                                                      </div>
-                                                    </td>
-                                                  </tr>
-                                                ),
-                                              )}
-                                          </React.Fragment>
-                                        ) : (
-                                          <tr
-                                            className={`${groupIndex % 2 === 0 ? "bg-muted/5" : "bg-muted/15"} border-b hover:bg-muted/25`}
-                                          >
-                                            <td className="p-3 border-r text-sm pl-4 text-muted-foreground">
-                                              {field.name}(
-                                              {field.count})
-                                            </td>
-                                            <td className="p-3 text-center">
-                                              {/* 1,2,3번 그룹 모든 항목들은 rating 표시하지 않음 */}
-                                              {!field.name.startsWith(
-                                                "1.",
-                                              ) &&
-                                              !field.name.startsWith(
-                                                "2.",
-                                              ) &&
-                                              !field.name.startsWith(
-                                                "3.",
-                                              ) ? (
-                                                <div
-                                                  className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
-                                                    field.rating ===
-                                                    "P"
-                                                      ? "bg-yellow-500"
-                                                      : field.rating ===
-                                                          "Y"
-                                                        ? "bg-green-500"
-                                                        : "bg-red-500"
-                                                  }`}
-                                                >
-                                                  {field.rating}
-                                                </div>
-                                              ) : (
-                                                <span className="text-muted-foreground text-sm">
-                                                  -
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                        )}
-                                      </React.Fragment>
-                                    ),
-                                  )}
-                                </React.Fragment>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </ScrollArea>
-                    </div>
-                  </div>
+                          {/* 테이블 내용 */}
+                          <tbody className="bg-white">
+                            {(hasExcelData
+                              ? parsedExcelData
+                              : summaryResults
+                            ).map((group, groupIndex) => {
+                              return (
+                                <React.Fragment key={group.id}>
+                                  {/* 카테고리 헤더 행 */}
+                                  <tr
+                                    className={`hover:bg-muted/30 border-b`}
+                                  >
+                                    {/* ISMS-P열 */}
+                                    <td
+                                      rowSpan={
+                                        group.fields.length +
+                                        1 +
+                                        group.fields
+                                          .filter(
+                                            (f) =>
+                                              f.subItems &&
+                                              openFields.includes(
+                                                f.name,
+                                              ),
+                                          )
+                                          .reduce(
+                                            (acc, f) =>
+                                              acc +
+                                              (f.subItems
+                                                ?.length || 0),
+                                            0,
+                                          )
+                                      }
+                                      className="p-3 border-r text-center font-medium text-sm"
+                                    >
+                                      ISMS-P
+                                    </td>
 
-                  {/* 취약점 대응 방안 */}
-                  <div className="border-t pt-4">
-                    <h3 className="mb-3">
-                      취약 항목 및 대응 방안
-                    </h3>
-                    <div className="w-full">
-                      <ScrollArea className="h-[300px] w-full">
-                        <div className="border rounded-lg overflow-hidden">
-                          <table className="w-full border-collapse table-fixed">
-                            <thead className="sticky top-0 z-10">
-                              <tr>
-                                <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
-                                  취약 항목
-                                </th>
-                                <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
-                                  대응 방안
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {(hasExcelData
-                                ? dynamicVulnerabilityDetails
-                                : vulnerabilityDetails
-                              ).length > 0 ? (
-                                (hasExcelData
-                                  ? dynamicVulnerabilityDetails
-                                  : vulnerabilityDetails
-                                ).map((item, index) => (
-                                  <tr
-                                    key={item.id}
-                                    className={`${index % 2 === 0 ? "bg-white" : "bg-muted/10"} hover:bg-muted/20 border-b transition-colors`}
-                                  >
-                                    <td className="p-4 border-r text-sm leading-relaxed">
-                                      {item.vulnerability}
-                                    </td>
-                                    <td className="p-4 text-sm leading-relaxed">
-                                      {item.countermeasure}
-                                    </td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan={2} className="p-8 text-center text-muted-foreground">
-                                    취약점이 발견되지 않았습니다.
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </div>
-                </div>
-              )}
+                                    {/* ISMS열 */}
+                                    <td
+                                      rowSpan={
+                                        group.fields.length +
+                                        1 +
+                                        group.fields
+                                          .filter(
+                                            (f) =>
+                                              f.subItems &&
+                                              openFields.includes(
+                                                f.name,
+                                              ),
+                                          )
+                                          .reduce(
+                                            (acc, f) =>
+                                              acc +
+                                              (f.subItems
+                                                ?.length || 0),
+                                            0,
+                                          )
+                                      }
+                                      className="p-3 border-r text-center font-medium text-sm"
+                                    >
+                                      {groupIndex === 2
+                                        ? "-"
+                                        : "ISMS"}
+                                    </td>
 
-            </TabsContent>
-            {/* 자동 진단 */}
-            <TabsContent
-              value="auto"
-              className="flex-1 flex flex-col space-y-4"
-            >
-            {isUploading ? (
-              <div className="space-y-4">
-                <div className="text-center space-y-3">
-                  <p className="text-lg font-medium">{diagnosisStep}</p>
-                  <p className="text-sm text-muted-foreground">
-                    지침서를 상세히 분석하여 101개 항목에 대한 평가를 준비하고 있습니다.
-                  </p>
-                </div>
-                <Progress value={progress} />
-                <p className="text-xs text-center text-muted-foreground">
-                  예상 대기 시간: 3-4분 | 창을 닫지 마세요.
-                </p>
-              </div>
-              ) : !diagnosisGenerated ? (
-                <div className="flex-1 flex items-center justify-center pb-96">
-                  <div className="space-y-4">
-                    <div className="text-center space-y-2">
-                      <p className="text-muted-foreground">
-                      지침서를 업로드하면 자동 진단해드립니다.
-                      </p>
-                    </div>
-                    <div className="flex justify-center">
-                      <Button
-                      variant="outline"
-                      className="gap-2"
-                      asChild
-                      >
-                      <label>
-                        지침서 업로드
-                        <input
-                          type="file"
-                          accept=".doc,.docx,.pdf"
-                          onChange={handleDiagnosisFileUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-             ) : (
-                <div className="flex-1 flex flex-col space-y-4">
-                  <div className="flex justify-start">
-                    <Button
-                      variant="outline"
-                      className="gap-2"
-                      asChild
-                    >
-                      <label>
-                        지침서 재업로드
-                        <input
-                          type="file"
-                          accept=".xlsx,.xls"
-                          onChange={handleDiagnosisFileUpload}
-                          className="hidden"
-                        />
-                      </label>
-                    </Button>
-                  </div>
+                                    {/* 통합인증 열 */}
+                                    <td
+                                      rowSpan={
+                                        group.fields.length +
+                                        1 +
+                                        group.fields
+                                          .filter(
+                                            (f) =>
+                                              f.subItems &&
+                                              openFields.includes(
+                                                f.name,
+                                              ),
+                                          )
+                                          .reduce(
+                                            (acc, f) =>
+                                              acc +
+                                              (f.subItems
+                                                ?.length || 0),
+                                            0,
+                                          )
+                                      }
+                                      className="p-3 border-r text-sm font-medium align-top"
+                                    >
+                                      {group.integratedAuth}
+                                    </td>
+                                  </tr>
 
-                  {diagnosisFile && (
-                    <p className="text-sm text-muted-foreground">
-                      업로드된 파일: {diagnosisFile.name}
-                    </p>
-                  )}
-
-                  {/* 보고서요약과 동일한 테이블 구조 */}
-                  <div className="flex-1 min-h-0">
-                    <div className="border rounded-lg overflow-hidden h-[500px]">
-                      <ScrollArea className="h-full w-full">
-                        <table className="w-full border-collapse">
-                          {/* 동일한 테이블 헤더 구조 */}
-                          <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
-                            <tr>
-                              <th
-                                colSpan={2}
-                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px]"
-                              >
-                                구분
-                              </th>
-                              <th
-                                rowSpan={2}
-                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px] align-middle"
-                              >
-                                통합인증
-                              </th>
-                              <th
-                                rowSpan={2}
-                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[300px] align-middle"
-                              >
-                                분야(인증 개수)
-                              </th>
-                              <th
-                                rowSpan={2}
-                                className="p-3 border-b font-medium text-center text-sm min-w-[100px] align-middle"
-                              >
-                                진단결과
-                              </th>
-                            </tr>
-                            <tr>
-                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
-                                ISMS-P
-                              </th>
-                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
-                                ISMS
-                              </th>
-                            </tr>
-                          </thead>
-
-                          {/* 동일한 테이블 내용 - 보고서 요약 탭과 완전히 동일한 구조 */}
-                          <tbody className="bg-white">
-                            {(hasExcelData
-                              ? parsedExcelData
-                              : summaryResults
-                            ).map((group, groupIndex) => {
-                              return (
-                                <React.Fragment key={group.id}>
-                                  {/* 카테고리 헤더 행 */}
-                                  <tr
-                                    className={`hover:bg-muted/30 border-b`}
-                                  >
-                                    {/* ISMS-P열 */}
-                                    <td
-                                      rowSpan={
-                                        group.fields.length +
-                                        1 +
-                                        group.fields
-                                          .filter(
-                                            (f) =>
-                                              f.subItems &&
-                                              openFields.includes(
-                                                f.name,
-                                              ),
-                                          )
-                                          .reduce(
-                                            (acc, f) =>
-                                              acc +
-                                              (f.subItems
-                                                ?.length || 0),
-                                            0,
-                                          )
-                                      }
-                                      className="p-3 border-r text-center font-medium text-sm"
-                                    >
-                                      ISMS-P
-                                    </td>
-
-                                    {/* ISMS열 */}
-                                    <td
-                                      rowSpan={
-                                        group.fields.length +
-                                        1 +
-                                        group.fields
-                                          .filter(
-                                            (f) =>
-                                              f.subItems &&
-                                              openFields.includes(
-                                                f.name,
-                                              ),
-                                          )
-                                          .reduce(
-                                            (acc, f) =>
-                                              acc +
-                                              (f.subItems
-                                                ?.length || 0),
-                                            0,
-                                          )
-                                      }
-                                      className="p-3 border-r text-center font-medium text-sm"
-                                    >
-                                      {groupIndex === 2
-                                        ? "-"
-                                        : "ISMS"}
-                                    </td>
-
-                                    {/* 통합인증 열 */}
-                                    <td
-                                      rowSpan={
-                                        group.fields.length +
-                                        1 +
-                                        group.fields
-                                          .filter(
-                                            (f) =>
-                                              f.subItems &&
-                                              openFields.includes(
-                                                f.name,
-                                              ),
-                                          )
-                                          .reduce(
-                                            (acc, f) =>
-                                              acc +
-                                              (f.subItems
-                                                ?.length || 0),
-                                            0,
-                                          )
-                                      }
-                                      className="p-3 border-r text-sm font-medium align-top"
-                                    >
-                                      {group.integratedAuth}
-                                    </td>
-                                  </tr>
-
-                                  {/* 세부 항목들 */}
-                                  {group.fields.map(
-                                    (field, fieldIndex) => (
-                                      <React.Fragment
-                                        key={fieldIndex}
-                                      >
-                                        {field.subItems &&
-                                        field.subItems.length >
-                                          0 ? (
-                                          <React.Fragment>
-                                            {/* 메인 항목 행 */}
-                                            <tr
-                                              className={`${groupIndex % 2 === 0 ? "bg-muted/5" : "bg-muted/15"} border-b hover:bg-muted/25`}
-                                            >
-                                              <td
-                                                className="p-3 border-r text-sm pl-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                                                onClick={() =>
-                                                  toggleField(
-                                                    field.name,
-                                                  )
-                                                }
-                                              >
-                                                <div className="flex items-center gap-2">
-                                                  {openFields.includes(
-                                                    field.name,
-                                                  ) ? (
-                                                    <ChevronDown className="h-4 w-4" />
-                                                  ) : (
-                                                    <ChevronRight className="h-4 w-4" />
-                                                  )}
-                                                  {field.name}(
-                                                  {field.count})
-                                                </div>
-                                              </td>
-                                              <td className="p-3 text-center">
-                                                {!field.name.startsWith(
-                                                  "1.",
-                                                ) &&
-                                                !field.name.startsWith(
-                                                  "2.",
-                                                ) &&
-                                                !field.name.startsWith(
-                                                  "3.",
-                                                ) ? (
-                                                  <div
-                                                    className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
-                                                      field.rating ===
-                                                      "P"
-                                                        ? "bg-yellow-500"
-                                                        : field.rating ===
-                                                            "Y"
-                                                          ? "bg-green-500"
-                                                          : "bg-red-500"
-                                                    }`}
-                                                  >
-                                                    {
-                                                      field.rating
-                                                    }
-                                                  </div>
-                                                ) : (
-                                                  <span className="text-muted-foreground text-sm">
-                                                    -
-                                                  </span>
-                                                  )}
+                                  {/* 세부 항목들 */}
+                                  {group.fields.map(
+                                    (field, fieldIndex) => (
+                                      <React.Fragment
+                                        key={fieldIndex}
+                                      >
+                                        {field.subItems &&
+                                        field.subItems.length >
+                                          0 ? (
+                                          <React.Fragment>
+                                            {/* 메인 항목 행 */}
+                                            <tr
+                                              className={`${groupIndex % 2 === 0 ? "bg-muted/5" : "bg-muted/15"} border-b hover:bg-muted/25`}
+                                            >
+                                              <td
+                                                className="p-3 border-r text-sm pl-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                                                onClick={() =>
+                                                  toggleField(
+                                                    field.name,
+                                                  )
+                                                }
+                                              >
+                                                <div className="flex items-center gap-2">
+                                                  {openFields.includes(
+                                                    field.name,
+                                                  ) ? (
+                                                    <ChevronDown className="h-4 w-4" />
+                                                  ) : (
+                                                    <ChevronRight className="h-4 w-4" />
+                                                  )}
+                                                  {field.name}(
+                                                  {field.count})
+                                                </div>
+                                              </td>
+                                              <td className="p-3 text-center">
+                                                {/* 1,2,3번 그룹 모든 항목들은 rating 표시하지 않음 */}
+                                                {!field.name.startsWith(
+                                                  "1.",
+                                                ) &&
+                                                !field.name.startsWith(
+                                                  "2.",
+                                                ) &&
+                                                !field.name.startsWith(
+                                                  "3.",
+                                                ) ? (
+                                                  <div
+                                                    className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
+                                                      field.rating ===
+                                                      "P"
+                                                        ? "bg-yellow-500"
+                                                        : field.rating ===
+                                                            "Y"
+                                                          ? "bg-green-500"
+                                                          : "bg-red-500"
+                                                    }`}
+                                                  >
+                                                    {
+                                                      field.rating
+                                                    }
+                                                  </div>
+                                                ) : (
+                                                  <span className="text-muted-foreground text-sm">
+                                                    -
+                                                  </span>
+                                                )}
                                               </td>
                                             </tr>
                                             {/* 세부 항목들 (조건부 렌더링) */}
@@ -1702,10 +1308,431 @@ export default function MgmtConsultingPanel() {
                     </div>
                   </div>
 
-                  {/* 취약점 대응 방안 */}
+                  {/* 취약점 대응방안 */}
                   <div className="border-t pt-4">
                     <h3 className="mb-3">
-                      취약 항목 및 대응 방안
+                      취약 항목 | 대응방안
+                    </h3>
+                    <div className="w-full">
+                      <ScrollArea className="h-[300px] w-full">
+                        <div className="border rounded-lg overflow-hidden">
+                          <table className="w-full border-collapse table-fixed">
+                            <thead className="sticky top-0 z-10">
+                              <tr>
+                                <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
+                                  취약 항목
+                                </th>
+                                <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
+                                  대응방안
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(hasExcelData
+                                ? dynamicVulnerabilityDetails
+                                : vulnerabilityDetails
+                              ).length > 0 ? (
+                                (hasExcelData
+                                  ? dynamicVulnerabilityDetails
+                                  : vulnerabilityDetails
+                                ).map((item, index) => (
+                                  <tr
+                                    key={item.id}
+                                    className={`${index % 2 === 0 ? "bg-white" : "bg-muted/10"} hover:bg-muted/20 border-b transition-colors`}
+                                  >
+                                    <td className="p-4 border-r text-sm leading-relaxed">
+                                      {item.vulnerability}
+                                    </td>
+                                    <td className="p-4 text-sm leading-relaxed">
+                                      {item.countermeasure}
+                                    </td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={2} className="p-8 text-center text-muted-foreground">
+                                    취약점이 발견되지 않았습니다.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </TabsContent>
+            {/* 자동 진단 */}
+            <TabsContent
+              value="auto"
+              className="flex-1 flex flex-col space-y-4"
+            >
+            {isUploading ? (
+              <div className="space-y-4">
+                <div className="text-center space-y-3">
+                  <p className="text-lg font-medium">{diagnosisStep}</p>
+                  <p className="text-sm text-muted-foreground">
+                    지침서를 상세히 분석하여 101개 항목에 대한 평가를 준비하고 있습니다.
+                  </p>
+                </div>
+                <Progress value={progress} />
+                <p className="text-xs text-center text-muted-foreground">
+                  예상 대기 시간: 3-4분 | 창을 닫지 마세요.
+                </p>
+              </div>
+              ) : !diagnosisGenerated ? (
+                <div className="flex-1 flex items-center justify-center pb-96">
+                  <div className="space-y-4">
+                    <div className="text-center space-y-2">
+                      <p className="text-muted-foreground">
+                      지침서를 업로드하면 자동 진단해드립니다.
+                      </p>
+                    </div>
+                    <div className="flex justify-center">
+                      <Button
+                      variant="outline"
+                      className="gap-2"
+                      asChild
+                      >
+                      <label>
+                        지침서 업로드
+                        <input
+                          type="file"
+                          accept=".doc,.docx,.pdf"
+                          onChange={handleDiagnosisFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+             ) : (
+                <div className="flex-1 flex flex-col space-y-4">
+                  <div className="flex justify-start">
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      asChild
+                    >
+                      <label>
+                        지침서 재업로드
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls"
+                          onChange={handleDiagnosisFileUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </Button>
+                  </div>
+
+                  {diagnosisFile && (
+                    <p className="text-sm text-muted-foreground">
+                      업로드된 파일: {diagnosisFile.name}
+                    </p>
+                  )}
+
+                  {/* 보고서요약과 동일한 테이블 구조 */}
+                  <div className="flex-1 min-h-0">
+                    <div className="border rounded-lg overflow-hidden h-[500px]">
+                      <ScrollArea className="h-full w-full">
+                        <table className="w-full border-collapse">
+                          {/* 동일한 테이블 헤더 구조 */}
+                          <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
+                            <tr>
+                              <th
+                                colSpan={2}
+                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px]"
+                              >
+                                구분
+                              </th>
+                              <th
+                                rowSpan={2}
+                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[200px] align-middle"
+                              >
+                                통합인증
+                              </th>
+                              <th
+                                rowSpan={2}
+                                className="p-3 border-r border-b font-medium text-center text-sm min-w-[300px] align-middle"
+                              >
+                                분야(인증 개수)
+                              </th>
+                              <th
+                                rowSpan={2}
+                                className="p-3 border-b font-medium text-center text-sm min-w-[100px] align-middle"
+                              >
+                                진단결과
+                              </th>
+                            </tr>
+                            <tr>
+                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
+                                ISMS-P
+                              </th>
+                              <th className="p-3 border-r border-b font-medium text-center text-sm min-w-[100px]">
+                                ISMS
+                              </th>
+                            </tr>
+                          </thead>
+
+                          {/* 동일한 테이블 내용 - 보고서 요약 탭과 완전히 동일한 구조 */}
+                          <tbody className="bg-white">
+                            {(hasExcelData
+                              ? parsedExcelData
+                              : summaryResults
+                            ).map((group, groupIndex) => {
+                              return (
+                                <React.Fragment key={group.id}>
+                                  {/* 카테고리 헤더 행 */}
+                                  <tr
+                                    className={`hover:bg-muted/30 border-b`}
+                                  >
+                                    {/* ISMS-P열 */}
+                                    <td
+                                      rowSpan={
+                                        group.fields.length +
+                                        1 +
+                                        group.fields
+                                          .filter(
+                                            (f) =>
+                                              f.subItems &&
+                                              openFields.includes(
+                                                f.name,
+                                              ),
+                                          )
+                                          .reduce(
+                                            (acc, f) =>
+                                              acc +
+                                              (f.subItems
+                                                ?.length || 0),
+                                            0,
+                                          )
+                                      }
+                                      className="p-3 border-r text-center font-medium text-sm"
+                                    >
+                                      ISMS-P
+                                    </td>
+
+                                    {/* ISMS열 */}
+                                    <td
+                                      rowSpan={
+                                        group.fields.length +
+                                        1 +
+                                        group.fields
+                                          .filter(
+                                            (f) =>
+                                              f.subItems &&
+                                              openFields.includes(
+                                                f.name,
+                                              ),
+                                          )
+                                          .reduce(
+                                            (acc, f) =>
+                                              acc +
+                                              (f.subItems
+                                                ?.length || 0),
+                                            0,
+                                          )
+                                      }
+                                      className="p-3 border-r text-center font-medium text-sm"
+                                    >
+                                      {groupIndex === 2
+                                        ? "-"
+                                        : "ISMS"}
+                                    </td>
+
+                                    {/* 통합인증 열 */}
+                                    <td
+                                      rowSpan={
+                                        group.fields.length +
+                                        1 +
+                                        group.fields
+                                          .filter(
+                                            (f) =>
+                                              f.subItems &&
+                                              openFields.includes(
+                                                f.name,
+                                              ),
+                                          )
+                                          .reduce(
+                                            (acc, f) =>
+                                              acc +
+                                              (f.subItems
+                                                ?.length || 0),
+                                            0,
+                                          )
+                                      }
+                                      className="p-3 border-r text-sm font-medium align-top"
+                                    >
+                                      {group.integratedAuth}
+                                    </td>
+                                  </tr>
+
+                                  {/* 세부 항목들 */}
+                                  {group.fields.map(
+                                    (field, fieldIndex) => (
+                                      <React.Fragment
+                                        key={fieldIndex}
+                                      >
+                                        {field.subItems &&
+                                        field.subItems.length >
+                                          0 ? (
+                                          <React.Fragment>
+                                            {/* 메인 항목 행 */}
+                                            <tr
+                                              className={`${groupIndex % 2 === 0 ? "bg-muted/5" : "bg-muted/15"} border-b hover:bg-muted/25`}
+                                            >
+                                              <td
+                                                className="p-3 border-r text-sm pl-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                                                onClick={() =>
+                                                  toggleField(
+                                                    field.name,
+                                                  )
+                                                }
+                                              >
+                                                <div className="flex items-center gap-2">
+                                                  {openFields.includes(
+                                                    field.name,
+                                                  ) ? (
+                                                    <ChevronDown className="h-4 w-4" />
+                                                  ) : (
+                                                    <ChevronRight className="h-4 w-4" />
+                                                  )}
+                                                  {field.name}(
+                                                  {field.count})
+                                                </div>
+                                              </td>
+                                              <td className="p-3 text-center">
+                                                {/* 1,2,3번 그룹 모든 항목들은 rating 표시하지 않음 */}
+                                                {!field.name.startsWith(
+                                                  "1.",
+                                                ) &&
+                                                !field.name.startsWith(
+                                                  "2.",
+                                                ) &&
+                                                !field.name.startsWith(
+                                                  "3.",
+                                                ) ? (
+                                                  <div
+                                                    className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
+                                                      field.rating ===
+                                                      "P"
+                                                        ? "bg-yellow-500"
+                                                        : field.rating ===
+                                                            "Y"
+                                                          ? "bg-green-500"
+                                                          : "bg-red-500"
+                                                    }`}
+                                                  >
+                                                    {
+                                                      field.rating
+                                                    }
+                                                  </div>
+                                                ) : (
+                                                  <span className="text-muted-foreground text-sm">
+                                                    -
+                                                  </span>
+                                                )}
+                                              </td>
+                                            </tr>
+                                            {/* 세부 항목들 (조건부 렌더링) */}
+                                            {openFields.includes(
+                                              field.name,
+                                            ) &&
+                                              field.subItems.map(
+                                                (subItem) => (
+                                                  <tr
+                                                    key={
+                                                      subItem.id
+                                                    }
+                                                    className={`${groupIndex % 2 === 0 ? "bg-muted/10" : "bg-muted/20"} border-b hover:bg-muted/30`}
+                                                  >
+                                                    <td className="p-3 border-r text-sm pl-8 text-muted-foreground">
+                                                      {
+                                                        subItem.name
+                                                      }
+                                                    </td>
+                                                    <td className="p-3 text-center">
+                                                      <div
+                                                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
+                                                          subItem.rating ===
+                                                          "P"
+                                                            ? "bg-yellow-500"
+                                                            : subItem.rating ===
+                                                                "Y"
+                                                              ? "bg-green-500"
+                                                              : "bg-red-500"
+                                                        }`}
+                                                      >
+                                                        {
+                                                          subItem.rating
+                                                        }
+                                                      </div>
+                                                    </td>
+                                                  </tr>
+                                                ),
+                                              )}
+                                          </React.Fragment>
+                                        ) : (
+                                          <tr
+                                            className={`${groupIndex % 2 === 0 ? "bg-muted/5" : "bg-muted/15"} border-b hover:bg-muted/25`}
+                                          >
+                                            <td className="p-3 border-r text-sm pl-4 text-muted-foreground">
+                                              {field.name}(
+                                              {field.count})
+                                            </td>
+                                            <td className="p-3 text-center">
+                                              {/* 1,2,3번 그룹 모든 항목들은 rating 표시하지 않음 */}
+                                              {!field.name.startsWith(
+                                                "1.",
+                                              ) &&
+                                              !field.name.startsWith(
+                                                "2.",
+                                              ) &&
+                                              !field.name.startsWith(
+                                                "3.",
+                                              ) ? (
+                                                <div
+                                                  className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs font-medium ${
+                                                    field.rating ===
+                                                    "P"
+                                                      ? "bg-yellow-500"
+                                                      : field.rating ===
+                                                          "Y"
+                                                        ? "bg-green-500"
+                                                        : "bg-red-500"
+                                                  }`}
+                                                >
+                                                  {field.rating}
+                                                </div>
+                                              ) : (
+                                                <span className="text-muted-foreground text-sm">
+                                                  -
+                                                </span>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </React.Fragment>
+                                    ),
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </ScrollArea>
+                    </div>
+                  </div>
+
+                  {/* 취약점 대응방안 */}
+                  <div className="border-t pt-4">
+                    <h3 className="mb-3">
+                      취약 항목 | 대응방안
                     </h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
@@ -1717,7 +1744,7 @@ export default function MgmtConsultingPanel() {
                                   취약 항목
                                 </th>
                                 <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
-                                  대응 방안
+                                  대응방안
                                 </th>
                               </tr>
                             </thead>
