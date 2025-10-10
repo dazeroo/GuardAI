@@ -16,7 +16,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/routers': {
-        target: 'http://0.0.0.0:8000',
+        target: 'http://127.0.0.1:8000',   //http://0.0.0.0:8000
         changeOrigin: true,
       },
     },
