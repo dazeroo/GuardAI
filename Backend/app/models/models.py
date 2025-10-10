@@ -2,8 +2,9 @@ from uuid import uuid4
 import pytz   # KST
 from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, LargeBinary
+    Column, Integer, String, Text, DateTime
 )
+from sqlalchemy.dialects.mysql import LONGBLOB 
 from app.core.database import Base, engine
 
 # SQLAlchemy 모델(테이블) 정의
@@ -34,7 +35,8 @@ class File(Base):
     file_size = Column(Integer, nullable=False)
     # uploaded_at = Column(DateTime, default=datetime.utcnow)
     uploaded_at = Column(DateTime, default=lambda: datetime.now(KST))
-    file_data = Column(LargeBinary, nullable=False)
+    file_data = Column(LONGBLOB, nullable=False)
+    option = Column(String(255), index=True)
     summary_output = Column(Text, nullable=True)
 
 # DB 테이블을 생성하는 함수 (main.py 등에서 앱 시작 시 호출)
