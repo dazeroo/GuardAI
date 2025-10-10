@@ -55,7 +55,7 @@ pip install -r requirements.txt
 
 3. 서버 실행
 ```
-uvicorn app.main:app --reload --host 0.0.0.0
+uvicorn app.main:app --reload  # --host 0.0.0.0
 ```
 
 
