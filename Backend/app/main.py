@@ -1,15 +1,15 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 import logging
 import google.generativeai as genai
 from fastapi import FastAPI
-from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.models import init_db
 from app.routers.v2 import items, targets, tech_summary, upload, ai, mng_auto_diagnose
 
-load_dotenv()
-logger = logging.getLogger(__name__)  
-
+logger = logging.getLogger("uvicorn") 
 app = FastAPI(title="GuardAI API")
 
 @app.on_event("startup")
@@ -18,13 +18,14 @@ def on_startup():
     FastAPI 애플리케이션 시작 시 DB 및 Gemini API 초기화
     """
     # 1. 데이터베이스 초기화
-    print("애플리케이션 시작... 데이터베이스 초기화를 진행합니다.")
-    init_db()  
-    print("데이터베이스 초기화 완료.")
+    logger.info("애플리케이션 시작... 데이터베이스 초기화를 진행합니다.")
+    init_db()
+    logger.info("데이터베이스 초기화 완료.")
 
     # 2. Gemini API 설정
     try:
-        my_key = os.getenv("GENAI_API_KEY") 
+        my_key = os.getenv("GENAI_API_KEY")
+        logger.info(f"불러온 API KEY: {my_key}")
         if not my_key:
             raise ValueError("GENAI_API_KEY 환경 변수가 설정되지 않았습니다.")
         genai.configure(api_key=my_key)
