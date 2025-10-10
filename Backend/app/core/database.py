@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import pymysql
+pymysql.install_as_MySQLdb()
 
 # 1. 데이터베이스 연결 URL 설정
 DATABASE_URL = os.environ.get(
