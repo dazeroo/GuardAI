@@ -142,6 +142,7 @@ export default function TechConsultingPanel() {
 
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("option", "db"); 
 
       try {
         const response = await fetch("/routers/v2/files/upload", { method: "POST", body: formData });
@@ -177,6 +178,7 @@ export default function TechConsultingPanel() {
 
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("option", "web")
 
       try {
         const response = await fetch("/routers/v2/files/upload", { method: "POST", body: formData });
