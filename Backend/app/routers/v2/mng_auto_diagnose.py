@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # mng 자동 진단 API 엔드포인트
-@router.post("/mng_auto_diagnose", summary="ISMS-P 자동 진단")
+@router.post("/mng/auto/diagnose", summary="ISMS-P 자동 진단")
 async def diagnose_guideline(guideline: UploadFile = File(...)):
     """
     업로드된 지침서 파일(xlsx, docx, txt)을 분석하여

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
-import * as pdfjsLib from "pdfjs-dist";
-import mammoth from "mammoth";
 import {
   Card,
   CardHeader,
@@ -804,7 +802,7 @@ export default function MgmtConsultingPanel() {
       }, 40000); // 40초 간격
   
       // --- 실제 백엔드 API 호출 ---
-      const response = await fetch('/routers/v2/mng-auto-diagnose', {
+      const response = await fetch('/routers/v2/mng/auto/diagnose', {
         method: 'POST',
         body: formData,
       });
@@ -1009,7 +1007,7 @@ export default function MgmtConsultingPanel() {
 
                   {uploadedFile && (
                     <p className="text-sm text-muted-foreground">
-                      업로드된 파일: {uploadedFile.name}
+                      [업로드된 파일] {uploadedFile.name}
                     </p>
                   )}
 
@@ -1311,7 +1309,7 @@ export default function MgmtConsultingPanel() {
                   {/* 취약점 대응방안 */}
                   <div className="border-t pt-4">
                     <h3 className="mb-3">
-                      취약 항목 | 대응방안
+                      취약 항목 및 대응 방안
                     </h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
@@ -1432,7 +1430,7 @@ export default function MgmtConsultingPanel() {
 
                   {diagnosisFile && (
                     <p className="text-sm text-muted-foreground">
-                      업로드된 파일: {diagnosisFile.name}
+                      [업로드된 파일] {diagnosisFile.name}
                     </p>
                   )}
 
@@ -1732,7 +1730,7 @@ export default function MgmtConsultingPanel() {
                   {/* 취약점 대응방안 */}
                   <div className="border-t pt-4">
                     <h3 className="mb-3">
-                      취약 항목 | 대응방안
+                      취약 항목 및 대응 방안
                     </h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">

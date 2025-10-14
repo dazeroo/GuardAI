@@ -8,7 +8,7 @@ from app.services.v2.tech_summary_service import parse_report_auto
 
 router = APIRouter()
 
-@router.post("/summary")
+@router.post("/tech/summary")
 async def summary(
     file_id: str = Form(...),
     domain: str = Form("WEB"),

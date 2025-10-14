@@ -6,7 +6,7 @@ from app.services.v2.ai_service import generate_ai_response
 router = APIRouter()
 
 # tech-ai 추가 진단
-@router.post("/tech-ai", response_model=GenerateResponse)
+@router.post("/tech/ai", response_model=GenerateResponse)
 async def run_ai(req: GenerateRequest):
     try:
         return await generate_ai_response(req)

@@ -7,14 +7,14 @@ from app.models.models import WebTarget, DBCredential
 
 router = APIRouter()
 
-@router.post("/web/targets", response_model=SiteOut)
+@router.post("/tech/auto/web/targets", response_model=SiteOut)
 def create_site(payload: SiteIn, db: Session = Depends(get_db)):
     site_id = str(uuid4())
     db.add(WebTarget(site_id=site_id, url=str(payload.url)))
     db.commit()
     return SiteOut(site_id=site_id)
 
-@router.post("/db/credentials", response_model=DBCredOut)
+@router.post("/tech/auto/db/credentials", response_model=DBCredOut)
 def create_db_cred(payload: DBCredIn, db: Session = Depends(get_db)):
     cred_id = str(uuid4())
     db.add(DBCredential(

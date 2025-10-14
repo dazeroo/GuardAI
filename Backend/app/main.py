@@ -42,12 +42,12 @@ app.add_middleware(
 )
 
 # API 라우터 등록
-app.include_router(items.router, prefix="/routers/v2", tags=["items"])
-app.include_router(targets.router, prefix="/routers/v2", tags=["targets"])
-app.include_router(tech_summary.router, prefix="/routers/v2", tags=["summary"])
-app.include_router(upload.router, prefix="/routers/v2", tags=["upload"])
-app.include_router(ai.router, prefix="/routers/v2", tags=["AI"])
-app.include_router(mng_auto_diagnose.router, prefix="/routers/v2", tags=["mng"])
+app.include_router(items.router, prefix="/routers/v2", tags=["tech", "items"])
+app.include_router(targets.router, prefix="/routers/v2", tags=["tech", "auto", "targets"])
+app.include_router(tech_summary.router, prefix="/routers/v2", tags=["tech", "summary"])
+app.include_router(upload.router, prefix="/routers/v2", tags=["tech", "summary", "upload"])
+app.include_router(ai.router, prefix="/routers/v2", tags=["tech", "AI"])
+app.include_router(mng_auto_diagnose.router, prefix="/routers/v2", tags=["mng", "auto"])
 
 
 # if __name__ == "__main__":

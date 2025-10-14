@@ -108,7 +108,7 @@ export default function TechConsultingPanel() {
   useEffect(() => {
     const fetchChecklistItems = async () => {
       try {
-        const response = await fetch("/routers/v2/items");
+        const response = await fetch("/routers/v2/tech/items");
         if (!response.ok) throw new Error("진단 항목 API 응답 오류");
         const data = await response.json();
         setDbItems(data.db);
@@ -145,7 +145,7 @@ export default function TechConsultingPanel() {
       formData.append("option", "db"); 
 
       try {
-        const response = await fetch("/routers/v2/files/upload", { method: "POST", body: formData });
+        const response = await fetch("/routers/v2/tech/summary/files/upload", { method: "POST", body: formData });
         if (!response.ok) {
           const errData = await response.json();
           throw new Error(errData.detail || "서버 응답이 올바르지 않습니다.");
@@ -181,7 +181,7 @@ export default function TechConsultingPanel() {
       formData.append("option", "web")
 
       try {
-        const response = await fetch("/routers/v2/files/upload", { method: "POST", body: formData });
+        const response = await fetch("/routers/v2/tech/summary/files/upload", { method: "POST", body: formData });
         if (!response.ok) {
           const errData = await response.json();
           throw new Error(errData.detail || "서버 응답이 올바르지 않습니다.");
@@ -219,7 +219,7 @@ export default function TechConsultingPanel() {
       formData.append('file_id', fileId);
       formData.append('domain', isDbTab ? 'DB' : 'WEB');
 
-      const response = await fetch("/routers/v2/summary", { method: "POST", body: formData });
+      const response = await fetch("/routers/v2/tech/summary", { method: "POST", body: formData });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ detail: "서버에서 오류가 발생했습니다." }));
@@ -340,7 +340,7 @@ export default function TechConsultingPanel() {
     showModalMessage("AI 진단", "생성을 시작합니다...", "info");
 
     try {
-        const ai_res = await fetch("/routers/v2/tech-ai", {
+        const ai_res = await fetch("/routers/v2/tech/ai", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ tabType }),
@@ -412,7 +412,7 @@ export default function TechConsultingPanel() {
     }
 
     try {
-      const response = await fetch("/routers/v2/web/targets", {
+      const response = await fetch("/routers/v2/tech/auto/web/targets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: trimmedUrl }),
@@ -514,7 +514,7 @@ export default function TechConsultingPanel() {
     };
 
     try {
-      const response = await fetch("/routers/v2/db/credentials", {
+      const response = await fetch("/routers/v2/tech/auto/db/credentials", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dbCredData),
       });

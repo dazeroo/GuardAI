@@ -7,7 +7,7 @@ from app.models.models import File
 
 router = APIRouter()
 
-@router.post("/files/upload", response_model=FileOut)
+@router.post("/tech/summary/files/upload", response_model=FileOut)
 async def upload_file(
     file: UploadFile,
     db: Session = Depends(get_db),
