@@ -444,7 +444,7 @@ export default function MgmtConsultingPanel() {
               if (backendItem.rating === "N" || backendItem.rating === "P") {
                 const vulnerability = subItem.name;
                 // countermeasure 필드를 사용하도록 수정
-                const countermeasure = backendItem.countermeasure || backendItem.reason || "개선이 필요합니다.";
+                const countermeasure = backendItem.countermeasure || "구체적인 개선방안이 필요합니다.";
                 
                 console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
                 console.log(`   대응방안: ${countermeasure}`);
