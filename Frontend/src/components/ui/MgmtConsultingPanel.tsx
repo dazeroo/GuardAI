@@ -416,8 +416,7 @@ export default function MgmtConsultingPanel() {
       countermeasure: string;
     }> = [];
     let vulnerabilityIdCounter = 1;
-
-    
+  
     // 1단계: 백엔드 데이터를 id 기반으로 맵핑
     const dataMap = new Map();
     diagnosisData.forEach((item: any) => {
@@ -441,12 +440,14 @@ export default function MgmtConsultingPanel() {
               subItem.rating = backendItem.rating || "N";
               console.log(`✓ 매핑: ${subItem.id} - ${subItem.name} (${subItem.rating})`);
               
-              // N 등급인 항목을 취약점으로 추가
-              if (backendItem.rating === "N") {
+              // N 또는 P 등급인 항목을 취약점으로 추가 (대응방안이 필요한 경우)
+              if (backendItem.rating === "N" || backendItem.rating === "P") {
                 const vulnerability = subItem.name;
-                const countermeasure = backendItem.reason || "개선이 필요합니다.";
+                // countermeasure 필드를 사용하도록 수정
+                const countermeasure = backendItem.countermeasure || backendItem.reason || "개선이 필요합니다.";
                 
                 console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
+                console.log(`   대응방안: ${countermeasure}`);
                 
                 newVulnerabilityDetails.push({
                   id: vulnerabilityIdCounter++,
@@ -461,10 +462,10 @@ export default function MgmtConsultingPanel() {
         }
       }
     }
-
+  
     console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 취약점 발견`);
     console.log("취약점 목록:", newVulnerabilityDetails);
-
+  
     return {
       summaryData: newSummaryResults,
       vulnerabilityData: newVulnerabilityDetails,
