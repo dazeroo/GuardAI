@@ -1,0 +1,31 @@
+# .gitignore
+
+# Python Virtual Environments
+Backend/venv/
+Backend/my_env/
+Backend/new_env/
+Backend/new_env2/
+Backend/.venv/
+
+# Python Cache
+Backend/__pycache__/
+Backend/app/__pycache__/
+**/*.pyc
+
+# Database file at root
+/app_data.db
+
+# Editor save/backup files
+Frontend/vite.config.ts.save
+*.save
+
+# Common Frontend ignores (node_modules, build artifacts)
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.vite/
+
+# Common OS/Editor ignores
+.vscode/
+.idea/
+.DS_Store
+*.log
