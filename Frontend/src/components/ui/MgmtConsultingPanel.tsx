@@ -402,7 +402,7 @@ export default function MgmtConsultingPanel() {
   >([]);
 
   //  mapDiagnosisDataToSummary 함수 추가
-  const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
+ const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
     console.log("--- 백엔드로부터 받은 Raw 데이터 ---");
     console.log(JSON.stringify(diagnosisData, null, 2));
     
@@ -441,12 +441,12 @@ export default function MgmtConsultingPanel() {
               subItem.rating = backendItem.rating || "N";
               console.log(`✓ 매핑: ${subItem.id} - ${subItem.name} (${subItem.rating})`);
               
-              // N 등급인 항목을 취약점으로 추가
-              if (backendItem.rating === "N") {
+              // N 또는 P 등급인 항목을 취약점으로 추가 (수정된 부분)
+              if (backendItem.rating === "N" || backendItem.rating === "P") {
                 const vulnerability = subItem.name;
-                const countermeasure = backendItem.reason || "개선이 필요합니다.";
+                const countermeasure = backendItem.countermeasure || backendItem.reason || "개선이 필요합니다.";
                 
-                console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
+                console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability} (${backendItem.rating})`);
                 
                 newVulnerabilityDetails.push({
                   id: vulnerabilityIdCounter++,
