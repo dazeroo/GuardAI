@@ -28,36 +28,7 @@ try:
 except Exception as e:
     app.logger.error(f"Gemini API 설정 중 오류 발생: {e}")
 
-def extract_text_from_file(file):
-    """파일에서 텍스트를 추출하는 함수"""
-    try:
-        guideline_text = ""
-        filename = file.filename
-        
-        # 엑셀 파일 처리
-        if filename.endswith('.xlsx') or filename.endswith('.xls'):
-            app.logger.info(f"엑셀 파일 처리: {filename}")
-            df = pd.read_excel(file, engine='openpyxl')
-            guideline_text = ' '.join(df.astype(str).stack())
-        
-        # 워드 문서 처리
-        elif filename.endswith('.docx'):
-            app.logger.info(f"워드 문서 처리: {filename}")
-            doc = docx.Document(file)
-            guideline_text = "\n".join([para.text for para in doc.paragraphs])
-        
-        # 일반 텍스트 파일 처리
-        else:
-            app.logger.info(f"텍스트 파일 처리: {filename}")
-            guideline_text = file.read().decode('utf-8', errors='ignore')
-        
-        return guideline_text, filename
-    
-    except Exception as e:
-        app.logger.error(f"파일 '{filename}' 처리 중 오류: {e}")
-        return None, filename
-
-# 자동 진단 API 엔드포인트 (다중 파일 지원)
+# 자동 진단 API 엔드포인트
 @app.route("/api/diagnose", methods=["POST"])
 def diagnose():
     # 파일이 요청에 포함되어 있는지 확인
@@ -65,45 +36,39 @@ def diagnose():
         app.logger.warning("파일이 업로드되지 않았습니다.")
         return jsonify({"error": "파일이 업로드되지 않았습니다."}), 400
 
-    files = request.files.getlist('guideline')  # 여러 파일을 리스트로 받음
+    file = request.files['guideline']
 
-    if not files or all(f.filename == '' for f in files):
+    if file.filename == '':
         app.logger.warning("빈 파일 이름이 제출되었습니다.")
         return jsonify({"error": "파일이 선택되지 않았습니다."}), 400
     
     try:
-        # 모든 파일의 텍스트를 통합
-        all_guideline_texts = []
-        processed_files = []
-        failed_files = []
+        guideline_text = ""
+        # 파일 이름이 .xlsx로 끝나는지 확인하여 엑셀 파일인지 판별
+        if file.filename.endswith('.xlsx'):
+            app.logger.info("엑셀 파일로 처리 시작")
+            # pandas를 사용해 엑셀 파일의 모든 데이터를 읽어옴
+            df = pd.read_excel(file, engine='openpyxl')
+            # 엑셀의 모든 셀 내용을 하나의 긴 텍스트로 합침
+            guideline_text = ' '.join(df.astype(str).stack())
         
-        for file in files:
-            if file.filename == '':
-                continue
-                
-            guideline_text, filename = extract_text_from_file(file)
+        # .docx 파일 처리
+        elif file.filename.endswith('.docx'):
+            app.logger.info("워드 문서(.docx) 파일로 처리 시작")
+            doc = docx.Document(file)
+            # 문서의 모든 문단(paragraph)을 순회하며 텍스트를 추출하고, 줄바꿈으로 합칩니다.
+            guideline_text = "\n".join([para.text for para in doc.paragraphs])
             
-            if guideline_text and guideline_text.strip():
-                all_guideline_texts.append(f"\n\n=== 파일명: {filename} ===\n{guideline_text}")
-                processed_files.append(filename)
-                app.logger.info(f"파일 '{filename}' 처리 완료, 내용 길이: {len(guideline_text)}")
-            else:
-                failed_files.append(filename)
-                app.logger.warning(f"파일 '{filename}'에서 텍스트를 추출할 수 없습니다.")
-        
-        if not all_guideline_texts:
-            app.logger.warning("모든 파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
-            return jsonify({
-                "error": "업로드된 파일에서 읽을 수 있는 텍스트가 없습니다.",
-                "failed_files": failed_files
-            }), 400
-        
-        # 모든 파일의 텍스트를 하나로 통합
-        combined_guideline_text = "\n".join(all_guideline_texts)
-        
-        app.logger.info(f"총 {len(processed_files)}개 파일 처리 완료: {', '.join(processed_files)}")
-        if failed_files:
-            app.logger.warning(f"처리 실패한 파일: {', '.join(failed_files)}")
+        else:
+            app.logger.info("일반 텍스트 파일로 처리 시작")
+            # 텍스트 파일인 경우, 오류를 무시하고 UTF-8로 디코딩
+            guideline_text = file.read().decode('utf-8', errors='ignore')
+
+        if not guideline_text.strip():
+            app.logger.warning("파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
+            return jsonify({"error": "파일이 비어있거나 읽을 수 있는 텍스트가 없습니다."}), 400
+
+        app.logger.info(f"파일 '{file.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
         
         # Gemini API에 보낼 프롬프트 정의
         prompt = f"""
@@ -257,10 +222,7 @@ def diagnose():
 
           ---
           [회사 내부 지침서 내용]
-          업로드된 파일 수: {len(processed_files)}개
-          파일 목록: {', '.join(processed_files)}
-          
-          {combined_guideline_text}
+          {guideline_text}
           ---
         """
         
@@ -290,14 +252,7 @@ def diagnose():
         # JSON 파싱 및 클라이언트에 전송
         diagnosis_data = json.loads(json_response)
         app.logger.info("JSON 파싱 성공, 클라이언트에 데이터 전송")
-        
-        # 응답에 처리된 파일 정보 포함
-        return jsonify({
-            "data": diagnosis_data,
-            "processed_files": processed_files,
-            "failed_files": failed_files,
-            "total_files": len(files)
-        })
+        return jsonify(diagnosis_data)
 
     except Exception as e:
         app.logger.error(f"진단 보고서 생성 중 오류 발생: {e}", exc_info=True)
