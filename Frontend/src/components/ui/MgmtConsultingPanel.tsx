@@ -766,7 +766,7 @@ export default function MgmtConsultingPanel() {
     setShowSummaryCompleteModal(true);
   };
 
-  const startDiagnosis = async (file: File) => {
+  const startDiagnosis = async (files: File | File[]) => {
     setUploading(true);
     setDiagnosisGenerated(false);
     showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
@@ -787,7 +787,16 @@ export default function MgmtConsultingPanel() {
   
     try {
       const formData = new FormData();
-      formData.append('guideline', file);
+
+      // ✅ 배열 또는 단일 파일 처리
+      if (Array.isArray(files)) {
+        files.forEach(file => {
+          formData.append('guideline', file);
+        });
+      } else {
+        formData.append('guideline', files);
+      }
+      
   
       // 첫 번째 메시지와 진행률을 즉시 설정
       setDiagnosisStep(progressSteps[stepIndex].text);
@@ -819,7 +828,8 @@ export default function MgmtConsultingPanel() {
       // --- 결과 처리 ---
       setProgress(90); // 결과를 받아온 후 진행률을 90%로 설정
       setDiagnosisStep("📊 진단 결과 생성 중...");
-      const diagnosisData = await response.json();
+      const responseData = await response.json();
+      const diagnosisData = responseData.data || responseData; // data 속성이 있으면 사용, 없으면 전체 사용
       await new Promise(r => setTimeout(r, 1000)); 
   
       setDiagnosisStep("✅ 곧 완료됩니다...");
@@ -850,17 +860,31 @@ export default function MgmtConsultingPanel() {
     }
   };
 
+  const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
+
   // 3. handleDiagnosisFileUpload 수정
   const handleDiagnosisFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+  event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setDiagnosisFile(file);
-      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
-      await startDiagnosis(file); // file 파라미터 전달
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      const fileNames = fileArray.map(f => f.name);
+      
+      setDiagnosisFile(fileArray[0]); // 첫 번째 파일 정보 저장 (필요시 수정)
+      setUploadedFileNames(fileNames);
+      
+      showModalMessage(
+        "파일 업로드", 
+        `${files.length}개 파일이 업로드되었습니다: ${fileNames}`, 
+        "success"
+      );
+      
+      // 여러 파일을 startDiagnosis에 전달
+      await startDiagnosis(fileArray);
     }
   };
+
 
   // handleFileUpload 추가
   const handleFileUpload = async (
@@ -1401,9 +1425,10 @@ export default function MgmtConsultingPanel() {
                         지침서 업로드
                         <input
                           type="file"
-                          accept=".doc,.docx,.pdf"
+                          accept=".doc,.docx,.pdf,.txt,.xlsx,.xls"
                           onChange={handleDiagnosisFileUpload}
                           className="hidden"
+                          multiple
                         />
                       </label>
                     </Button>
@@ -1422,18 +1447,24 @@ export default function MgmtConsultingPanel() {
                         지침서 재업로드
                         <input
                           type="file"
-                          accept=".xlsx,.xls"
+                          accept=".doc,.docx,.pdf,.txt,.xlsx,.xls"
                           onChange={handleDiagnosisFileUpload}
                           className="hidden"
+                          multiple
                         />
                       </label>
                     </Button>
                   </div>
 
-                  {diagnosisFile && (
-                    <p className="text-sm text-muted-foreground">
-                      업로드된 파일: {diagnosisFile.name}
-                    </p>
+                  {uploadedFileNames.length > 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      <p className="font-medium mb-1">업로드된 파일 ({uploadedFileNames.length}개):</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {uploadedFileNames.map((name, index) => (
+                          <li key={index}>{name}</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
 
                   {/* 보고서요약과 동일한 테이블 구조 */}
