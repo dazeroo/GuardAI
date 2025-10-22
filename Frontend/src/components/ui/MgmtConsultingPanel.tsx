@@ -308,7 +308,7 @@ const summaryResults = [
   },
 ];
 
-// 취약점 상세 데이터
+// 결함사항 상세 데이터
 const vulnerabilityDetails = [
   {
     id: 1,
@@ -389,7 +389,7 @@ export default function MgmtConsultingPanel() {
   const [parsedExcelData, setParsedExcelData] = useState<
     typeof summaryResults
   >([]);
-  // 상태 관리 및 데이터 업데이트: 엑셀에서 추출한 취약점 데이터를 저장할 새로운 상태 변수
+  // 상태 관리 및 데이터 업데이트: 엑셀에서 추출한 결함사항 데이터를 저장할 새로운 상태 변수
   const [
     dynamicVulnerabilityDetails,
     setDynamicVulnerabilityDetails,
@@ -441,12 +441,12 @@ export default function MgmtConsultingPanel() {
               subItem.rating = backendItem.rating || "N";
               console.log(`✓ 매핑: ${subItem.id} - ${subItem.name} (${subItem.rating})`);
               
-              // N 또는 P 등급인 항목을 취약점으로 추가 (수정된 부분)
+              // N 또는 P 등급인 항목을 결함사항으로 추가 (수정된 부분)
               if (backendItem.rating === "N" || backendItem.rating === "P") {
                 const vulnerability = subItem.name;
                 const countermeasure = backendItem.countermeasure || backendItem.reason || "개선이 필요합니다.";
                 
-                console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability} (${backendItem.rating})`);
+                console.log(`🔴 결함사항 발견: [${subItem.id}] ${vulnerability} (${backendItem.rating})`);
                 
                 newVulnerabilityDetails.push({
                   id: vulnerabilityIdCounter++,
@@ -462,8 +462,8 @@ export default function MgmtConsultingPanel() {
       }
     }
 
-    console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 취약점 발견`);
-    console.log("취약점 목록:", newVulnerabilityDetails);
+    console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 결함사항 발견`);
+    console.log("결함사항 목록:", newVulnerabilityDetails);
 
     return {
       summaryData: newSummaryResults,
@@ -598,10 +598,10 @@ export default function MgmtConsultingPanel() {
           // 선택적 컬럼들에 대한 경고 메시지
           if (itemColumnIndex === -1) {
             console.warn(
-              '엑셀 파일에서 "항목" 컬럼을 찾을 수 없습니다. 취약점 항목 추출이 제한됩니다.',
+              '엑셀 파일에서 "항목" 컬럼을 찾을 수 없습니다. 결함사항 항목 추출이 제한됩니다.',
             );
             toast.warning(
-              '"항목" 컬럼이 없어 취약점 항목 추출이 제한됩니다.',
+              '"항목" 컬럼이 없어 결함사항 항목 추출이 제한됩니다.',
             );
           }
 
@@ -773,11 +773,11 @@ export default function MgmtConsultingPanel() {
   
     // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
     const progressSteps = [
-      { text: "📄 지침서 내용을 분석하고 있습니다...", progress: 15 },
+      { text: "📄 증적 자료를 분석하고 있습니다...", progress: 15 },
       { text: "🔍 ISMS-P 101개 항목과의 적합성을 검토 중입니다...", progress: 30 },
       { text: "⚙️ AI 진단 엔진이 자동 분석을 수행하고 있습니다...", progress: 45 },
-      { text: "📖 취약 항목을 식별하고 있습니다...", progress: 60 },
-      { text: "🔐 개선 및 대응 방안을 도출하고 있습니다...", progress: 75 },
+      { text: "📖 결함사항을 식별하고 있습니다...", progress: 60 },
+      { text: "🔐 대응 방안을 도출하고 있습니다...", progress: 75 },
       { text: "⏳ 진단 결과를 정리 중입니다. 잠시만 기다려주세요...", progress: 80 },
     ];
     let stepIndex = 0;
@@ -941,7 +941,7 @@ export default function MgmtConsultingPanel() {
                     <p className="max-w-xs">
                       진단을 원하시는 기업의 ISMS-P 현황 분석
                       보고서를 업로드하면 각 진단 항목을 ISMS,
-                      ISMS-P의 만족 여부를 확인하고, 취약 항목과
+                      ISMS-P의 만족 여부를 확인하고, 결함사항과
                       그 대응 방안을 제시합니다.
                     </p>
                   </TooltipContent>
@@ -962,7 +962,7 @@ export default function MgmtConsultingPanel() {
                     <p className="max-w-xs">
                       진단이 필요한 기업의 내규 지침서를
                       업로드하면 ISMS, ISMS-P의 항목을 자동으로
-                      진단하고, 취약 항목과 대응방안을
+                      진단하고, 결함사항과 대응방안을
                       요약합니다.
                     </p>
                   </TooltipContent>
@@ -1332,10 +1332,10 @@ export default function MgmtConsultingPanel() {
                     </div>
                   </div>
 
-                  {/* 취약점 대응방안 */}
+                  {/* 결함사항 대응방안 */}
                   <div className="border-t pt-4">
                     <h3 className="mb-3">
-                      취약 항목 | 대응방안
+                      결함사항 | 대응방안
                     </h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
@@ -1344,7 +1344,7 @@ export default function MgmtConsultingPanel() {
                             <thead className="sticky top-0 z-10">
                               <tr>
                                 <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
-                                  취약 항목
+                                  결함사항
                                 </th>
                                 <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
                                   대응방안
@@ -1760,10 +1760,10 @@ export default function MgmtConsultingPanel() {
                     </div>
                   </div>
 
-                  {/* 취약점 대응방안 */}
+                  {/* 결함사항 대응방안 */}
                   <div className="border-t pt-4">
                     <h3 className="mb-3">
-                      취약 항목 | 대응방안
+                      결함사항 | 대응방안
                     </h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
@@ -1772,7 +1772,7 @@ export default function MgmtConsultingPanel() {
                             <thead className="sticky top-0 z-10">
                               <tr>
                                 <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
-                                  취약 항목
+                                  결함사항
                                 </th>
                                 <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
                                   대응방안
@@ -1803,7 +1803,7 @@ export default function MgmtConsultingPanel() {
                               ) : (
                                 <tr>
                                   <td colSpan={2} className="p-8 text-center text-muted-foreground">
-                                    취약점이 발견되지 않았습니다.
+                                    결함사항이 발견되지 않았습니다.
                                   </td>
                                 </tr>
                               )}
