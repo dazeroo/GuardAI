@@ -38,7 +38,7 @@ WEB_CODE_MAP: Dict[str, dict] = {
     "SS": {"name": "SSI 인젝션", "countermeasure": "웹 서버에서 SSI(Server-Side Includes)를 비활성화하거나, 사용자 입력이 SSI 지시문에 포함되지 않도록 필터링합니다."},
     "XP": {"name": "XPath 인젝션", "countermeasure": "사용자 입력을 기반으로 XPath 쿼리를 동적으로 구성하지 말고, 파라미터화된 XPath 인터페이스를 사용합니다."},
     "DI": {"name": "디렉터리 인덱싱", "countermeasure": "웹 서버 설정에서 디렉터리 리스팅 기능을 비활성화하고, 각 디렉터리에 기본 페이지(index.html 등)를 설정합니다."},
-    "IN": {"name": "정보 노출", "countermeasure": "오류 메시지, 주석 등에서 시스템의 민감한 정보가 노출되지 않도록 서버 측에서 처리합니다."},
+    "IN": {"name": "정보 누출", "countermeasure": "오류 메시지, 주석 등에서 시스템의 민감한 정보가 노출되지 않도록 서버 측에서 처리합니다."},
     "MC": {"name": "악성 콘텐츠", "countermeasure": "업로드되는 파일의 확장자, MIME 타입을 제한하고, 파일 내용을 검사하며, 웹 루트 외부의 안전한 경로에 저장합니다."},
     "XS": {"name": "크로스사이트 스크립팅", "countermeasure": "입력값 필터링 및 출력값 인코딩(HTML Encoding)을 적용하여 스크립트 실행을 방지합니다."},
     "PW": {"name": "약한 문자열 강도", "countermeasure": "패스워드 설정 시 길이, 대소문자, 숫자, 특수문자 조합 등 복잡도 요구사항을 강제하는 정책을 적용합니다."},
