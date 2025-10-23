@@ -405,7 +405,7 @@ export default function TechConsultingPanel() {
       return;
     }
 
-    const urlPattern = /^https:\/\/[a-zA-Z0-9.-]+\.com$/; 
+    const urlPattern = /^https?:\/\/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|(\d{1,3}\.){3}\d{1,3})(:\d+)?(\/.*)?$/;
     if (!urlPattern.test(trimmedUrl)) {
         showModalMessage("입력 형식 오류", "형식에 맞게 입력해주세요.", "error");
         return;
@@ -572,20 +572,64 @@ export default function TechConsultingPanel() {
     setWebDiagnosing(true);
     setWebProgress(15);
     showModalMessage("WEB 자동 진단", "WEB 자동 진단을 시작합니다...", "info");
-    const steps = [35, 55, 80, 100];
-    for (const p of steps) {
-      await new Promise((r) => setTimeout(r, 400));
-      setWebProgress(p);
+    
+    try {
+	const response = await fetch("/api/v2/scan", {
+	    method: "POST",
+	    headers: { "Content-Type": "application/json" },
+	    body: JSON.stringify({ url: savedSiteUrl }),
+	});
+
+	setWebProgress(80);
+
+	if (!response.ok) {
+	    const errorData = await response.json().catch(() => ({ detail: "서버 응답이 올바르지 않습니다." }));
+	    throw new Error(errorData.detail || `HTTP Error: ${response.status}`);
+	}
+
+	const backendResult: { status: string; message: string; report_summary: { [key: string]: { status: string; description: string; details: any[] } } } = await response.json();
+
+	console.log("백엔드 응답 전체:", backendResult);
+	console.log("report_summary:", backendResult.report_summary)
+
+	if (backendResult.status === 'error') {
+	    throw new Error(backendResult.message);
+	}
+
+	const analysisResultForCheckboxes: { [key: string]: { good: boolean; vulnerable: boolean; interview: boolean; } } = {};
+
+	webItems.forEach((item) => {
+	    const key = `web-${item.id}`;
+	    const matchingKey = Object.keys(backendResult.report_summary).find(k => k.includes(item.name)
+	    );
+
+	    if (matchingKey) {
+		const testResult = backendResult.report_summary[matchingKey];
+		const status = testResult.status;
+		analysisResultForCheckboxes[key] = {
+		    good: status === '양호',
+                    vulnerable: status === '취약',
+                    interview: status === '인터뷰',
+		};
+            } else {
+		analysisResultForCheckboxes[key] = { good: false, vulnerable: false, interview: true };
+            }
+        });
+
+        setDiagnosisWebCompleted(true);
+        setDiagnosisCheckedItems((prev) => ({ ...prev, ...analysisResultForCheckboxes }));
+        setWebProgress(100);
+        showModalMessage("WEB 진단 완료", "WEB 진단이 완료되었습니다.", "success");
+
+    } catch (error) {
+        // 오류 처리
+        console.error("WEB 진단 실패:", error);
+        setWebProgress(0); // 오류 시 진행률 초기화
+        showModalMessage("WEB 진단 실패", error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.", "error");
+
+    } finally {
+        setWebDiagnosing(false);
     }
-    const analysisResult: { [key: string]: { good: boolean; vulnerable: boolean; interview: boolean; } } = {};
-    setDiagnosisWebCompleted(true);
-    webItems.forEach((item) => {
-      const key = `web-${item.id}`;
-      analysisResult[key] = { good: true, vulnerable: false, interview: false };
-    });
-    setWebDiagnosing(false);
-    setDiagnosisCheckedItems((prev) => ({ ...prev, ...analysisResult }));
-    showModalMessage("WEB 진단 완료", "WEB 진단이 완료되었습니다.", "success");
   };
   
   // AIComponent가 탭별로 독립적인 데이터를 표시하도록 threatAnalysis와 yaraRule을 props로 직접 전달받도록 수정
@@ -1033,4 +1077,3 @@ export default function TechConsultingPanel() {
     </>
   );
 }
-

@@ -5,113 +5,49 @@
 ## 📁 프로젝트 구조
 
 ```
-web_vulnerability_scanner/
+WEB_scanner/
+├── modules/                          # 취약점 테스트 모듈
+│   ├── __init__.py                   # 패키지 초기화 파일
+│   ├── admin_exposure.py             # 관리자 페이지 노출
+│   ├── automation_attack.py          # 자동화 공격
+│   ├── buffer_overflow.py            # 버퍼 오버플로우
+│   ├── command_injection.py          # 운영체제 명령 실행
+│   ├── cookie_manipulation.py        # 쿠키 변조
+│   ├── csrf.py                       # 크로스 사이트 리퀘스트 변조(CSRF)
+│   ├── directory_indexing.py         # 디렉터리 인덱싱
+│   ├── file_download.py              # 파일 다운로드
+│   ├── file_upload.py                # 파일 업로드
+│   ├── format_string.py              # 포맷스트링
+│   ├── information_leakage.py        # 정보 누출
+│   ├── insufficient_authentication.py # 불충분한 인증
+│   ├── insufficient_authorization.py  # 불충분한 인가
+│   ├── ldap_injection.py             # LDAP 인젝션
+│   ├── location_disclosure.py        # 경로 추적
+│   ├── malicious_content.py          # 악성 콘텐츠
+│   ├── path_traversal.py             # 경로 추적
+│   ├── plaintext_transmission.py     # 데이터 평문 전송
+│   ├── process_info_leak.py          # 프로세스 검증 누락
+│   ├── session_fixation.py           # 세션 고정
+│   ├── session_prediction.py         # 세션 예측
+│   ├── session_timeout.py            # 불충분한 세션 만료
+│   ├── sql_injection.py              # SQL 인젝션
+│   ├── ssi_injection.py              # SSI 인젝션
+│   ├── weak_password_recovery.py     # 취약한 패스워드 복구
+│   ├── weak_string.py                # 약한 문자열 강도
+│   ├── xpath_injection.py            # XPath 인젝션
+│   └── xss.py                        # 크로스사이트 스크립팅
 │
-├── main.py                          # 메인 실행 파일
-├── config.py                        # 설정 파일
-├── requirements.txt                 # 필요 라이브러리
-├── README.md                        # 이 파일
+├── reports/                          # 스캔 결과 보고서 저장 폴더
 │
-├── modules/                         # 취약점 검사 모듈
-│   ├── __init__.py
-│   ├── sql_injection.py            # 1. SQL 인젝션
-│   ├── xss.py                      # 2. XSS
-│   ├── directory_indexing.py       # 3. 디렉터리 인덱싱
-│   ├── security_headers.py         # 4. 보안 헤더
-│   ├── cookie_security.py          # 5. 쿠키 보안 속성
-│   ├── csrf_protection.py          # 6. CSRF 토큰
-│   ├── ssi_injection.py            # 7. SSI 인젝션
-│   ├── ldap_injection.py           # 8. LDAP 인젝션
-│   ├── xpath_injection.py          # 9. XPath 인젝션
-│   ├── file_upload.py              # 10. 파일 업로드
-│   ├── file_download.py            # 11. 파일 다운로드
-│   └── weak_crypto.py              # 12. 약한 암호화
+├── utils/                            # 유틸리티 함수들
+│   ├── __init__.py                   # 패키지 초기화
+│   ├── http_client.py                # HTTP 요청 처리 (requests 래퍼)
+│   └── report_generator.py           # JSON/HTML 보고서 생성기
 │
-├── utils/                           # 유틸리티
-│   ├── __init__.py
-│   ├── http_client.py              # HTTP 요청 처리
-│   └── report_generator.py         # 리포트 생성
-│
-└── reports/                         # 결과 리포트 (자동 생성)
-```
-
-## 🚀 설치 방법
-
-### 1. Python 설치 확인
-```bash
-python --version  # Python 3.7 이상 필요
-```
-
-### 2. 프로젝트 디렉터리 생성
-```bash
-mkdir web_vulnerability_scanner
-cd web_vulnerability_scanner
-```
-
-### 3. 디렉터리 구조 생성
-```bash
-# Windows
-mkdir modules utils reports
-
-# Linux/Mac
-mkdir -p modules utils reports
-```
-
-### 4. 파일 복사
-각 파일을 해당 위치에 저장:
-- `main.py` → 루트 디렉터리
-- `config.py` → 루트 디렉터리
-- `requirements.txt` → 루트 디렉터리
-- `modules/*.py` → modules 디렉터리
-- `utils/*.py` → utils 디렉터리
-
-### 5. 필요 라이브러리 설치
-```bash
-pip install -r requirements.txt
-```
-
-## 💻 사용 방법
-
-### 기본 사용
-```bash
-python main.py
-```
-
-# 웹 취약점 자동 진단 스크립트
-
-권한이 있는 시스템에 대해서만 사용하세요. 무단 스캔은 법적 문제를 일으킬 수 있습니다.
-
-## 📁 프로젝트 구조
-
-```
-web_vulnerability_scanner/
-│
-├── main.py                          # 메인 실행 파일
-├── config.py                        # 설정 파일
-├── requirements.txt                 # 필요 라이브러리
-├── README.md                        # 이 파일
-│
-├── modules/                         # 취약점 검사 모듈
-│   ├── __init__.py
-│   ├── sql_injection.py            # 1. SQL 인젝션
-│   ├── xss.py                      # 2. XSS
-│   ├── directory_indexing.py       # 3. 디렉터리 인덱싱
-│   ├── security_headers.py         # 4. 보안 헤더
-│   ├── cookie_security.py          # 5. 쿠키 보안 속성
-│   ├── csrf_protection.py          # 6. CSRF 토큰
-│   ├── ssi_injection.py            # 7. SSI 인젝션
-│   ├── ldap_injection.py           # 8. LDAP 인젝션
-│   ├── xpath_injection.py          # 9. XPath 인젝션
-│   ├── file_upload.py              # 10. 파일 업로드
-│   ├── file_download.py            # 11. 파일 다운로드
-│   └── weak_crypto.py              # 12. 약한 암호화
-│
-├── utils/                           # 유틸리티
-│   ├── __init__.py
-│   ├── http_client.py              # HTTP 요청 처리
-│   └── report_generator.py         # 리포트 생성
-│
-└── reports/                         # 결과 리포트 (자동 생성)
+├── config.py                         # 설정 파일 (타임아웃, 헤더, 페이로드 등)
+├── main.py                           # 메인 실행 파일 (run_scan 함수)
+├── README.md                         # 프로젝트 문서
+└── requirements.txt                  # 의존성 패키지 목록
 ```
 
 ## 🚀 설치 방법
@@ -178,12 +114,14 @@ $ python main.py
 ======================================================================
 
 [항목]
-  1. SQL 인젝션
-  2. XSS (크로스사이트 스크립팅)
+  1. 버퍼 오버플로우
+  2. 포맷스트링
   ...
-  13. 데이터 평문 전송
-  14. 정보 누출
+  13. 약한 문자열 강도
+  14. 불충분한 인증
   ...
+  27. 데이터 평문 전송
+  28. 쿠키 변조
 
 ======================================================================
 전체 검사: Enter
@@ -194,8 +132,8 @@ $ python main.py
 
 선택된 항목: [1, 2, 3, 4, 5, 13, 14]
 
-[*] 1. SQL 인젝션 검사 중...
-    🟢 양호: SQL 인젝션 취약점이 발견되지 않았습니다
+[*] 1. 버퍼 오버플로우 검사 중...
+    🟢 양호: 버퍼 오버플로우 취약점이 발견되지 않았습니다
 ...
 ```
 
@@ -294,19 +232,6 @@ MAX_RETRIES = 3            # 최대 재시도 횟수
 VERIFY_SSL = False         # SSL 인증서 검증
 ```
 
-## 🔧 개별 모듈 사용
-
-특정 취약점만 검사하고 싶다면:
-
-```python
-from modules.sql_injection import test_sql_injection
-from utils.http_client import create_session
-
-session = create_session()
-result = test_sql_injection("https://example.com?id=1", session)
-print(result)
-```
-
 ## ⚠️ 주의사항
 
 1. **법적 책임**: 권한이 없는 시스템에 대한 스캔은 불법입니다
@@ -352,12 +277,12 @@ $ python main.py
 시작 시간: 2025-10-17 14:30:00
 ======================================================================
 
-[*] 1. SQL 인젝션 검사 중...
-    🟢 양호: SQL 인젝션 취약점이 발견되지 않았습니다
+[*] 1. 버퍼 오버플로우 검사 중...
+    🟢 양호: 버퍼 오버플로우 취약점이 발견되지 않았습니다
 
-[*] 2. XSS (크로스사이트 스크립팅) 검사 중...
-    🔴 취약: XSS 취약점이 발견되었습니다
-       - 파라미터 'search'에서 XSS 가능: 입력값이 필터링 없이 반영됨
+[*] 2. 포맷스트링 검사 중...
+    🔴 취약: 포맷스트링 취약점이 발견되었습니다
+       - 포맷/에러 메시지 탐지
 
 ...
 ```
