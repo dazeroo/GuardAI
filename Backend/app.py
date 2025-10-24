@@ -87,7 +87,7 @@ def call_gemini_with_retry(prompt, max_retries=3, initial_timeout=300):
             app.logger.info(f"Gemini API 호출 시도 {attempt + 1}/{max_retries}")
             
             # 모델 설정
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            model = genai.GenerativeModel('gemini-1.5-flash-latest')
             
             # Generation Config 설정
             generation_config = genai.types.GenerationConfig(
