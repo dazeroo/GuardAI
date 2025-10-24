@@ -94,7 +94,7 @@ def call_gemini_with_retry(prompt, max_retries=3, initial_timeout=300):
                 temperature=0.3,
                 top_p=0.95,
                 top_k=40,
-                max_output_tokens=32768,  # 101개 항목을 위해 충분한 토큰 할당
+                max_output_tokens=8192,  # 101개 항목을 위해 충분한 토큰 할당
             )
             
             # API 호출
