@@ -773,7 +773,7 @@ export default function MgmtConsultingPanel() {
   
     // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
     const progressSteps = [
-      { text: "📄 증적 자료를 분석하고 있습니다...", progress: 15 },
+      { text: "📄 파일을 분석하고 있습니다...", progress: 15 },
       { text: "🔍 ISMS-P 101개 항목과의 적합성을 검토 중입니다...", progress: 30 },
       { text: "⚙️ AI 진단 엔진이 자동 분석을 수행하고 있습니다...", progress: 45 },
       { text: "📖 결함사항을 식별하고 있습니다...", progress: 60 },
@@ -1399,7 +1399,7 @@ export default function MgmtConsultingPanel() {
                 <div className="text-center space-y-3">
                   <p className="text-lg font-medium">{diagnosisStep}</p>
                   <p className="text-sm text-muted-foreground">
-                    지침서를 상세히 분석하여 101개 항목에 대한 평가를 준비하고 있습니다.
+                    파일을 상세히 분석하여 101개 항목에 대한 평가를 준비하고 있습니다.
                   </p>
                 </div>
                 <Progress value={progress} />
