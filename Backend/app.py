@@ -94,7 +94,7 @@ def call_gemini_with_retry(prompt, max_retries=3, initial_timeout=300):
                 temperature=0.3,
                 top_p=0.95,
                 top_k=40,
-                max_output_tokens=16384,
+                max_output_tokens=32768,  # 101개 항목을 위해 충분한 토큰 할당
             )
             
             # API 호출
@@ -256,23 +256,35 @@ def diagnose():
         # JSON 추출
         app.logger.info("응답에서 JSON 추출 시작")
         
+        # 마크다운 코드 블록 제거
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0]
         elif '```' in response_text:
             response_text = response_text.split('```')[1].split('```')[0]
         
+        # JSON 배열 찾기
         json_start = response_text.find('[')
-        json_end = response_text.rfind(']') + 1
+        json_end = response_text.rfind(']')
         
-        if json_start == -1 or json_end == 0:
-            app.logger.error("API 응답에서 유효한 JSON 배열을 찾지 못했습니다.")
+        if json_start == -1:
+            app.logger.error("API 응답에서 JSON 배열의 시작을 찾지 못했습니다.")
             app.logger.error(f"응답 샘플: {response_text[:500]}")
             return jsonify({
                 "error": "진단 결과에서 유효한 형식을 찾지 못했습니다.",
-                "detail": "API 응답 형식이 올바르지 않습니다."
+                "detail": "JSON 배열의 시작 '[' 를 찾을 수 없습니다."
+            }), 500
+        
+        if json_end == -1:
+            app.logger.error("API 응답에서 JSON 배열의 끝을 찾지 못했습니다.")
+            app.logger.error(f"응답 길이: {len(response_text)}, 시작 위치: {json_start}")
+            app.logger.error(f"응답 끝 부분: ...{response_text[-500:]}")
+            return jsonify({
+                "error": "진단 결과가 불완전합니다.",
+                "detail": "JSON 배열의 끝 ']' 를 찾을 수 없습니다. API 응답이 잘렸을 수 있습니다."
             }), 500
             
-        json_response = response_text[json_start:json_end]
+        json_response = response_text[json_start:json_end + 1]
+        app.logger.info(f"추출된 JSON 길이: {len(json_response)}")
         
         # JSON 파싱
         try:
