@@ -7,6 +7,7 @@ import google.generativeai as genai
 import logging
 import pandas as pd
 import docx
+import time
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -57,6 +58,49 @@ def extract_text_from_file(file):
         app.logger.error(f"파일 '{filename}' 처리 중 오류: {e}")
         return None, filename
 
+def call_gemini_with_retry(prompt, max_retries=3, initial_timeout=120):
+    """재시도 로직과 타임아웃을 포함한 Gemini API 호출"""
+    
+    for attempt in range(max_retries):
+        try:
+            app.logger.info(f"Gemini API 호출 시도 {attempt + 1}/{max_retries}")
+            
+            # 모델 설정 - 타임아웃 증가
+            model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            
+            # Generation Config 설정
+            generation_config = {
+                "temperature": 0.3,  # 일관성을 위해 낮은 온도
+                "top_p": 0.95,
+                "top_k": 40,
+                "max_output_tokens": 16384,  # 충분한 출력 토큰
+            }
+            
+            # API 호출 (타임아웃 시간 증가)
+            response = model.generate_content(
+                prompt,
+                generation_config=generation_config,
+                request_options={"timeout": initial_timeout * (attempt + 1)}  # 재시도마다 타임아웃 증가
+            )
+            
+            response_text = response.text
+            app.logger.info("Gemini API 응답 수신 완료")
+            return response_text
+            
+        except Exception as e:
+            error_message = str(e)
+            app.logger.warning(f"시도 {attempt + 1} 실패: {error_message}")
+            
+            # 마지막 시도가 아니면 재시도
+            if attempt < max_retries - 1:
+                wait_time = 5 * (attempt + 1)  # 지수 백오프
+                app.logger.info(f"{wait_time}초 후 재시도...")
+                time.sleep(wait_time)
+            else:
+                # 모든 재시도 실패
+                app.logger.error(f"모든 재시도 실패: {error_message}")
+                raise
+
 # 자동 진단 API 엔드포인트 (다중 파일 지원)
 @app.route("/api/diagnose", methods=["POST"])
 def diagnose():
@@ -100,6 +144,12 @@ def diagnose():
         
         # 모든 파일의 텍스트를 하나로 통합
         combined_guideline_text = "\n".join(all_guideline_texts)
+        
+        # 텍스트가 너무 길면 자르기 (토큰 제한 고려)
+        max_text_length = 200000  # 약 50,000 토큰
+        if len(combined_guideline_text) > max_text_length:
+            app.logger.warning(f"텍스트가 너무 깁니다 ({len(combined_guideline_text)}자). {max_text_length}자로 자릅니다.")
+            combined_guideline_text = combined_guideline_text[:max_text_length] + "\n... (내용이 너무 길어 일부만 분석합니다)"
         
         app.logger.info(f"총 {len(processed_files)}개 파일 처리 완료: {', '.join(processed_files)}")
         if failed_files:
@@ -264,13 +314,8 @@ def diagnose():
           ---
         """
         
-        app.logger.info("Gemini API 호출 시작")
-        
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        response = model.generate_content(prompt)
-        response_text = response.text
-        
-        app.logger.info("Gemini API 응답 수신 완료")
+        # 재시도 로직을 포함한 API 호출
+        response_text = call_gemini_with_retry(prompt, max_retries=3, initial_timeout=600)
 
         # 생성된 텍스트에서 JSON 부분만 추출
         # 마크다운 코드 블록(` ```json ... ``` `)을 제거
@@ -282,14 +327,14 @@ def diagnose():
         
         if json_start == -1 or json_end == 0:
             app.logger.error("API 응답에서 유효한 JSON 배열을 찾지 못했습니다.")
-            app.logger.debug(f"전체 응답 텍스트: {response_text}")
+            app.logger.debug(f"전체 응답 텍스트: {response_text[:1000]}...")
             return jsonify({"error": "진단 결과에서 유효한 형식을 찾지 못했습니다."}), 500
             
         json_response = response_text[json_start:json_end]
         
         # JSON 파싱 및 클라이언트에 전송
         diagnosis_data = json.loads(json_response)
-        app.logger.info("JSON 파싱 성공, 클라이언트에 데이터 전송")
+        app.logger.info(f"JSON 파싱 성공, {len(diagnosis_data)}개 항목 포함")
         
         # 응답에 처리된 파일 정보 포함
         return jsonify({
@@ -301,6 +346,15 @@ def diagnose():
 
     except Exception as e:
         app.logger.error(f"진단 보고서 생성 중 오류 발생: {e}", exc_info=True)
+        error_message = str(e)
+        
+        # 타임아웃 오류에 대한 구체적인 메시지
+        if "Deadline Exceeded" in error_message or "timeout" in error_message.lower():
+            return jsonify({
+                "error": "분석 시간이 초과되었습니다. 문서 크기를 줄이거나 파일을 나누어 업로드해주세요.",
+                "detail": "서버 처리 시간이 너무 오래 걸렸습니다."
+            }), 504
+        
         return jsonify({"error": "진단 보고서 생성 중 서버 오류가 발생했습니다."}), 500
 
 # 서버 실행
