@@ -359,6 +359,8 @@ const vulnerabilityDetails = [
   },
 ];
 
+
+
 export default function MgmtConsultingPanel() {
   const [diagnosisStep, setDiagnosisStep] = useState<string>("");
   const [isUploading, setUploading] = useState(false);
@@ -400,8 +402,27 @@ export default function MgmtConsultingPanel() {
       countermeasure: string;
     }>
   >([]);
+const [diagnosisStats, setDiagnosisStats] = useState({ Y: 0, P: 0, N: 0 });
 
   //  mapDiagnosisDataToSummary 함수 추가
+
+  const calculateStats = (data: typeof summaryResults) => {
+    const stats = { Y: 0, P: 0, N: 0 };
+    
+    data.forEach(group => {
+      group.fields.forEach(field => {
+        if (field.subItems) {
+          field.subItems.forEach(subItem => {
+            if (subItem.rating === 'Y') stats.Y++;
+            else if (subItem.rating === 'P') stats.P++;
+            else if (subItem.rating === 'N') stats.N++;
+          });
+        }
+      });
+    });
+    
+    return stats;
+  };
  const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
     console.log("--- 백엔드로부터 받은 Raw 데이터 ---");
     console.log(JSON.stringify(diagnosisData, null, 2));
@@ -763,6 +784,11 @@ export default function MgmtConsultingPanel() {
 
     setUploading(false);
     setSummaryGenerated(true);
+    
+    const stats = calculateStats(hasExcelData ? parsedExcelData : summaryResults);
+    setDiagnosisStats(stats);
+
+  
     setShowSummaryCompleteModal(true);
   };
 
@@ -843,6 +869,10 @@ export default function MgmtConsultingPanel() {
       setUploading(false);
       setDiagnosisStep("");
       setDiagnosisGenerated(true);
+
+      const stats = calculateStats(mappedData.summaryData);
+      setDiagnosisStats(stats);
+      
       setShowDiagnosisCompleteModal(true);
   
     } catch (error) {
@@ -1864,13 +1894,14 @@ export default function MgmtConsultingPanel() {
       )}
 
       {/* 진단 완료 모달 */}
+{/* 진단 완료 모달 */}
       {showDiagnosisCompleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowDiagnosisCompleteModal(false)}
           />
-          <Card className="relative w-80 shadow-lg border-2 animate-in fade-in-0 zoom-in-95 duration-300">
+          <Card className="relative w-96 shadow-lg border-2 animate-in fade-in-0 zoom-in-95 duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1892,10 +1923,41 @@ export default function MgmtConsultingPanel() {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <div className="font-medium">
+                  <div className="font-medium mb-3">
                     자동 진단이 완료되었습니다.
+                  </div>
+                  
+                  {/* 🆕 통계 정보 표시 - 여기가 새로 추가된 부분! */}
+                  <div className="grid grid-cols-3 gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center w-8 h-8 mx-auto mb-1 rounded-full bg-green-500 text-white text-sm font-bold">
+                        Y
+                      </div>
+                      <div className="text-xs text-muted-foreground">양호</div>
+                      <div className="text-lg font-bold text-green-600">
+                        {diagnosisStats.Y}개
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center w-8 h-8 mx-auto mb-1 rounded-full bg-yellow-500 text-white text-sm font-bold">
+                        P
+                      </div>
+                      <div className="text-xs text-muted-foreground">부분충족</div>
+                      <div className="text-lg font-bold text-yellow-600">
+                        {diagnosisStats.P}개
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center w-8 h-8 mx-auto mb-1 rounded-full bg-red-500 text-white text-sm font-bold">
+                        N
+                      </div>
+                      <div className="text-xs text-muted-foreground">미흡</div>
+                      <div className="text-lg font-bold text-red-600">
+                        {diagnosisStats.N}개
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1912,13 +1974,13 @@ export default function MgmtConsultingPanel() {
       )}
 
       {/* 보고서 요약 완료 모달 */}
-      {showSummaryCompleteModal && (
+     {showSummaryCompleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowSummaryCompleteModal(false)}
           />
-          <Card className="relative w-80 shadow-lg border-2 animate-in fade-in-0 zoom-in-95 duration-300">
+          <Card className="relative w-96 shadow-lg border-2 animate-in fade-in-0 zoom-in-95 duration-300">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1940,10 +2002,41 @@ export default function MgmtConsultingPanel() {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <div className="font-medium">
+                  <div className="font-medium mb-3">
                     보고서 요약이 완료되었습니다.
+                  </div>
+                  
+                  {/* 🆕 통계 정보 표시 - 여기가 새로 추가된 부분! */}
+                  <div className="grid grid-cols-3 gap-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="text-center">
+                      <div className="flex items-center justify-center w-8 h-8 mx-auto mb-1 rounded-full bg-green-500 text-white text-sm font-bold">
+                        Y
+                      </div>
+                      <div className="text-xs text-muted-foreground">양호</div>
+                      <div className="text-lg font-bold text-green-600">
+                        {diagnosisStats.Y}개
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center w-8 h-8 mx-auto mb-1 rounded-full bg-yellow-500 text-white text-sm font-bold">
+                        P
+                      </div>
+                      <div className="text-xs text-muted-foreground">부분충족</div>
+                      <div className="text-lg font-bold text-yellow-600">
+                        {diagnosisStats.P}개
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center justify-center w-8 h-8 mx-auto mb-1 rounded-full bg-red-500 text-white text-sm font-bold">
+                        N
+                      </div>
+                      <div className="text-xs text-muted-foreground">미흡</div>
+                      <div className="text-lg font-bold text-red-600">
+                        {diagnosisStats.N}개
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1958,6 +2051,3 @@ export default function MgmtConsultingPanel() {
           </Card>
         </div>
       )}
-    </>
-  );
-}
