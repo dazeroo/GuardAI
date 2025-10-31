@@ -2047,6 +2047,7 @@ const [diagnosisStats, setDiagnosisStats] = useState({ Y: 0, P: 0, N: 0 });
                   </div>
                 </div>
               </div>
+              </div>
             </CardContent>
           </Card>
         </div>
