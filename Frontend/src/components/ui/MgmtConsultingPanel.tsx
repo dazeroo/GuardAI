@@ -646,8 +646,8 @@ export default function MgmtConsultingPanel() {
               ) {
                 ratingValues.push(ratingValue);
 
-                // 진단결과가 'N'인 경우 취약점 데이터로 추출
-                if (ratingValue === "N") {
+                // 진단결과가 'N'또는 'P'인 경우 취약점 데이터로 추출
+                if (ratingValue === "N" || ratingValue === "P") {
                   const vulnerability =
                     itemColumnIndex !== -1 &&
                     row[itemColumnIndex]
