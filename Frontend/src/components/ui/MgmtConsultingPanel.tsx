@@ -960,7 +960,7 @@ export default function MgmtConsultingPanel() {
                   </TooltipTrigger>
                   <TooltipContent side="top">
                     <p className="max-w-xs">
-                      진단이 필요한 기업의 내규 지침서를
+                      진단이 필요한 기업의 내규 증적자료를
                       업로드하면 ISMS, ISMS-P의 항목을 자동으로
                       진단하고, 결함사항과 대응방안을
                       요약합니다.
@@ -1412,7 +1412,7 @@ export default function MgmtConsultingPanel() {
                   <div className="space-y-4">
                     <div className="text-center space-y-2">
                       <p className="text-muted-foreground">
-                      지침서를 업로드하면 자동 진단해드립니다.
+                      증적자료를 업로드하면 자동 진단해드립니다.
                       </p>
                     </div>
                     <div className="flex justify-center">
@@ -1422,7 +1422,7 @@ export default function MgmtConsultingPanel() {
                       asChild
                       >
                       <label>
-                        지침서 업로드
+                        증적자료 업로드
                         <input
                           type="file"
                           accept=".doc,.docx,.pdf,.txt,.xlsx,.xls"
@@ -1444,7 +1444,7 @@ export default function MgmtConsultingPanel() {
                       asChild
                     >
                       <label>
-                        지침서 재업로드
+                        증적자료 재업로드
                         <input
                           type="file"
                           accept=".doc,.docx,.pdf,.txt,.xlsx,.xls"
