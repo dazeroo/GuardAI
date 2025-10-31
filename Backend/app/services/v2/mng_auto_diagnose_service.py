@@ -8,34 +8,33 @@ import io
 
 logger = logging.getLogger(__name__)
 
-async def analyze_guideline(filename: str, content_bytes: bytes) -> list:
-    """
-    파일명과 파일 내용을 받아 ISMS-P 진단을 수행하고 결과를 반환합니다.
-    """
+def extract_text_from_file(file, logger):
+    """파일에서 텍스트를 추출하는 함수"""
     try:
         guideline_text = ""
-        # 파일 확장자에 따라 텍스트 추출
-        if filename.endswith('.xlsx'):
-            logger.info("엑셀 파일로 처리 시작")
-            df = pd.read_excel(io.BytesIO(content_bytes), engine='openpyxl')
+        filename = file.filename
+
+        if filename.endswith('.xlsx') or filename.endswith('.xls'):
+            logger.info(f"엑셀 파일 처리: {filename}")
+            df = pd.read_excel(file, engine='openpyxl')
             guideline_text = ' '.join(df.astype(str).stack())
+
         elif filename.endswith('.docx'):
-            logger.info("워드 문서(.docx) 파일로 처리 시작")
-            doc = docx.Document(io.BytesIO(content_bytes))
+            logger.info(f"워드 문서 처리: {filename}")
+            doc = docx.Document(file)
             guideline_text = "\n".join([para.text for para in doc.paragraphs])
+
         else:
-            logger.info("일반 텍스트 파일로 처리 시작")
-            guideline_text = content_bytes.decode('utf-8', errors='ignore')
+            logger.info(f"텍스트 파일 처리: {filename}")
+            guideline_text = file.read().decode('utf-8', errors='ignore')
 
-        if not guideline_text.strip():
-            logger.warning("파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
-            # 서비스단에서는 구체적인 에러를 발생시켜 라우터가 처리하도록 함
-            raise ValueError("파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
+        return guideline_text, filename
+    except Exception as e:
+        logger.error(f"파일 '{filename}' 처리 중 오류: {e}")
+        return None, filename
 
-        logger.info(f"파일 '{filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
-
-        # Gemini API에 보낼 프롬프트 정의
-        prompt = f"""
+def perform_diagnosis(processed_files, combined_guideline_text, logger):
+    prompt = f"""
         당신은 ISMS-P 인증 심사 전문가입니다.
         아래에 제공되는 회사의 내부 지침서 내용을 분석하여, ISMS-P의 각 통제 항목을 만족하는지 진단해주세요.
         
@@ -172,32 +171,28 @@ async def analyze_guideline(filename: str, content_bytes: bytes) -> list:
         {guideline_text}
         ---
         """
-        
+        generation_config = {
+            "temperature": 0.1,
+            "top_p": 0.8,
+            "top_k": 40,
+            "max_output_tokens": 8192,
+        }
         logger.info("Gemini API 호출 시작")
         model = genai.GenerativeModel('gemini-2.5-flash')
-        response = await model.generate_content_async(prompt)
+        response = model.generate_content(
+            prompt,
+            generation_config=generation_config
+        )
         response_text = response.text
         logger.info("Gemini API 응답 수신 완료")
-
-        # 응답 텍스트에서 JSON 부분만 정제
-        if '```json' in response_text:
-            response_text = response_text.split('```json')[1].split('```')[0]
-        
+    
+        if '```
+            response_text = response_text.split('```json').split('```
         json_start = response_text.find('[')
         json_end = response_text.rfind(']') + 1
-        
+    
         if json_start == -1 or json_end == 0:
             logger.error("API 응답에서 유효한 JSON 배열을 찾지 못했습니다.")
-            raise ValueError("진단 결과에서 유효한 형식을 찾지 못했습니다.")
-            
-        json_response_str = response_text[json_start:json_end]
-        
-        diagnosis_data = json.loads(json_response_str)
-        logger.info("JSON 파싱 성공")
-        return diagnosis_data
-
-    except Exception as e:
-        logger.error(f"서비스 로직 처리 중 오류 발생: {e}", exc_info=True)
-        # 발생한 에러를 그대로 다시 발생시켜 라우터에서 처리하도록 함
-        logger.info(f"Gemini API 전체 응답: {response.text[:1000]}")  # 처음 1000자만 출력
-        raise e
+            return None
+        json_response = response_text[json_start:json_end]
+        return json.loads(json_response)
