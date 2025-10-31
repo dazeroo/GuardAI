@@ -263,10 +263,25 @@ def diagnose():
           {combined_guideline_text}
           ---
         """
+        # 안정적인 생성을 위한 generation_config 설정
+        # 응답이 중간에 끊기는 현상(500 오류)을 방지하기 위해 max_output_tokens를 충분히 크게 설정합니다.
+        generation_config = {
+            "temperature": 0.1,  # 일관성을 위한 낮은 온도
+            "top_p": 0.8,
+            "top_k": 40,
+            "max_output_tokens": 8192,  # 충분한 토큰 (매우 중요)
+        }
         
         app.logger.info("Gemini API 호출 시작")
         
         model = genai.GenerativeModel('gemini-2.5-flash')
+
+       # model.generate_content 호출 시 generation_config를 전달합니다.
+        response = model.generate_content(
+            prompt,
+            generation_config=generation_config
+        )
+        
         response = model.generate_content(prompt)
         response_text = response.text
         
