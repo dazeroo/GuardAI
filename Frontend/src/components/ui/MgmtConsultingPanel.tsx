@@ -959,7 +959,7 @@ export default function MgmtConsultingPanel() {
                   <TooltipContent side="top">
                     <p className="max-w-xs">
                       진단을 원하시는 기업의 증적자료를 업로드하면 
-                      각 진단 항목을 ISMS, ISMS-P의 만족 여부를 확인하고, 
+                      각 진단 항목을 ISMS-P의 만족 여부를 확인하고, 
                       결함사항과 그 대응 방안을 제시합니다.
                     </p>
                   </TooltipContent>
