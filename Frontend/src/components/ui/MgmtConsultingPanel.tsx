@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
+import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
 import {
   Card,
   CardHeader,
@@ -306,7 +308,7 @@ const summaryResults = [
   },
 ];
 
-// 취약점 상세 데이터
+// 결함사항 상세 데이터
 const vulnerabilityDetails = [
   {
     id: 1,
@@ -387,7 +389,7 @@ export default function MgmtConsultingPanel() {
   const [parsedExcelData, setParsedExcelData] = useState<
     typeof summaryResults
   >([]);
-  // 상태 관리 및 데이터 업데이트: 엑셀에서 추출한 취약점 데이터를 저장할 새로운 상태 변수
+  // 상태 관리 및 데이터 업데이트: 엑셀에서 추출한 결함사항 데이터를 저장할 새로운 상태 변수
   const [
     dynamicVulnerabilityDetails,
     setDynamicVulnerabilityDetails,
@@ -400,7 +402,7 @@ export default function MgmtConsultingPanel() {
   >([]);
 
   //  mapDiagnosisDataToSummary 함수 추가
-  const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
+ const mapDiagnosisDataToSummary = (diagnosisData: any[]) => {
     console.log("--- 백엔드로부터 받은 Raw 데이터 ---");
     console.log(JSON.stringify(diagnosisData, null, 2));
     
@@ -439,12 +441,12 @@ export default function MgmtConsultingPanel() {
               subItem.rating = backendItem.rating || "N";
               console.log(`✓ 매핑: ${subItem.id} - ${subItem.name} (${subItem.rating})`);
               
-              // N 등급인 항목을 취약점으로 추가
-              if (backendItem.rating === "N") {
+              // N 또는 P 등급인 항목을 결함사항으로 추가 (수정된 부분)
+              if (backendItem.rating === "N" || backendItem.rating === "P") {
                 const vulnerability = subItem.name;
-                const countermeasure = backendItem.reason || "개선이 필요합니다.";
+                const countermeasure = backendItem.countermeasure || backendItem.reason || "개선이 필요합니다.";
                 
-                console.log(`🔴 취약점 발견: [${subItem.id}] ${vulnerability}`);
+                console.log(`🔴 결함사항 발견: [${subItem.id}] ${vulnerability} (${backendItem.rating})`);
                 
                 newVulnerabilityDetails.push({
                   id: vulnerabilityIdCounter++,
@@ -460,8 +462,8 @@ export default function MgmtConsultingPanel() {
       }
     }
 
-    console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 취약점 발견`);
-    console.log("취약점 목록:", newVulnerabilityDetails);
+    console.log(`✅ 총 ${newVulnerabilityDetails.length}개의 결함사항 발견`);
+    console.log("결함사항 목록:", newVulnerabilityDetails);
 
     return {
       summaryData: newSummaryResults,
@@ -596,10 +598,10 @@ export default function MgmtConsultingPanel() {
           // 선택적 컬럼들에 대한 경고 메시지
           if (itemColumnIndex === -1) {
             console.warn(
-              '엑셀 파일에서 "항목" 컬럼을 찾을 수 없습니다. 취약점 항목 추출이 제한됩니다.',
+              '엑셀 파일에서 "항목" 컬럼을 찾을 수 없습니다. 결함사항 항목 추출이 제한됩니다.',
             );
             toast.warning(
-              '"항목" 컬럼이 없어 취약점 항목 추출이 제한됩니다.',
+              '"항목" 컬럼이 없어 결함사항 항목 추출이 제한됩니다.',
             );
           }
 
@@ -644,8 +646,8 @@ export default function MgmtConsultingPanel() {
               ) {
                 ratingValues.push(ratingValue);
 
-                // 진단결과가 'N'인 경우 취약점 데이터로 추출
-                if (ratingValue === "N") {
+                // 진단결과가 'N'또는 'P'인 경우 취약점 데이터로 추출
+                if (ratingValue === "N" || ratingValue === "P") {
                   const vulnerability =
                     itemColumnIndex !== -1 &&
                     row[itemColumnIndex]
@@ -764,18 +766,18 @@ export default function MgmtConsultingPanel() {
     setShowSummaryCompleteModal(true);
   };
 
-  const startDiagnosis = async (file: File) => {
+  const startDiagnosis = async (files: File | File[]) => {
     setUploading(true);
     setDiagnosisGenerated(false);
     showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
   
     // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
     const progressSteps = [
-      { text: "📄 지침서 내용을 분석하고 있습니다...", progress: 15 },
+      { text: "📄 파일을 분석하고 있습니다...", progress: 15 },
       { text: "🔍 ISMS-P 101개 항목과의 적합성을 검토 중입니다...", progress: 30 },
       { text: "⚙️ AI 진단 엔진이 자동 분석을 수행하고 있습니다...", progress: 45 },
-      { text: "📖 취약 항목을 식별하고 있습니다...", progress: 60 },
-      { text: "🔐 개선 및 대응 방안을 도출하고 있습니다...", progress: 75 },
+      { text: "📖 결함사항을 식별하고 있습니다...", progress: 60 },
+      { text: "🔐 대응 방안을 도출하고 있습니다...", progress: 75 },
       { text: "⏳ 진단 결과를 정리 중입니다. 잠시만 기다려주세요...", progress: 80 },
     ];
     let stepIndex = 0;
@@ -785,7 +787,16 @@ export default function MgmtConsultingPanel() {
   
     try {
       const formData = new FormData();
-      formData.append('guideline', file);
+
+      // ✅ 배열 또는 단일 파일 처리
+      if (Array.isArray(files)) {
+        files.forEach(file => {
+          formData.append('guideline', file);
+        });
+      } else {
+        formData.append('guideline', files);
+      }
+      
   
       // 첫 번째 메시지와 진행률을 즉시 설정
       setDiagnosisStep(progressSteps[stepIndex].text);
@@ -802,7 +813,7 @@ export default function MgmtConsultingPanel() {
       }, 40000); // 40초 간격
   
       // --- 실제 백엔드 API 호출 ---
-      const response = await fetch('/routers/v2/mng/auto/diagnose', {
+      const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
         method: 'POST',
         body: formData,
       });
@@ -817,7 +828,8 @@ export default function MgmtConsultingPanel() {
       // --- 결과 처리 ---
       setProgress(90); // 결과를 받아온 후 진행률을 90%로 설정
       setDiagnosisStep("📊 진단 결과 생성 중...");
-      const diagnosisData = await response.json();
+      const responseData = await response.json();
+      const diagnosisData = responseData.data || responseData; // data 속성이 있으면 사용, 없으면 전체 사용
       await new Promise(r => setTimeout(r, 1000)); 
   
       setDiagnosisStep("✅ 곧 완료됩니다...");
@@ -848,17 +860,31 @@ export default function MgmtConsultingPanel() {
     }
   };
 
+  const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
+
   // 3. handleDiagnosisFileUpload 수정
   const handleDiagnosisFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+  event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setDiagnosisFile(file);
-      showModalMessage("파일 업로드", `${file.name} 파일이 업로드되었습니다!`, "success");
-      await startDiagnosis(file); // file 파라미터 전달
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      const fileNames = fileArray.map(f => f.name);
+      
+      setDiagnosisFile(fileArray[0]); // 첫 번째 파일 정보 저장 (필요시 수정)
+      setUploadedFileNames(fileNames);
+      
+      showModalMessage(
+        "파일 업로드", 
+        `${files.length}개 파일이 업로드되었습니다: ${fileNames}`, 
+        "success"
+      );
+      
+      // 여러 파일을 startDiagnosis에 전달
+      await startDiagnosis(fileArray);
     }
   };
+
 
   // handleFileUpload 추가
   const handleFileUpload = async (
@@ -913,10 +939,8 @@ export default function MgmtConsultingPanel() {
                   </TooltipTrigger>
                   <TooltipContent side="top">
                     <p className="max-w-xs">
-                      진단을 원하시는 기업의 ISMS-P 현황 분석
-                      보고서를 업로드하면 각 진단 항목을 ISMS,
-                      ISMS-P의 만족 여부를 확인하고, 취약 항목과
-                      그 대응 방안을 제시합니다.
+                      요약이 필요한 기업의 ISMS-P 현황분석 보고서를
+                      업로드하면 결함사항과 대응방안을 요약합니다.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -934,10 +958,9 @@ export default function MgmtConsultingPanel() {
                   </TooltipTrigger>
                   <TooltipContent side="top">
                     <p className="max-w-xs">
-                      진단이 필요한 기업의 내규 지침서를
-                      업로드하면 ISMS, ISMS-P의 항목을 자동으로
-                      진단하고, 취약 항목과 대응방안을
-                      요약합니다.
+                      진단을 원하시는 기업의 증적자료를 업로드하면 
+                      각 진단 항목을 ISMS-P의 만족 여부를 자동으로 진단하고,
+                      결함사항과 대응 방안을 요약합니다.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -1007,7 +1030,7 @@ export default function MgmtConsultingPanel() {
 
                   {uploadedFile && (
                     <p className="text-sm text-muted-foreground">
-                      [업로드된 파일] {uploadedFile.name}
+                      업로드된 파일: {uploadedFile.name}
                     </p>
                   )}
 
@@ -1306,10 +1329,10 @@ export default function MgmtConsultingPanel() {
                     </div>
                   </div>
 
-                  {/* 취약점 대응방안 */}
+                  {/* 결함사항 대응방안 */}
                   <div className="border-t pt-4">
                     <h3 className="mb-3">
-                      취약 항목 및 대응 방안
+                      결함사항 | 대응방안
                     </h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
@@ -1318,7 +1341,7 @@ export default function MgmtConsultingPanel() {
                             <thead className="sticky top-0 z-10">
                               <tr>
                                 <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
-                                  취약 항목
+                                  결함사항
                                 </th>
                                 <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
                                   대응방안
@@ -1373,7 +1396,7 @@ export default function MgmtConsultingPanel() {
                 <div className="text-center space-y-3">
                   <p className="text-lg font-medium">{diagnosisStep}</p>
                   <p className="text-sm text-muted-foreground">
-                    지침서를 상세히 분석하여 101개 항목에 대한 평가를 준비하고 있습니다.
+                    파일을 상세히 분석하여 101개 항목에 대한 평가를 준비하고 있습니다.
                   </p>
                 </div>
                 <Progress value={progress} />
@@ -1386,7 +1409,7 @@ export default function MgmtConsultingPanel() {
                   <div className="space-y-4">
                     <div className="text-center space-y-2">
                       <p className="text-muted-foreground">
-                      지침서를 업로드하면 자동 진단해드립니다.
+                      증적자료를 업로드하면 자동 진단해드립니다.
                       </p>
                     </div>
                     <div className="flex justify-center">
@@ -1396,12 +1419,13 @@ export default function MgmtConsultingPanel() {
                       asChild
                       >
                       <label>
-                        지침서 업로드
+                        증적자료 업로드
                         <input
                           type="file"
-                          accept=".doc,.docx,.pdf"
+                          accept=".doc,.docx,.pdf,.txt,.xlsx,.xls"
                           onChange={handleDiagnosisFileUpload}
                           className="hidden"
+                          multiple
                         />
                       </label>
                     </Button>
@@ -1417,21 +1441,27 @@ export default function MgmtConsultingPanel() {
                       asChild
                     >
                       <label>
-                        지침서 재업로드
+                        증적자료 재업로드
                         <input
                           type="file"
-                          accept=".xlsx,.xls"
+                          accept=".doc,.docx,.pdf,.txt,.xlsx,.xls"
                           onChange={handleDiagnosisFileUpload}
                           className="hidden"
+                          multiple
                         />
                       </label>
                     </Button>
                   </div>
 
-                  {diagnosisFile && (
-                    <p className="text-sm text-muted-foreground">
-                      [업로드된 파일] {diagnosisFile.name}
-                    </p>
+                  {uploadedFileNames.length > 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      <p className="font-medium mb-1">업로드된 파일 ({uploadedFileNames.length}개):</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {uploadedFileNames.map((name, index) => (
+                          <li key={index}>{name}</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
 
                   {/* 보고서요약과 동일한 테이블 구조 */}
@@ -1727,10 +1757,10 @@ export default function MgmtConsultingPanel() {
                     </div>
                   </div>
 
-                  {/* 취약점 대응방안 */}
+                  {/* 결함사항 대응방안 */}
                   <div className="border-t pt-4">
                     <h3 className="mb-3">
-                      취약 항목 및 대응 방안
+                      결함사항 | 대응방안
                     </h3>
                     <div className="w-full">
                       <ScrollArea className="h-[300px] w-full">
@@ -1739,7 +1769,7 @@ export default function MgmtConsultingPanel() {
                             <thead className="sticky top-0 z-10">
                               <tr>
                                 <th className="w-1/2 p-3 border-b border-r font-medium text-left text-sm">
-                                  취약 항목
+                                  결함사항
                                 </th>
                                 <th className="w-1/2 p-3 border-b font-medium text-left text-sm">
                                   대응방안
@@ -1770,7 +1800,7 @@ export default function MgmtConsultingPanel() {
                               ) : (
                                 <tr>
                                   <td colSpan={2} className="p-8 text-center text-muted-foreground">
-                                    취약점이 발견되지 않았습니다.
+                                    결함사항이 발견되지 않았습니다.
                                   </td>
                                 </tr>
                               )}
