@@ -939,7 +939,7 @@ export default function MgmtConsultingPanel() {
                   </TooltipTrigger>
                   <TooltipContent side="top">
                     <p className="max-w-xs">
-                      기업의 ISMS-P 현황분석 보고서를
+                      요약이 필요한 기업의 ISMS-P 현황분석 보고서를
                       업로드하면 결함사항과 대응방안을 요약합니다.
                     </p>
                   </TooltipContent>
@@ -959,8 +959,8 @@ export default function MgmtConsultingPanel() {
                   <TooltipContent side="top">
                     <p className="max-w-xs">
                       진단을 원하시는 기업의 증적자료를 업로드하면 
-                      각 진단 항목을 ISMS-P의 만족 여부를 확인하고, 
-                      결함사항과 그 대응 방안을 제시합니다.
+                      각 진단 항목을 ISMS-P의 만족 여부를 자동으로 진단하고,
+                      결함사항과 대응 방안을 요약합니다.
                     </p>
                   </TooltipContent>
                 </Tooltip>
