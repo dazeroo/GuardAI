@@ -382,21 +382,37 @@ export default function TechConsultingPanel() {
       }));
   };
   
+  // const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
+  //   const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
+  //   const items = tabType === "db" ? dbItems : webItems;
+  //   items.forEach((item) => {
+  //       const key = `${tabType}-${item.id}`;
+  //       const itemStatus = diagnosisCheckedItems[key];
+  //       if (itemStatus && (itemStatus.vulnerable || itemStatus.interview)) {
+  //           vulnerableItems.push({
+  //               name: item.name,
+  //               countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안을 수립하고 정기적인 점검을 실시해야 합니다.`,
+  //           });
+  //       }
+  //   });
+  //   return vulnerableItems;
+  // };
   const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
-    const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
-    const items = tabType === "db" ? dbItems : webItems;
-    items.forEach((item) => {
-        const key = `${tabType}-${item.id}`;
-        const itemStatus = diagnosisCheckedItems[key];
-        if (itemStatus && (itemStatus.vulnerable || itemStatus.interview)) {
-            vulnerableItems.push({
-                name: item.name,
-                countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안을 수립하고 정기적인 점검을 실시해야 합니다.`,
-            });
-        }
-    });
-    return vulnerableItems;
-  };
+    const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
+    const items = tabType === "db" ? dbItems : webItems;
+    items.forEach((item) => {
+        const key = `${tabType}-${item.id}`;
+        const itemStatus = diagnosisCheckedItems[key];
+       // [수정됨] itemStatus.vulnerable가 true인 경우만 포함하도록 변경
+        if (itemStatus && itemStatus.vulnerable) { 
+            vulnerableItems.push({
+                name: item.name,
+                countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안을 수립하고 정기적인 점검을 실시해야 합니다.`,
+            });
+        }
+    });
+    return vulnerableItems;
+  };
 
   const handleSiteInput = async () => {
     const trimmedUrl = siteUrl.trim();
@@ -463,29 +479,96 @@ export default function TechConsultingPanel() {
     showModalMessage("사이트 재입력 준비", "사이트 URL을 새로 입력해주세요.", "info");
   };
 
+  // const handleDBDiagnosis = async () => {
+  //   if (!savedDbAccount) {
+  //       showModalMessage("정보 입력 필요", "DB 정보를 먼저 입력해주세요.", "error");
+  //       return;
+  //   }
+  //   setDBDiagnosing(true);
+  //   setDBProgress(15);
+  //   showModalMessage("DB 자동 진단", "DB 자동 진단을 시작합니다...", "info");
+  //   const steps = [35, 55, 80, 100];
+  //   for (const p of steps) {
+  //       await new Promise((r) => setTimeout(r, 400));
+  //       setDBProgress(p);
+  //   }
+  //   const analysisResult: { [key: string]: { good: boolean; vulnerable: boolean; interview: boolean; } } = {};
+  //   setDiagnosisDBCompleted(true);
+  //   dbItems.forEach((item) => {
+  //       const key = `db-${item.id}`;
+  //       analysisResult[key] = { good: false, vulnerable: true, interview: false };
+  //   });
+  //   setDBDiagnosing(false);
+  //   setDiagnosisCheckedItems((prev) => ({ ...prev, ...analysisResult }));
+  //   showModalMessage("DB 진단 완료", "DB 진단이 완료되었습니다.", "success");
+  // };
   const handleDBDiagnosis = async () => {
-    if (!savedDbAccount) {
-        showModalMessage("정보 입력 필요", "DB 정보를 먼저 입력해주세요.", "error");
-        return;
-    }
-    setDBDiagnosing(true);
-    setDBProgress(15);
-    showModalMessage("DB 자동 진단", "DB 자동 진단을 시작합니다...", "info");
-    const steps = [35, 55, 80, 100];
-    for (const p of steps) {
-        await new Promise((r) => setTimeout(r, 400));
-        setDBProgress(p);
-    }
-    const analysisResult: { [key: string]: { good: boolean; vulnerable: boolean; interview: boolean; } } = {};
-    setDiagnosisDBCompleted(true);
-    dbItems.forEach((item) => {
-        const key = `db-${item.id}`;
-        analysisResult[key] = { good: false, vulnerable: true, interview: false };
-    });
-    setDBDiagnosing(false);
-    setDiagnosisCheckedItems((prev) => ({ ...prev, ...analysisResult }));
-    showModalMessage("DB 진단 완료", "DB 진단이 완료되었습니다.", "success");
-  };
+    if (!savedDbAccount) {
+      showModalMessage("정보 입력 필요", "DB 정보를 먼저 입력해주세요.", "error");
+      return;
+    }
+    setDBDiagnosing(true);
+    setDBProgress(15);
+    showModalMessage("DB 자동 진단", "DB 자동 진단을 시작합니다...", "info");
+    const steps = [35, 55, 80, 100];
+    for (const p of steps) {
+      await new Promise((r) => setTimeout(r, 400));
+      setDBProgress(p);
+    }
+
+    // 1. 요청하신 상태를 순서대로 정의한 배열
+    const hardcodedStatuses = [
+      { good: false, vulnerable: false, interview: true }, // 1. 인터뷰
+      { good: false, vulnerable: false, interview: true }, // 2. 인터뷰
+      { good: false, vulnerable: true, interview: false }, // 3. 취약
+      { good: false, vulnerable: false, interview: true }, // 4. 인터뷰
+      { good: false, vulnerable: true, interview: false }, // 5. 취약
+      { good: true, vulnerable: false, interview: false }, // 6. 양호
+      { good: true, vulnerable: false, interview: false }, // 7. 양호
+      { good: true, vulnerable: false, interview: false }, // 8. 양호
+      { good: false, vulnerable: false, interview: true }, // 9. 인터뷰
+      { good: false, vulnerable: true, interview: false }, // 10. 취약
+      { good: false, vulnerable: true, interview: false }, // 11. 취약
+      { good: false, vulnerable: true, interview: false }, // 12. 취약
+      { good: false, vulnerable: false, interview: true }, // 13. 인터뷰
+      { good: false, vulnerable: false, interview: true }, // 14. 인터뷰
+      { good: false, vulnerable: true, interview: false }, // 15. 취약
+      { good: true, vulnerable: false, interview: false }, // 16. 양호
+      { good: false, vulnerable: true, interview: false }, // 17. 취약
+      { good: false, vulnerable: true, interview: false }, // 18. 취약
+      { good: false, vulnerable: true, interview: false }, // 19. 취약
+      { good: false, vulnerable: false, interview: true }, // 20. 인터뷰
+      { good: false, vulnerable: false, interview: true }, // 21. 인터뷰
+      { good: false, vulnerable: true, interview: false }, // 22. 취약
+      { good: false, vulnerable: true, interview: false }, // 23. 취약
+      { good: false, vulnerable: true, interview: false }  // 24. 취약
+    ];
+
+    const analysisResult: { [key: string]: { good: boolean; vulnerable: boolean; interview: boolean; } } = {};
+    setDiagnosisDBCompleted(true);
+    
+    // 2. dbItems를 순회하며 위 배열의 상태를 순서대로 적용
+    dbItems.forEach((item, index) => {
+        const key = `db-${item.id}`;
+
+        if (index < hardcodedStatuses.length) {
+            // 24개 항목까지는 정의된 상태를 적용
+            analysisResult[key] = hardcodedStatuses[index];
+        } else {
+            // 25번째 항목부터는 기본값 (예: 인터뷰)으로 처리
+            analysisResult[key] = { good: false, vulnerable: false, interview: true };
+        }
+    });
+
+    // --- [디버깅 로그 추가] ---
+    // '진단' 버튼 클릭 시 브라우저 콘솔(F12)에 이 객체의 내용이 출력됩니다.
+    console.log("Setting diagnosis items:", analysisResult);
+    // -------------------------
+
+    setDBDiagnosing(false);
+    setDiagnosisCheckedItems((prev) => ({ ...prev, ...analysisResult }));
+    showModalMessage("DB 진단 완료", "DB 진단이 완료되었습니다.", "success");
+  };
 
   const handleDbAccountInput = async () => {
     const trimmedDbAccount = dbAccount.trim();
