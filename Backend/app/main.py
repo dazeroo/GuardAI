@@ -1,13 +1,16 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from dotenv import load_dotenv
 load_dotenv()
-
-import os
 import logging
 import google.generativeai as genai
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.models import init_db
 from app.routers.v2 import items, targets, tech_summary, upload, ai, mng_auto_diagnose
+from app.routers.v2.webscan import router as webscan_router
 
 logger = logging.getLogger("uvicorn") 
 app = FastAPI(title="GuardAI API")
@@ -35,7 +38,7 @@ def on_startup():
     
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=["*"],  # 개발 단계: 모두 허용, 운영에서는 도메인 제한
+    #allow_origins=["*"],  # 개발 단계: 모두 허용, 운영에서는 도메인 제한
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,7 +51,7 @@ app.include_router(tech_summary.router, prefix="/routers/v2", tags=["tech", "sum
 app.include_router(upload.router, prefix="/routers/v2", tags=["tech", "summary", "upload"])
 app.include_router(ai.router, prefix="/routers/v2", tags=["tech", "AI"])
 app.include_router(mng_auto_diagnose.router, prefix="/routers/v2", tags=["mng", "auto"])
-
+app.include_router(webscan_router, prefix="/api/v2", tags=["scan", "web"])
 
 # if __name__ == "__main__":
 #     import uvicorn

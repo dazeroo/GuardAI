@@ -15,6 +15,10 @@ export default defineConfig({
   // 2. 새로운 프록시(proxy) 설정을 여기에 추가합니다.
   server: {
     proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
       '/routers': {
         target: 'http://127.0.0.1:8000',   //http://0.0.0.0:8000
         changeOrigin: true,

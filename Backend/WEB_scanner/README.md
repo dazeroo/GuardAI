@@ -1,0 +1,292 @@
+# 웹 취약점 자동 진단 스크립트
+
+권한이 있는 시스템에 대해서만 사용하세요. 무단 스캔은 법적 문제를 일으킬 수 있습니다.
+
+## 📁 프로젝트 구조
+
+```
+WEB_scanner/
+├── modules/                          # 취약점 테스트 모듈
+│   ├── __init__.py                   # 패키지 초기화 파일
+│   ├── admin_exposure.py             # 관리자 페이지 노출
+│   ├── automation_attack.py          # 자동화 공격
+│   ├── buffer_overflow.py            # 버퍼 오버플로우
+│   ├── command_injection.py          # 운영체제 명령 실행
+│   ├── cookie_manipulation.py        # 쿠키 변조
+│   ├── csrf.py                       # 크로스 사이트 리퀘스트 변조(CSRF)
+│   ├── directory_indexing.py         # 디렉터리 인덱싱
+│   ├── file_download.py              # 파일 다운로드
+│   ├── file_upload.py                # 파일 업로드
+│   ├── format_string.py              # 포맷스트링
+│   ├── information_leakage.py        # 정보 누출
+│   ├── insufficient_authentication.py # 불충분한 인증
+│   ├── insufficient_authorization.py  # 불충분한 인가
+│   ├── ldap_injection.py             # LDAP 인젝션
+│   ├── location_disclosure.py        # 경로 추적
+│   ├── malicious_content.py          # 악성 콘텐츠
+│   ├── path_traversal.py             # 경로 추적
+│   ├── plaintext_transmission.py     # 데이터 평문 전송
+│   ├── process_info_leak.py          # 프로세스 검증 누락
+│   ├── session_fixation.py           # 세션 고정
+│   ├── session_prediction.py         # 세션 예측
+│   ├── session_timeout.py            # 불충분한 세션 만료
+│   ├── sql_injection.py              # SQL 인젝션
+│   ├── ssi_injection.py              # SSI 인젝션
+│   ├── weak_password_recovery.py     # 취약한 패스워드 복구
+│   ├── weak_string.py                # 약한 문자열 강도
+│   ├── xpath_injection.py            # XPath 인젝션
+│   └── xss.py                        # 크로스사이트 스크립팅
+│
+├── reports/                          # 스캔 결과 보고서 저장 폴더
+│
+├── utils/                            # 유틸리티 함수들
+│   ├── __init__.py                   # 패키지 초기화
+│   ├── http_client.py                # HTTP 요청 처리 (requests 래퍼)
+│   └── report_generator.py           # JSON/HTML 보고서 생성기
+│
+├── config.py                         # 설정 파일 (타임아웃, 헤더, 페이로드 등)
+├── main.py                           # 메인 실행 파일 (run_scan 함수)
+├── README.md                         # 프로젝트 문서
+└── requirements.txt                  # 의존성 패키지 목록
+```
+
+## 🚀 설치 방법
+
+### 1. Python 설치 확인
+```bash
+python --version  # Python 3.7 이상 필요
+```
+
+### 2. 프로젝트 디렉터리 생성
+```bash
+mkdir web_vulnerability_scanner
+cd web_vulnerability_scanner
+```
+
+### 3. 디렉터리 구조 생성
+```bash
+# Windows
+mkdir modules utils reports
+
+# Linux/Mac
+mkdir -p modules utils reports
+```
+
+### 4. 파일 복사
+각 파일을 해당 위치에 저장:
+- `main.py` → 루트 디렉터리
+- `config.py` → 루트 디렉터리
+- `requirements.txt` → 루트 디렉터리
+- `modules/*.py` → modules 디렉터리
+- `utils/*.py` → utils 디렉터리
+
+### 5. 필요 라이브러리 설치
+```bash
+pip install -r requirements.txt
+```
+
+## 💻 사용 방법
+
+### 기본 사용
+```bash
+python main.py
+```
+
+실행 후:
+1. 진단할 URL 입력
+2. 검사 항목 선택
+   - **전체 검사**: 그냥 Enter
+   - **선택 검사**: 번호 입력 (예: `1,2,5` 또는 `1-5` 또는 `13-20`)
+
+### 사용 예시
+
+```bash
+$ python main.py
+
+======================================================================
+              웹 취약점 자동 진단 스크립트 v2.0
+======================================================================
+
+진단할 URL을 입력하세요: https://example.com
+
+======================================================================
+검사 항목 선택
+======================================================================
+
+[항목]
+  1. 버퍼 오버플로우
+  2. 포맷스트링
+  ...
+  13. 약한 문자열 강도
+  14. 불충분한 인증
+  ...
+  27. 데이터 평문 전송
+  28. 쿠키 변조
+
+======================================================================
+전체 검사: Enter
+선택 검사: 번호 입력 (예: 1,2,5 또는 1-5)
+======================================================================
+
+선택: 1-5,13,14
+
+선택된 항목: [1, 2, 3, 4, 5, 13, 14]
+
+[*] 1. 버퍼 오버플로우 검사 중...
+    🟢 양호: 버퍼 오버플로우 취약점이 발견되지 않았습니다
+...
+```
+
+## 📈 결과 해석
+
+### 🔴 취약
+- 명확한 취약점이 발견됨
+- 즉시 조치 필요
+
+### 🟢 양호
+- 취약점이 발견되지 않음
+- 현재 상태 유지
+
+### 🟡 인터뷰
+- 추가 수동 확인 필요
+- 자동화로 판단 불가능한 경우
+
+## 📄 리포트
+
+스캔 완료 후 `reports/` 디렉터리에 자동 저장:
+- `scan_report_YYYYMMDD_HHMMSS.json` - JSON 형식 리포트
+- `scan_report_YYYYMMDD_HHMMSS.html` - HTML 형식 리포트 (브라우저에서 열기)
+
+### JSON 리포트 구조
+```json
+{
+  "target_url": "https://example.com",
+  "scan_time": "2025-10-17 14:30:00",
+  "summary": {
+    "취약": 2,
+    "양호": 15,
+    "인터뷰": 3
+  },
+  "results": {
+    "1. SQL 인젝션": {
+      "status": "취약",
+      "description": "...",
+      "details": [...]
+    }
+  }
+}
+```
+
+### HTML 리포트
+- 웹 브라우저에서 보기 좋은 형식
+- 색상 코딩된 결과
+- 상세 정보 포함-10-17 14:30:00",
+  "summary": {
+    "취약": 2,
+    "양호": 8,
+    "인터뷰": 2
+  },
+  "results": {
+    "1. SQL 인젝션": {
+      "status": "취약",
+      "description": "...",
+      "details": [...]
+    }
+  }
+}
+```
+
+## ⚙️ 설정 커스터마이징
+
+`config.py` 파일에서 설정 변경 가능:
+
+```python
+REQUEST_TIMEOUT = 10        # 요청 타임아웃 (초)
+MAX_RETRIES = 3            # 최대 재시도 횟수
+VERIFY_SSL = False         # SSL 인증서 검증
+```
+
+## ⚠️ 주의사항
+
+1. **법적 책임**: 권한이 없는 시스템에 대한 스캔은 불법입니다
+2. **네트워크 부하**: 과도한 요청으로 서버에 부하를 줄 수 있습니다
+3. **False Positive**: 자동화 도구는 오탐이 발생할 수 있으니 수동 확인 필요
+4. **제한사항**: 
+   - 인증이 필요한 페이지는 검사 불가
+   - JavaScript로 동적 생성되는 콘텐츠는 일부 탐지 불가
+   - 복잡한 로직의 취약점은 수동 검사 필요
+
+## 🐛 문제 해결
+
+### SSL 인증서 오류
+```bash
+# config.py에서 VERIFY_SSL = False로 설정됨
+# 필요시 True로 변경
+```
+
+### 모듈 import 오류
+```bash
+# __init__.py 파일이 각 디렉터리에 있는지 확인
+# Python 경로 확인
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+```
+
+### 타임아웃 오류
+```bash
+# config.py에서 REQUEST_TIMEOUT 값 증가
+REQUEST_TIMEOUT = 30
+```
+
+## 📝 예제
+
+### 1. 기본 스캔
+```bash
+$ python main.py
+진단할 URL을 입력하세요: https://testsite.com
+
+======================================================================
+웹 취약점 진단 시작
+======================================================================
+대상 URL: https://testsite.com
+시작 시간: 2025-10-17 14:30:00
+======================================================================
+
+[*] 1. 버퍼 오버플로우 검사 중...
+    🟢 양호: 버퍼 오버플로우 취약점이 발견되지 않았습니다
+
+[*] 2. 포맷스트링 검사 중...
+    🔴 취약: 포맷스트링 취약점이 발견되었습니다
+       - 포맷/에러 메시지 탐지
+
+...
+```
+
+### 2. 파라미터가 있는 URL
+```bash
+$ python main.py
+진단할 URL을 입력하세요: https://testsite.com/search?q=test&page=1
+```
+
+## 📞 지원
+
+문제가 발생하면 다음을 확인하세요:
+1. Python 버전 (3.7 이상)
+2. 필요 라이브러리 설치 여부
+3. 네트워크 연결 상태
+4. 대상 URL 접근 가능 여부
+
+## 📚 참고 자료
+
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- OWASP Testing Guide: https://owasp.org/www-project-web-security-testing-guide/
+
+## 🤝 기여
+
+추가하고 싶은 취약점 검사 모듈이 있다면:
+1. `modules/` 디렉터리에 새 파일 생성
+2. `test_[취약점명]` 함수 구현
+3. `main.py`와 `modules/__init__.py`에 추가
+
+---
+
+**면책 조항**: 이 도구는 교육 및 합법적인 보안 테스트 목적으로만 사용되어야 합니다. 작성자는 이 도구의 오용에 대해 책임지지 않습니다.

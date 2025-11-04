@@ -391,6 +391,7 @@ export default function TechConsultingPanel() {
 
   // '취약'/'인터뷰' 모두 'result' 내용 출력
   const getSummaryVulnerableItems = (tabType: "db" | "web") => {
+<<<<<<< HEAD
     const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
     const items = tabType === "db" ? dbItems : webItems;
     items.forEach((item) => {
@@ -409,6 +410,16 @@ export default function TechConsultingPanel() {
     });
     return vulnerableItems;
   };
+=======
+    const summaryResult = tabType === "db" ? dbSummaryResult : webSummaryResult;
+    return summaryResult
+      .filter(item => item.weakness)
+      .map(item => ({
+        name: item.name,
+        countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안 수립이 필요합니다.`,
+      }));
+  };
+>>>>>>> 23fff309ed554d5ae6148bb635a54e1cf3d447d1
   
   // const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
   //   const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
@@ -425,6 +436,7 @@ export default function TechConsultingPanel() {
   //   });
   //   return vulnerableItems;
   // };
+<<<<<<< HEAD
 
 // // 취약, 인터뷰 하드 코딩  
 //   const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
@@ -503,6 +515,24 @@ const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
     });
     return vulnerableItems;
   };
+=======
+  const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
+    const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
+    const items = tabType === "db" ? dbItems : webItems;
+    items.forEach((item) => {
+        const key = `${tabType}-${item.id}`;
+        const itemStatus = diagnosisCheckedItems[key];
+       // [수정됨] itemStatus.vulnerable가 true인 경우만 포함하도록 변경
+        if (itemStatus && itemStatus.vulnerable) { 
+            vulnerableItems.push({
+                name: item.name,
+                countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안을 수립하고 정기적인 점검을 실시해야 합니다.`,
+            });
+        }
+    });
+    return vulnerableItems;
+  };
+>>>>>>> 23fff309ed554d5ae6148bb635a54e1cf3d447d1
 
   const handleSiteInput = async () => {
     const trimmedUrl = siteUrl.trim();
