@@ -6,6 +6,7 @@ Backend/my_env/
 Backend/new_env/
 Backend/new_env2/
 Backend/.venv/
+Backend/venv-final/
 
 # Python Cache
 Backend/__pycache__/
