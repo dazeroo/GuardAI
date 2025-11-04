@@ -813,7 +813,7 @@ export default function MgmtConsultingPanel() {
       }, 40000); // 40초 간격
   
       // --- 실제 백엔드 API 호출 ---
-      const response = await fetch('http://192.168.0.63:3001/api/diagnose', {
+      const response = await fetch('http://127.0.0.1:3001/api/diagnose', {
         method: 'POST',
         body: formData,
       });
