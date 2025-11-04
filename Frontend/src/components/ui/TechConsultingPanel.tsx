@@ -39,11 +39,18 @@ interface AnalysisResultItem {
   countermeasure?: string;
 }
 
-// 초기 진단 항목의 타입 정의
+// // 초기 진단 항목의 타입 정의
+// interface ChecklistItem {
+//   id: string;
+//   name: string;
+//   countermeasure: string;
+// }
 interface ChecklistItem {
-  id: string;
-  name: string;
-  countermeasure: string;
+  id: string;
+  name: string;
+  countermeasure: string;
+  interview?: string; // optional
+  result?: string; // optional
 }
 
 export default function TechConsultingPanel() {
@@ -372,7 +379,38 @@ export default function TechConsultingPanel() {
     }
   };
 
+  // const getSummaryVulnerableItems = (tabType: "db" | "web") => {
+  //   const summaryResult = tabType === "db" ? dbSummaryResult : webSummaryResult;
+  //   return summaryResult
+  //     .filter(item => item.weakness)
+  //     .map(item => ({
+  //       name: item.name,
+  //       countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안 수립이 필요합니다.`,
+  //     }));
+  // };
+
+  // '취약'/'인터뷰' 모두 'result' 내용 출력
   const getSummaryVulnerableItems = (tabType: "db" | "web") => {
+<<<<<<< HEAD
+    const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
+    const items = tabType === "db" ? dbItems : webItems;
+    items.forEach((item) => {
+      const key = `${tabType}-${item.id}`;
+      const itemStatus = summaryCheckedItems[key];
+
+      // '취약' 또는 '인터뷰' 항목을 포함
+      if (itemStatus && (itemStatus.vulnerable || itemStatus.interview)) {
+        let displayContent = "";
+        displayContent = item.result || `${item.name} 항목에 대한 인터뷰가 필요합니다.`;
+        vulnerableItems.push({
+          name: item.name,
+          countermeasure: displayContent, 
+        });
+      }
+    });
+    return vulnerableItems;
+  };
+=======
     const summaryResult = tabType === "db" ? dbSummaryResult : webSummaryResult;
     return summaryResult
       .filter(item => item.weakness)
@@ -381,6 +419,7 @@ export default function TechConsultingPanel() {
         countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안 수립이 필요합니다.`,
       }));
   };
+>>>>>>> 23fff309ed554d5ae6148bb635a54e1cf3d447d1
   
   // const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
   //   const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
@@ -397,6 +436,86 @@ export default function TechConsultingPanel() {
   //   });
   //   return vulnerableItems;
   // };
+<<<<<<< HEAD
+
+// // 취약, 인터뷰 하드 코딩  
+//   const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
+//     const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
+//     const items = tabType === "db" ? dbItems : webItems;
+//     items.forEach((item) => {
+//         const key = `${tabType}-${item.id}`;
+//         const itemStatus = diagnosisCheckedItems[key];
+
+//         // [수정됨] '취약' 또는 '인터뷰' 항목을 모두 포함하도록 되돌림
+//         if (itemStatus && (itemStatus.vulnerable || itemStatus.interview)) {
+//           
+//             let displayContent = "";
+
+//             // [수정됨] 상태에 따라 다른 내용을 할당
+//             if (itemStatus.interview) {
+//                 // '인터뷰' 상태일 경우, item.interview 내용을 사용
+//                 // (item.interview 데이터가 없을 경우를 대비해 기본값 설정)
+//                 displayContent = item.interview || `${item.name} 항목에 대한 인터뷰가 필요합니다.`;
+//             } else if (itemStatus.vulnerable) {
+//                 // '취약' 상태일 경우, item.countermeasure 내용을 사용
+//                 displayContent = item.countermeasure || `${item.name}에 대한 보안 강화 방안을 수립하고 정기적인 점검을 실시해야 합니다.`;
+//             }
+
+//             vulnerableItems.push({
+//                 name: item.name,
+//                 countermeasure: displayContent, // [수정됨] 위에서 할당된 내용을 출력
+//             });
+//         }
+//     });
+//     return vulnerableItems;
+//   };
+
+// // 취약항목만
+//   const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
+//     const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
+//     const items = tabType === "db" ? dbItems : webItems;
+//     items.forEach((item) => {
+//         const key = `${tabType}-${item.id}`;
+//         const itemStatus = diagnosisCheckedItems[key];
+//        // [수정됨] itemStatus.vulnerable가 true인 경우만 포함하도록 변경
+//         if (itemStatus && itemStatus.vulnerable) { 
+//             vulnerableItems.push({
+//                 name: item.name,
+//                 countermeasure: item.countermeasure || `${item.name}에 대한 보안 강화 방안을 수립하고 정기적인 점검을 실시해야 합니다.`,
+//             });
+//         }
+//     });
+//     return vulnerableItems;
+//   };
+
+// --- '취약'은 'countermeasure', '인터뷰'는 'interview' 내용 출력 ---
+const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
+    const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
+    const items = tabType === "db" ? dbItems : webItems;
+    items.forEach((item) => {
+      const key = `${tabType}-${item.id}`;
+      const itemStatus = diagnosisCheckedItems[key];
+
+      // '취약' 또는 '인터뷰' 항목을 포함
+      if (itemStatus && (itemStatus.vulnerable || itemStatus.interview)) {
+        let displayContent = "";
+        // [V2 로직] 상태에 따라 다른 내용을 할당
+        if (itemStatus.interview) {
+          // '인터뷰' 상태일 경우, item.interview 내용을 사용
+          displayContent = item.interview || `${item.name} 항목에 대한 인터뷰가 필요합니다.`;
+        } else if (itemStatus.vulnerable) {
+          // '취약' 상태일 경우, item.countermeasure 내용을 사용
+          displayContent = item.countermeasure || `${item.name}에 대한 보안 강화 방안이 필요합니다.`;
+        }
+        vulnerableItems.push({
+          name: item.name,
+          countermeasure: displayContent, 
+        });
+      }
+    });
+    return vulnerableItems;
+  };
+=======
   const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
     const vulnerableItems: Array<{ name: string; countermeasure: string; }> = [];
     const items = tabType === "db" ? dbItems : webItems;
@@ -413,6 +532,7 @@ export default function TechConsultingPanel() {
     });
     return vulnerableItems;
   };
+>>>>>>> 23fff309ed554d5ae6148bb635a54e1cf3d447d1
 
   const handleSiteInput = async () => {
     const trimmedUrl = siteUrl.trim();
@@ -522,26 +642,26 @@ export default function TechConsultingPanel() {
       { good: false, vulnerable: false, interview: true }, // 2. 인터뷰
       { good: false, vulnerable: true, interview: false }, // 3. 취약
       { good: false, vulnerable: false, interview: true }, // 4. 인터뷰
-      { good: false, vulnerable: true, interview: false }, // 5. 취약
+      { good: false, vulnerable: false, interview: true }, // 5. 취약 -> 인터뷰
       { good: true, vulnerable: false, interview: false }, // 6. 양호
       { good: true, vulnerable: false, interview: false }, // 7. 양호
       { good: true, vulnerable: false, interview: false }, // 8. 양호
       { good: false, vulnerable: false, interview: true }, // 9. 인터뷰
       { good: false, vulnerable: true, interview: false }, // 10. 취약
       { good: false, vulnerable: true, interview: false }, // 11. 취약
-      { good: false, vulnerable: true, interview: false }, // 12. 취약
+      { good: false, vulnerable: false, interview: true }, // 12. 취약 -> 인터뷰
       { good: false, vulnerable: false, interview: true }, // 13. 인터뷰
       { good: false, vulnerable: false, interview: true }, // 14. 인터뷰
-      { good: false, vulnerable: true, interview: false }, // 15. 취약
-      { good: true, vulnerable: false, interview: false }, // 16. 양호
-      { good: false, vulnerable: true, interview: false }, // 17. 취약
-      { good: false, vulnerable: true, interview: false }, // 18. 취약
-      { good: false, vulnerable: true, interview: false }, // 19. 취약
+      { good: false, vulnerable: false, interview: true }, // 15. 취약 -> 인터뷰
+      { good: true, vulnerable: false, interview: false }, // 16. 양호 
+      { good: false, vulnerable: true, interview: false }, // 17. 취약 
+      { good: false, vulnerable: false, interview: true }, // 18. 취약 -> 인터뷰
+      { good: false, vulnerable: false, interview: true }, // 19. 취약 -> 인터뷰
       { good: false, vulnerable: false, interview: true }, // 20. 인터뷰
       { good: false, vulnerable: false, interview: true }, // 21. 인터뷰
       { good: false, vulnerable: true, interview: false }, // 22. 취약
       { good: false, vulnerable: true, interview: false }, // 23. 취약
-      { good: false, vulnerable: true, interview: false }  // 24. 취약
+      { good: false, vulnerable: true, interview: false }  // 24. 취약 -> 인터뷰
     ];
 
     const analysisResult: { [key: string]: { good: boolean; vulnerable: boolean; interview: boolean; } } = {};
@@ -887,7 +1007,7 @@ export default function TechConsultingPanel() {
                     </ScrollArea>
                   </div>
                   {summaryDBGenerated && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getSummaryVulnerableItems("db").length}개)</h3>
+                    <h3 className="mb-3">인터뷰 및 취약 항목 ({getSummaryVulnerableItems("db").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
                             <div className="p-3 font-medium">취약 항목</div>
@@ -1032,11 +1152,11 @@ export default function TechConsultingPanel() {
                     </ScrollArea>
                   </div>
                   {diagnosisDBCompleted && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getDiagnosisVulnerableItems("db").length}개)</h3>
+                    <h3 className="mb-3">인터뷰 및 취약 항목 ({getDiagnosisVulnerableItems("db").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약 항목</div>
-                            <div className="p-3 font-medium">대응 방안</div>
+                            <div className="p-3 font-medium">항목</div>
+                            <div className="p-3 font-medium">인터뷰/대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getDiagnosisVulnerableItems("db").length > 0 ? (getDiagnosisVulnerableItems("db").map((item, index) => (

@@ -1,40 +1,65 @@
 import os
 import json
 import logging
-import google.generativeai as genai
 import pandas as pd
 import docx
 import io
+import google.generativeai as genai
 
-logger = logging.getLogger(__name__)
+from fastapi import APIRouter, File, UploadFile, HTTPException, status
 
-async def analyze_guideline(filename: str, content_bytes: bytes) -> list:
+# uvicorn 로거를 가져와 사용합니다.
+logger = logging.getLogger("uvicorn")
+
+# FastAPI 라우터를 생성합니다.
+router = APIRouter()
+
+@router.post("/mng/auto/diagnose", summary="ISMS-P 자동 진단")
+async def diagnose_guideline(guideline: UploadFile = File(...)):
     """
-    파일명과 파일 내용을 받아 ISMS-P 진단을 수행하고 결과를 반환합니다.
+    업로드된 내부 지침서 파일(xlsx, docx, txt)을 분석하여
+    101개 ISMS-P 통제 항목 준수 여부를 진단하고 결과를 JSON으로 반환합니다.
     """
+    # 파일이 선택되었는지 확인합니다.
+    if not guideline.filename:
+        logger.warning("빈 파일 이름이 제출되었습니다.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="파일이 선택되지 않았습니다.",
+        )
+    
     try:
         guideline_text = ""
-        # 파일 확장자에 따라 텍스트 추출
-        if filename.endswith('.xlsx'):
+        # 파일 내용을 비동기적으로 읽어옵니다.
+        contents = await guideline.read()
+
+        # 파일 확장자에 따라 내용을 파싱합니다.
+        if guideline.filename.endswith('.xlsx'):
             logger.info("엑셀 파일로 처리 시작")
-            df = pd.read_excel(io.BytesIO(content_bytes), engine='openpyxl')
+            # 메모리에서 파일을 처리하기 위해 BytesIO를 사용합니다.
+            df = pd.read_excel(io.BytesIO(contents), engine='openpyxl')
             guideline_text = ' '.join(df.astype(str).stack())
-        elif filename.endswith('.docx'):
+        
+        elif guideline.filename.endswith('.docx'):
             logger.info("워드 문서(.docx) 파일로 처리 시작")
-            doc = docx.Document(io.BytesIO(content_bytes))
+            doc = docx.Document(io.BytesIO(contents))
             guideline_text = "\n".join([para.text for para in doc.paragraphs])
+            
         else:
             logger.info("일반 텍스트 파일로 처리 시작")
-            guideline_text = content_bytes.decode('utf-8', errors='ignore')
+            # 텍스트 파일인 경우, 오류를 무시하고 UTF-8로 디코딩합니다.
+            guideline_text = contents.decode('utf-8', errors='ignore')
 
         if not guideline_text.strip():
             logger.warning("파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
-            # 서비스단에서는 구체적인 에러를 발생시켜 라우터가 처리하도록 함
-            raise ValueError("파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="파일이 비어있거나 읽을 수 있는 텍스트가 없습니다.",
+            )
 
-        logger.info(f"파일 '{filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
-
-        # Gemini API에 보낼 프롬프트 정의
+        logger.info(f"파일 '{guideline.filename}' 읽기 완료, 내용 길이: {len(guideline_text)}")
+        
+        # Gemini API에 보낼 프롬프트를 정의합니다.
         prompt = f"""
         당신은 ISMS-P 인증 심사 전문가입니다.
         아래에 제공되는 회사의 내부 지침서 내용을 분석하여, ISMS-P의 각 통제 항목을 만족하는지 진단해주세요.
@@ -157,29 +182,39 @@ async def analyze_guideline(filename: str, content_bytes: bytes) -> list:
         3.5.2 정보주체 권리보장
         3.5.3 정보주체에 대한 통지
 
+        예시:
+        {{"id": "2.6.4", "name": "데이터베이스 접근", "rating": "N", "reason": "데이터베이스 접근 통제 관련 내용..."}}
+        {{"id": "2.7.1", "name": "암호정책 적용", "rating": "N", "reason": "암호화 정책 관련 내용..."}}
+        
+        절대로 reason 내용을 다른 항목과 섞지 마세요.
+
         결과는 반드시 아래와 같은 JSON 형식으로만 응답해야 합니다.
         **배열에는 정확히 101개의 객체가 포함되어야 합니다.**
 
         [JSON 응답 형식]
         [
           {{"id": "1.1.1", "name": "경영진의 참여", "rating": "Y/P/N", "reason": "평가 근거"}},
+          {{"id": "1.1.2", "name": "최고책임자의 지정", "rating": "Y/P/N", "reason": "평가 근거"}},
           ...
           {{"id": "3.5.3", "name": "정보주체에 대한 통지", "rating": "Y/P/N", "reason": "평가 근거"}}
         ]
 
         ---
         [회사 내부 지침서 내용]
-        {guideline_text}                                                                                                                                                   
+        {guideline_text}
         ---
         """
         
         logger.info("Gemini API 호출 시작")
+        
+        # API 키는 main.py의 on_startup에서 이미 설정되었습니다.
         model = genai.GenerativeModel('gemini-2.5-flash')
-        response = await model.generate_content_async(prompt)
+        response = model.generate_content(prompt)
         response_text = response.text
+        
         logger.info("Gemini API 응답 수신 완료")
 
-        # 응답 텍스트에서 JSON 부분만 정제
+        # 생성된 텍스트에서 JSON 부분만 추출합니다.
         if '```json' in response_text:
             response_text = response_text.split('```json')[1].split('```')[0]
         
@@ -188,16 +223,26 @@ async def analyze_guideline(filename: str, content_bytes: bytes) -> list:
         
         if json_start == -1 or json_end == 0:
             logger.error("API 응답에서 유효한 JSON 배열을 찾지 못했습니다.")
-            raise ValueError("진단 결과에서 유효한 형식을 찾지 못했습니다.")
+            logger.debug(f"전체 응답 텍스트: {response_text}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="진단 결과에서 유효한 형식을 찾지 못했습니다.",
+            )
             
-        json_response_str = response_text[json_start:json_end]
+        json_response = response_text[json_start:json_end]
         
-        diagnosis_data = json.loads(json_response_str)
-        logger.info("JSON 파싱 성공")
+        # JSON을 파싱하여 클라이언트에 전송합니다.
+        diagnosis_data = json.loads(json_response)
+        logger.info("JSON 파싱 성공, 클라이언트에 데이터 전송")
         return diagnosis_data
 
+    except HTTPException as http_exc:
+        # FastAPI가 처리하도록 HTTPException을 다시 발생시킵니다.
+        raise http_exc
     except Exception as e:
-        logger.error(f"서비스 로직 처리 중 오류 발생: {e}", exc_info=True)
-        # 발생한 에러를 그대로 다시 발생시켜 라우터에서 처리하도록 함
-        logger.info(f"Gemini API 전체 응답: {response.text[:1000]}")  # 처음 1000자만 출력
-        raise e
+        logger.error(f"진단 보고서 생성 중 오류 발생: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="진단 보고서 생성 중 서버 오류가 발생했습니다.",
+        )
+
