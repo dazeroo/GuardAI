@@ -39,6 +39,7 @@ def test_directory_indexing(target_url, session):
         '/old/',
         '/new/',
         '/archive/',
+        '/wp-includes',
     ]
     
     # 디렉터리 인덱싱 탐지 패턴

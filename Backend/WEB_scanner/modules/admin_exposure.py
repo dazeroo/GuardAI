@@ -4,7 +4,7 @@
 관리자 페이지 노출 진단
 - 1) 일반적인 관리자 경로 접근 가능 여부 확인 (/admin, /wp-admin 등)
 - 2) 흔한 포트(80,443,8080,8443 등)로 접근 시도하여 노출 여부 확인
-- 3) 관리자 로그인 폼에 대해 제한된 기본 관리자 계정으로 로그인 시도 (작은 샘플만)
+- 3) 관리자 로그인 폼을 찾아 제한된 기본 계정으로 로그인 시도
 - 4) 로그인 후 식별된 하위 페이지 URL을 새 세션에서 인증 없이 접근 가능한지 확인
 """
 
@@ -225,11 +225,9 @@ def test_admin_exposure(target: str, session) -> Dict[str, Any]:
             # 다음 admin_page로 이동
 
         # 평가 및 반환 정리
-        if found_admin_pages or login_success_info or accessible_without_auth:
-            # 우선 취약으로 분류하고 상세히 기술(심각도는 상황에 따라 판단)
+        if login_success_info or accessible_without_auth:
+            # 기본 계정 로그인 성공 또는 인증 우회(인가 누락)는 명확한 취약점
             desc_parts = []
-            if found_admin_pages:
-                desc_parts.append(f"발견된 관리자/로그인 페이지: {len(found_admin_pages)}개")
             if login_success_info:
                 desc_parts.append(f"기본계정으로 로그인 가능한 페이지: {len(login_success_info)}개")
             if accessible_without_auth:
@@ -238,6 +236,16 @@ def test_admin_exposure(target: str, session) -> Dict[str, Any]:
             return {
                 'status': '취약',
                 'description': '; '.join(desc_parts),
+                'details': details
+            }
+        
+        elif found_admin_pages:
+            # 관리자 페이지로 추정만 되는 경우 (노출만 된 경우) -> 인터뷰로 처리
+            desc = f"관리자/로그인 페이지 {len(found_admin_pages)}개 발견. 오탐 및 인가/인증 강도 수동 확인 필요"
+            
+            return {
+                'status': '인터뷰',
+                'description': desc,
                 'details': details
             }
 

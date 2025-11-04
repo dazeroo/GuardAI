@@ -134,10 +134,15 @@ def test_xpath_injection(target: str, session, params: Dict[str, str] = None,
     반환 형식: {'status', 'description', 'details'}
     """
     scanner = SessionXPathInjectionScanner(session=session)
-    try:
-        if not params and not data:
-            params = {'q': 'test'}  # 기본 테스트 파라미터
+    
+    # 1. 원본 파라미터가 없었는지 확인
+    original_params_present = bool(params or data)
+    
+    # 2. 파라미터가 없으면 기본값 설정 (기존 로직 유지)
+    if not original_params_present:
+        params = {'q': 'test'}  # 기본 테스트 파라미터
 
+    try:
         vulns = []
         if params:
             vulns.extend(scanner.scan(target, params=params, method='GET'))
@@ -147,6 +152,16 @@ def test_xpath_injection(target: str, session, params: Dict[str, str] = None,
         if vulns:
             details = [f"{v['method']} param={v['parameter']} payload={v['payload'][:50]} evidence={v['evidence'][:100]}"
                        for v in vulns]
+            
+            # **수정된 로직:** 원본 파라미터 없이 'q'로만 발견된 경우, '인터뷰' 반환
+            if not original_params_present and vulns[0]['parameter'] == 'q':
+                return {
+                    'status': '인터뷰',
+                    'description': 'XPath Injection 징후 발견. 기본 파라미터(q)로 테스트됨. 실제 파라미터로 재확인 필요',
+                    'details': details
+                }
+            
+            # 실제 존재하는 파라미터로 발견되었거나 POST로 발견된 경우 '취약'
             return {
                 'status': '취약',
                 'description': f'XPath Injection 의심 {len(vulns)}건 발견',
