@@ -169,7 +169,7 @@ async def analyze_guideline(filename: str, content_bytes: bytes) -> list:
 
         ---
         [회사 내부 지침서 내용]
-        {guideline_text}
+        {guideline_text}                                                                                                                                                   
         ---
         """
         
