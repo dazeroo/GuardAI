@@ -8,7 +8,7 @@ DB_CODE_MAP = {
     "D-03": {"name": "패스워드의 사용기간 및 복잡도를 기관 정책에 맞도록 설정", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어, validate_password 컴포넌트를 설치(INSTALL COMPONENT)하고 관련 정책 변수(예: validate_password.length, validate_password.policy)를 설정하여 패스워드 복잡도 검증 기능을 활성화해주시기 바랍니다. 또한, default_password_lifetime 값을 90(일) 이상으로 설정하여 패스워드 만료 기간이 적용되도록 글로벌 변수 및 my.cnf 설정 파일에 반영해주시기 바랍니다.", "countermeasure": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어, 패스워드 최소 길이, 복잡도, 주기적 변경 정책을 수립하고 데이터베이스에 적용해주세요."},
     "D-04": {"name": "데이터베이스 관리자 권한을 꼭 필요한 계정 및 그룹에 허용", "result": "[인터뷰]\nguardai와 seung 계정이 실제 관리 업무(DBA)를 수행하는 계정이 맞는지, 관리자 권한이 업무상 반드시 필요한지, 해당 계정들의 접속을 '%'가 아닌 특정 IP나 localhost로 제한할 수 있는지 담당자 확인이 필요합니다.", "countermeasure": "DBA 권한은 최소한의 인원에게만 부여하고, 역할 기반의 접근 제어를 적용합니다.", "interview":"[인터뷰]\n담당자 확인이 필요합니다."},
     "D-05": {"name": "원격에서 DB 서버로의 접속 제한", "result": "[대응 방안]\nguardai 및 seung 계정의 사용 용도를 검토한 후, 주요정보통신기반시설 가이드를 참고하시어 원격 접속이 불필요한 경우 host 설정을 'localhost'로 변경해주시기 바랍니다. 만약 원격 접속이 반드시 필요하다면, '%' 대신 실제 접속이 필요한 애플리케이션 서버의 IP 주소나 IP 대역으로 명시적으로 제한하여 RENAME USER 또는 ALTER USER를 통해 접근 제어를 강화해주시기 바랍니다.","countermeasure": "방화벽을 사용하여 허용된 IP 주소에서만 데이터베이스 포트로 접근을 허용하고, 불필요한 원격 접속은 차단합니다.", "interview":"[인터뷰]\n담당자 확인이 필요합니다."},
-    "D-06": {"name": "DBA 이외의 인가되지 않은 사용자 시스템 테이블에 접근할 수 없도록 설정", "countermeasure": "시스템 테이블 및 데이터 딕셔너리에 대한 접근 권한을 최소화하고, DBA 및 필수 역할에만 접근을 허용합니다."},
+    "D-06": {"name": "DBA 이외의 인가되지 않은 사용자 시스템 테이블에 접근할 수 없도록 설정", "countermeasure": "시스템 테이블 및 데이터 딕셔너리에 대한 접근 권한을 최소화하고, DBA 및 필수 역할에만 접근을 허용합니다.", "interview":"[인터뷰]\n담당자 확인이 필요합니다."},
     "D-07": {"name": "오라클 데이터베이스의 경우 리스너의 패스워드를 설정하여 사용", "countermeasure": "Oracle Net Listener에 강력한 패스워드를 설정하여 비인가된 원격 관리를 방지합니다."},
     "D-08": {"name": "응용프로그램 또는 DBA 계정의 Role이 Public으로 설정되지 않도록 조정", "countermeasure": "PUBLIC 롤에 부여된 불필요한 권한을 회수하고, 각 계정에는 최소한의 필수 권한만 부여합니다."},
     "D-09": {"name": "OS_ROLES, REMOTE_OS_AUTHENTICATION, REMOTE_OS_ROLES를 FALSE로 설정", "result": "[인터뷰]\nPAM 플러그인을 사용하지 않는 것은 확인되었으나, D-04 항목에서 식별된 관리자 계정(guardai, seung 등)이 특정 개인에게 할당된 계정인지, 혹은 여러 담당자가 공유하여 사용하는 '공용 계정'인지 담당자 확인이 필요합니다.", "countermeasure": "데이터베이스 파라미터 파일에서 해당 값들을 FALSE로 설정하여 운영체제 인증을 비활성화하고 데이터베이스 자체 인증을 사용합니다.", "interview":"[인터뷰]\n담당자 확인이 필요합니다."},
@@ -30,34 +30,34 @@ DB_CODE_MAP = {
 }
 
 WEB_CODE_MAP: Dict[str, dict] = {
-    "BO": {"name": "버퍼 오버플로우", "countermeasure": "웹 애플리케이션에 전달되는 파라미터 값을 필요한 크기만큼만 받을 수 있도록 변경하고 입력 값 범위를 초과한 경우에도 에러 페이지를 반환하지 않도록 설정합니다."},
+    "BO": {"name": "버퍼 오버플로우", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 파라미터의 입력 값 범위를 제한하시고, 허용 범위를 벗어나는 경우 에러 페이지가 반환되지 않도록 설정하여 주시기 바랍니다.", "countermeasure": "웹 애플리케이션에 전달되는 파라미터 값을 필요한 크기만큼만 받을 수 있도록 변경하고 입력 값 범위를 초과한 경우에도 에러 페이지를 반환하지 않도록 설정합니다."},
     "FS": {"name": "포맷스트링", "countermeasure": "웹 서버 프로그램을 최신 버전으로 업데이트하고 포맷 스트링 버그를 발생시키는 문자열에 대한 검증 로직을 구현합니다."},
     "LI": {"name": "LDAP 인젝션", "countermeasure": "LDAP 쿼리 생성 시 사용자 입력을 이스케이프(escape) 처리하고, 지정된 문자열만 입력 허용합니다."},
-    "OC": {"name": "운영체제 명령 실행", "countermeasure": "취약한 버전의 웹 서버 및 웹 애플리케이션 서버는 최신 버전으로 업데이트를 적용해야 하며, 입력 값에 대한 파라미터 데이터의 '&', '|', ';', '`' 문자에 대한 필터링 처리해야 합니다."},
-    "SI": {"name": "SQL 인젝션", "countermeasure": "파라미터화된 쿼리(Prepared Statement)를 사용하고, 입력값에 대한 유효성을 검증하는 로직을 구현합니다."},
-    "SS": {"name": "SSI 인젝션", "countermeasure": "웹 서버에서 SSI(Server-Side Includes)를 비활성화하거나, 입력 값에 대한 검증 로직을 구현합니다."},
-    "XP": {"name": "XPath 인젝션", "countermeasure": "허용된 문자 이외의 모든 입력을 허용하지 않아야 하며, XPath 쿼리에 사용자가 값을 입력할 수 있는 경우, 엄격한 입력 값 검증을 통해 필요 문자만을 받아들이게 합니다."},
-    "DI": {"name": "디렉터리 인덱싱", "countermeasure": "웹 서버 설정에서 디렉터리 리스팅 기능을 비활성화하고, 각 디렉터리에 기본 페이지(index.html 등)를 설정합니다. Apache 서버의 경우 httpd.conf 파일 내 DocumentRoot 항목의 Options에서 Indexes를 제거합니다."},
-    "IN": {"name": "정보 누출", "countermeasure": "웹 사이트에 노출되는 중요정보는 마스킹을 적용해야 합니다."},
-    "MC": {"name": "악성 콘텐츠", "countermeasure": "업로드되는 파일의 확장자, MIME 타입을 제한하고, 파일 내용을 검사하며, 웹 루트 외부의 안전한 경로에 저장합니다."},
+    "OC": {"name": "운영체제 명령 실행", "countermeasure": "취약한 버전의 웹 서버 및 웹 애플리케이션 서버는 최신 버전으로 업데이트를 적용해야 하며, 입력 값에 대한 파라미터 데이터의 '&', '|', ';', '`' 문자에 대한 필터링 처리해야 합니다.", "interview":"URL에 파라미터가 없어 자동 진단이 불가능합니다. GET 파라미터를 포함한 URL로 다시 진단하세요"},
+    "SI": {"name": "SQL 인젝션", "countermeasure": "파라미터화된 쿼리(Prepared Statement)를 사용하고, 입력값에 대한 유효성을 검증하는 로직을 구현합니다." , "interview":"URL에 파라미터가 없어 자동 진단이 불가능합니다. GET 파라미터를 포함한 URL로 다시 진단하세요"},
+    "SS": {"name": "SSI 인젝션", "countermeasure": "웹 서버에서 SSI(Server-Side Includes)를 비활성화하거나, 입력 값에 대한 검증 로직을 구현합니다.", "interview":"URL에 파라미터가 없어 자동 진단이 불가능합니다. GET 파라미터를 포함한 URL로 다시 진단하세요"},
+    "XI": {"name": "XPath 인젝션", "countermeasure": "허용된 문자 이외의 모든 입력을 허용하지 않아야 하며, XPath 쿼리에 사용자가 값을 입력할 수 있는 경우, 엄격한 입력 값 검증을 통해 필요 문자만을 받아들이게 합니다.", "interview": "실제 파라미터가 존재하지 않아, 기본 파라미터(q)로 테스트되었지만, 실제 파라미터로 재확인이 필요합니다"},
+    "DI": {"name": "디렉터리 인덱싱", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 Apache 웹 서버 설정 파일(httpd.conf 또는 apache2.conf 또는 VirtualHost 설정)에서 해당 디렉터리 또는 전체 웹 루트에 설정된 Options의  Indexes 옵션을 제거하여 주시기 바랍니다.", "countermeasure": "웹 서버 설정에서 디렉터리 리스팅 기능을 비활성화하고, 각 디렉터리에 기본 페이지(index.html 등)를 설정합니다. Apache 서버의 경우 httpd.conf 파일 내 DocumentRoot 항목의 Options에서 Indexes를 제거합니다."},
+    "IL": {"name": "정보 누출", "result":"주요정보통신기반시설 가이드를 참고하시어 httpd.conf 또는 apache2.conf 설정파일에서 'ServerTokens Prod'로 설정 값을 변경하여 주시고 'ServerSignature Off'로 설정 값을 변경하여 주시기 바랍니다.", "countermeasure": "웹 사이트에 노출되는 중요정보는 마스킹을 적용해야 합니다."},
+    "CS": {"name": "악성 콘텐츠", "countermeasure": "업로드되는 파일의 확장자, MIME 타입을 제한하고, 파일 내용을 검사하며, 웹 루트 외부의 안전한 경로에 저장합니다."},
     "XS": {"name": "크로스사이트 스크립팅", "countermeasure": "입력값 필터링 및 출력값 인코딩(HTML Encoding)을 적용하여 스크립트 실행을 방지합니다."},
-    "PW": {"name": "약한 문자열 강도", "countermeasure": "취약한 계정 및 패스워드를 삭제하고, 사용자가 취약한 계정이나 패스워드를 등록하지 못하도록 패스워드 규정이 반영된 체크 로직을 회원가입, 정보변경, 패스워드 변경 등 적용 필요한 페이지에 모두 구현하여야 함"},
-    "AU": {"name": "불충분한 인증", "countermeasure": "다중 인증(MFA)을 도입하고, 모든 중요 기능에 대해 접근 전 반드시 사용자 인증 절차를 거치도록 설계합니다."},
-    "PR": {"name": "취약한 패스워드 복구", "countermeasure": "패스워드 복구 시 본인 확인 절차를 강화하고, 인증된 사용자 메일이나 SMS에서만 재설정된 패스워드를 확인할 수 있도록 조치합니다."},
-    "CR": {"name": "크로스사이트 리퀘스트 변조", "countermeasure": "주요 요청에 대해 사용자의 재인증을 요구하고, HTTP 헤더의 Referer 검증 로직을 구현합니다. 또한 정상적인 요청과 비정상적인 요청을 구분할 수 있도록 Hidden Form을 사용하여 임의의 암호화된 토큰(세션 ID, Timestamp, nonce 등)을 추가하고 이 토큰을 검증하도록 설계합니다."},
-    "SE": {"name": "세션 예측", "countermeasure": "예측 불가능한 복잡하고 긴 세션 ID를 생성하기 위해 암호학적으로 안전한 난수 생성기를 사용합니다."},
-    "AZ": {"name": "불충분한 인가", "countermeasure": "사용자의 모든 요청에 대해 서버 측에서 해당 사용자가 요청된 기능에 접근할 권한이 있는지 명시적으로 확인합니다."},
-    "SM": {"name": "불충분한 세션 만료", "countermeasure": "사용자가 활동이 없을 경우 일정 시간 후에 세션이 자동으로 만료되도록 타임아웃을 설정하고, 로그아웃 시 세션을 즉시 무효화합니다."},
-    "SF": {"name": "세션 고정", "countermeasure": "사용자가 성공적으로 인증된 후에는 즉시 새로운 세션 ID를 발급하여 이전 세션을 무효화합니다."},
-    "AT": {"name": "자동화 공격", "countermeasure": "로그인, 회원가입 등 주요 기능에 CAPTCHA를 도입하고, 동일 IP에서의 비정상적인 반복 요청을 탐지하고 차단합니다."},
-    "PV": {"name": "프로세스 검증 누락", "countermeasure": "중요한 비즈니스 로직의 모든 단계를 서버 측에서 순차적으로 검증하여 사용자가 단계를 건너뛸 수 없도록 방지합니다."},
+    "BF": {"name": "약한 문자열 강도", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 무차별 대입 공격을 방어할 수 있도록 Server Side Script(PHP, ASP, JSP 등)를 활용해 로그인 인증 실패 횟수를 3~5회 이상 초과 시 해당 계정의 접근을 제한하시기 바랍니다.", "countermeasure": "취약한 계정 및 패스워드를 삭제하고, 사용자가 취약한 계정이나 패스워드를 등록하지 못하도록 패스워드 규정이 반영된 체크 로직을 회원가입, 정보변경, 패스워드 변경 등 적용 필요한 페이지에 모두 구현하여야 함", "interview":"수동 확인이 필요합니다."},
+    "IA": {"name": "불충분한 인증", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 접근 제어가 필요한 모든 페이지(예: 중요정보페이지, 마이페이지)에 접근 시, Server Side Script(PHP, ASP, JSP 등)를 활용해 본인 인증을 재확인하는 로직을 구현하여 주시기 바랍니다.", "countermeasure": "다중 인증(MFA)을 도입하고, 모든 중요 기능에 대해 접근 전 반드시 사용자 인증 절차를 거치도록 설계합니다.", "interview":"인증 메커니즘에 계정 잠금 메커니즘 확인 불가. 수동 확인이 필요합니다."},
+    "PR": {"name": "취약한 패스워드 복구", "result":"주요정보통신기반시설 가이드를 참고하시어 패스워드 복구 시, 임시패스워드를 발급받고 임시 패스워드를 발급받은 즉시 새로운 패스워드로 재설정하도록 설정 하시고, 난수를 사용해 패스워드를 재설정하도록 설정하여 주시기 바랍니다.", "countermeasure": "패스워드 복구 시 본인 확인 절차를 강화하고, 인증된 사용자 메일이나 SMS에서만 재설정된 패스워드를 확인할 수 있도록 조치합니다.", "interview":"비밀번호 재설정 기본 검사 통과. 난수성 및 이메일/SMS 전송 여부는 수동 확인이 필요합니다."},
+    "CF": {"name": "크로스사이트 리퀘스트 변조", "countermeasure": "주요 요청에 대해 사용자의 재인증을 요구하고, HTTP 헤더의 Referer 검증 로직을 구현합니다. 또한 정상적인 요청과 비정상적인 요청을 구분할 수 있도록 Hidden Form을 사용하여 임의의 암호화된 토큰(세션 ID, Timestamp, nonce 등)을 추가하고 이 토큰을 검증하도록 설계합니다."},
+    "SE": {"name": "세션 예측", "countermeasure": "예측 불가능한 복잡하고 긴 세션 ID를 생성하기 위해 암호학적으로 안전한 난수 생성기를 사용합니다.", "interview": "세션 쿠키가 발견되지 않아 검사할 수 없습니다. 세션을 사용하는 페이지에서 테스트하세요"},
+    "IN": {"name": "불충분한 인가", "countermeasure": "사용자의 모든 요청에 대해 서버 측에서 해당 사용자가 요청된 기능에 접근할 권한이 있는지 명시적으로 확인합니다.", "interview": "다음 주소에 대한 수동 확인이 필요합니다. 'http://192.168.0.63/wordpress/admin : anon=404, auth=404', 'http://192.168.0.63/wordpress/api/admin/data : anon=404, auth=404', 'http://192.168.0.63/wordpress/user/profile : anon=404, auth=404'"},
+    "SC": {"name": "불충분한 세션 만료", "result":"주요정보통신기반시설 가이드를 참고하시어 세션 타임아웃을 10분으로 설정하여 주시기 바랍니다.", "countermeasure": "사용자가 활동이 없을 경우 일정 시간 후에 세션이 자동으로 만료되도록 타임아웃을 설정하고, 로그아웃 시 세션을 즉시 무효화합니다.", "interview":"수동 확인이 필요합니다."},
+    "SF": {"name": "세션 고정", "countermeasure": "사용자가 성공적으로 인증된 후에는 즉시 새로운 세션 ID를 발급하여 이전 세션을 무효화합니다.", "interview": "세션 쿠키가 발견되지 않아 검사할 수 없습니다. 로그인 페이지나 세션을 사용하는 페이지에서 테스트하세요"},
+    "AU": {"name": "자동화 공격", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 캡차(CAPTCHA)를 활용하여 반복적인 로그인 시도에 대한 일회성 확인 로직을 구현하여주시고, 자동화 공격을 감지하고 방어할 수 있는 IDS/IPS 시스템을 구축하여 주시기 바랍니다.", "countermeasure": "로그인, 회원가입 등 주요 기능에 CAPTCHA를 도입하고, 동일 IP에서의 비정상적인 반복 요청을 탐지하고 차단합니다."},
+    "PV": {"name": "프로세스 검증 누락", "countermeasure": "중요한 비즈니스 로직의 모든 단계를 서버 측에서 순차적으로 검증하여 사용자가 단계를 건너뛸 수 없도록 방지합니다.", "interview":"수동 확인이 필요합니다."},
     "FU": {"name": "파일 업로드", "countermeasure": "업로드 파일의 확장자 및 타입을 화이트리스트 방식으로 제한하고, 서버 실행 권한이 없는 디렉터리에 저장합니다."},
-    "FD": {"name": "파일 다운로드", "countermeasure": "다운로드 시 허용된 경로 이외의 디렉터리와 파일에 접근할 수 없도록 구현합니다."},
-    "AD": {"name": "관리자 페이지 노출", "countermeasure": "관리자 페이지 URL을 추측하기 어렵게 변경하고, 특정 IP 대역에서만 접근을 허용하며, 강력한 인증을 적용합니다. 단, 부득이하게 관리자 페이지를 외부에 노출해야 하는 경우 관리자 페이지 로그인 시 2차 인증(otp, vpn, 인증서 등) 적용이 필요합니다."},
+    "FD": {"name": "파일 다운로드", "countermeasure": "다운로드 시 허용된 경로 이외의 디렉터리와 파일에 접근할 수 없도록 구현합니다.", "interview":"URL에 파라미터가 없어 자동 검사가 불가능합니다. file, download, path, doc 등의 파라미터가 있는 URL로 테스트하세요"},
+    "AE": {"name": "관리자 페이지 노출", "countermeasure": "관리자 페이지 URL을 추측하기 어렵게 변경하고, 특정 IP 대역에서만 접근을 허용하며, 강력한 인증을 적용합니다. 단, 부득이하게 관리자 페이지를 외부에 노출해야 하는 경우 관리자 페이지 로그인 시 2차 인증(otp, vpn, 인증서 등) 적용이 필요합니다.", "interview":"관리자/로그인 페이지 1개 발견. 오탐 및 인가/인증 강도 수동 확인이 필요합니다. [포트 체크] 포트 노출된 관리자 페이지 추정: http://192.168.0.63:80/ (상태코드 200)"},
     "PT": {"name": "경로 추적", "countermeasure": "사용자 입력에서 '../' 와 같은 디렉터리 탐색 문자를 필터링하고, 파일 시스템 접근 시 경로를 검증합니다."},
-    "LP": {"name": "위치 공개", "countermeasure": "시스템 경로, 설정 파일 위치 등 내부 정보가 오류 메시지나 소스 코드에 노출되지 않도록 수정합니다. 또한,  웹 루트 디렉터리 이하 모든 불필요한 파일 및 샘플 페이지를 삭제합니다."},
-    "CT": {"name": "데이터 평문 전송", "countermeasure": "로그인 정보, 개인정보 등 모든 민감한 데이터는 SSL/TLS를 적용하여 암호화된 HTTPS 프로토콜을 통해 전송합니다."},
-    "CK": {"name": "쿠키 변조", "countermeasure": "쿠키에 저장되는 중요 정보는 암호화하고, 쿠키 대신 Server Side Session 방식을 사용하거나, 쿠키를 통해 인증 등 중요한 기능을 구현해야 할 경우엔 안전한 알고리즘(SEED, 3DES, AES 등) 적용합니다."},
+    "PL": {"name": "위치 공개", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 캡차(CAPTCHA)를 활용하여 반복적인 로그인 시도에 대한 일회성 확인 로직을 구현하여주시고, 자동화 공격을 감지하고 방어할 수 있는 IDS/IPS 시스템을 구축하여 주시기 바랍니다.", "countermeasure": "시스템 경로, 설정 파일 위치 등 내부 정보가 오류 메시지나 소스 코드에 노출되지 않도록 수정합니다. 또한,  웹 루트 디렉터리 이하 모든 불필요한 파일 및 샘플 페이지를 삭제합니다."},
+    "SN": {"name": "데이터 평문 전송", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 httpd-ssl.conf 또는 ssl.conf의 SSL 관련 Virtual Host 설정을 'SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1'로 적용하여 주시기 바랍니다.", "countermeasure": "로그인 정보, 개인정보 등 모든 민감한 데이터는 SSL/TLS를 적용하여 암호화된 HTTPS 프로토콜을 통해 전송합니다."},
+    "CC": {"name": "쿠키 변조", "countermeasure": "쿠키에 저장되는 중요 정보는 암호화하고, 쿠키 대신 Server Side Session 방식을 사용하거나, 쿠키를 통해 인증 등 중요한 기능을 구현해야 할 경우엔 안전한 알고리즘(SEED, 3DES, AES 등) 적용합니다."},
 }
 
 DB_NAME_MAP = {v['name']: k for k, v in DB_CODE_MAP.items()}
@@ -82,22 +82,29 @@ def empty_state():
     return {"positive": False, "weakness": False, "interview": False}
 
 def apply_state(result_val: str) -> Dict[str, bool]:
+    """
+    [수정됨] '취약' > '인터뷰' > '양호' 순서의 우선순위를 적용합니다.
+    """
     txt = str(result_val)
     st = {"positive": False, "weakness": False, "interview": False}
-    if any(w in txt for w in POSITIVE_WORDS):  st["positive"]  = True
-    if any(w in txt for w in WEAKNESS_WORDS):  st["weakness"]  = True
-    if any(w in txt for w in INTERVIEW_WORDS): st["interview"] = True
+
+    # 우선순위 1: '취약'이 발견되면, 무조건 '취약'으로 판정하고 즉시 종료
+    if any(w in txt for w in WEAKNESS_WORDS):
+        st["weakness"] = True
+        return st
+
+    # 우선순위 2: '취약'이 없고 '인터뷰'가 발견되면, '인터뷰'로 판정하고 즉시 종료
+    if any(w in txt for w in INTERVIEW_WORDS):
+        st["interview"] = True
+        return st
+    
+    # 우선순위 3: '취약'과 '인터뷰'가 없을 때만 '양호'로 판정
+    if any(w in txt for w in POSITIVE_WORDS):
+        st["positive"]  = True
+    
     return st
 
-def canon(s: str) -> str:
-    if s is None: return ""
-    s = str(s)
-    s = re.sub(r"[\s\(\)\[\]·.,/_-]+", "", s).lower()
-    s = s.replace("누출", "노출")
-    s = s.replace("crosssitescripting", "크로스사이트스크립팅")
-    s = s.replace("csrf", "리퀘스트변조")  
-    s = s.replace("xpath", "xpath")       
-    return s
+# [삭제됨] canon 함수가 제거되었습니다.
 
 def normalize_spaces(s: str) -> str:
     return re.sub(r"\s+", " ", str(s)).strip()
@@ -175,12 +182,27 @@ def parse_report_from_excel(file, domain: str):
             if not matched_code and item_val:
                 name_map = DB_NAME_MAP if domain.upper() == "DB" else WEB_NAME_MAP
                 for name, code in name_map.items():
-                    if canon(name) in canon(item_val):
+                    # [수정됨] canon() 대신 .lower()와 'in' 연산자로 단순 비교
+                    if name.lower() in item_val.lower():
                         matched_code = code
                         break
 
             if matched_code:
-                results[matched_code].update(st)
+                # [수정됨] 이전 대화의 우선순위 로직을 여기에 적용
+                current_st = st 
+                existing_st = results[matched_code]
+
+                if current_st["weakness"]:
+                    existing_st["weakness"] = True
+                    existing_st["positive"] = False
+                    existing_st["interview"] = False
+                
+                elif current_st["interview"] and not existing_st["weakness"]:
+                    existing_st["interview"] = True
+                    existing_st["positive"] = False
+
+                elif current_st["positive"] and not existing_st["weakness"] and not existing_st["interview"]:
+                    existing_st["positive"] = True
 
     return [{"id": code, **data} for code, data in results.items()]
 

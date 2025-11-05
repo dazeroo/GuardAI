@@ -615,7 +615,7 @@ const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
       { good: false, vulnerable: true, interview: false }, // 3. 취약
       { good: false, vulnerable: false, interview: true }, // 4. 인터뷰
       { good: false, vulnerable: false, interview: true }, // 5. 취약 -> 인터뷰
-      { good: true, vulnerable: false, interview: false }, // 6. 양호
+      { good: false, vulnerable: false, interview: true }, // 6. 양호 -> 인터뷰
       { good: true, vulnerable: false, interview: false }, // 7. 양호
       { good: true, vulnerable: false, interview: false }, // 8. 양호
       { good: false, vulnerable: false, interview: true }, // 9. 인터뷰
