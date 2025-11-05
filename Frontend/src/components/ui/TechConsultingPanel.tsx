@@ -982,14 +982,14 @@ const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
                     <h3 className="mb-3">인터뷰 및 취약 항목 ({getSummaryVulnerableItems("db").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약 항목</div>
-                            <div className="p-3 font-medium">대응 방안</div>
+                            <div className="p-3 font-medium">항목</div>
+                            <div className="p-3 font-medium">인터뷰/대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getSummaryVulnerableItems("db").length > 0 ? (getSummaryVulnerableItems("db").map((item, index) => (
                           <div key={index} className={`grid grid-cols-2 gap-0 ${index % 2 === 0 ? "bg-white" : "bg-muted/20"} divide-x border-b`}>
                             <div className="p-3 text-sm">{item.name}</div>
-                            <div className="p-3 text-sm">{item.countermeasure}</div>
+                            <div className="p-3 text-sm whitespace-pre-wrap">{item.countermeasure}</div>
                           </div>
                         ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
@@ -1049,17 +1049,17 @@ const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
                     </ScrollArea>
                   </div>
                   {summaryWebGenerated && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getSummaryVulnerableItems("web").length}개)</h3>
+                    <h3 className="mb-3">인터뷰 및 취약 항목 ({getSummaryVulnerableItems("web").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약 항목</div>
-                            <div className="p-3 font-medium">대응 방안</div>
+                            <div className="p-3 font-medium">항목</div>
+                            <div className="p-3 font-medium">인터뷰/대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getSummaryVulnerableItems("web").length > 0 ? (getSummaryVulnerableItems("web").map((item, index) => (
                           <div key={index} className={`grid grid-cols-2 gap-0 ${index % 2 === 0 ? "bg-white" : "bg-muted/20"} divide-x border-b`}>
                             <div className="p-3 text-sm">{item.name}</div>
-                            <div className="p-3 text-sm">{item.countermeasure}</div>
+                            <div className="p-3 text-sm whitespace-pre-wrap">{item.countermeasure}</div>
                           </div>
                         ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
@@ -1134,7 +1134,7 @@ const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
                         {getDiagnosisVulnerableItems("db").length > 0 ? (getDiagnosisVulnerableItems("db").map((item, index) => (
                           <div key={index} className={`grid grid-cols-2 gap-0 ${index % 2 === 0 ? "bg-white" : "bg-muted/20"} divide-x border-b`}>
                             <div className="p-3 text-sm">{item.name}</div>
-                            <div className="p-3 text-sm">{item.countermeasure}</div>
+                            <div className="p-3 text-sm whitespace-pre-wrap">{item.countermeasure}</div>
                           </div>
                         ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
@@ -1189,17 +1189,17 @@ const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
                     </ScrollArea>
                   </div>
                   {diagnosisWebCompleted && (<div className="border-t pt-4 mt-4">
-                    <h3 className="mb-3">취약 항목 및 대응 방안 ({getDiagnosisVulnerableItems("web").length}개)</h3>
+                    <h3 className="mb-3">인터뷰 및 취약 항목 ({getDiagnosisVulnerableItems("web").length}개)</h3>
                     <div className="border rounded-lg overflow-hidden max-h-[500px] flex flex-col">
                       <div className="grid grid-cols-2 gap-0 bg-muted flex-shrink-0 sticky top-0 divide-x border-b pr-[17px]">
-                            <div className="p-3 font-medium">취약 항목</div>
-                            <div className="p-3 font-medium">대응 방안</div>
+                            <div className="p-3 font-medium">항목</div>
+                            <div className="p-3 font-medium">인터뷰/대응 방안</div>
                         </div>
                       <div className="flex-1 overflow-y-auto min-h-[200px]">
                         {getDiagnosisVulnerableItems("web").length > 0 ? (getDiagnosisVulnerableItems("web").map((item, index) => (
                           <div key={index} className={`grid grid-cols-2 gap-0 ${index % 2 === 0 ? "bg-white" : "bg-muted/20"} divide-x border-b`}>
                             <div className="p-3 text-sm">{item.name}</div>
-                            <div className="p-3 text-sm">{item.countermeasure}</div>
+                            <div className="p-3 text-sm whitespace-pre-wrap">{item.countermeasure}</div>
                           </div>
                         ))) : (<div className="p-8 text-center text-muted-foreground">취약 항목이 발견되지 않았습니다.</div>)}
                       </div>
