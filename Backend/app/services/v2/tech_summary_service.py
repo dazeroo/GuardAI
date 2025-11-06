@@ -38,7 +38,7 @@ WEB_CODE_MAP: Dict[str, dict] = {
     "SS": {"name": "SSI 인젝션", "countermeasure": "웹 서버에서 SSI(Server-Side Includes)를 비활성화하거나, 입력 값에 대한 검증 로직을 구현합니다.", "interview":"URL에 파라미터가 없어 자동 진단이 불가능합니다. GET 파라미터를 포함한 URL로 다시 진단하세요"},
     "XI": {"name": "XPath 인젝션", "countermeasure": "허용된 문자 이외의 모든 입력을 허용하지 않아야 하며, XPath 쿼리에 사용자가 값을 입력할 수 있는 경우, 엄격한 입력 값 검증을 통해 필요 문자만을 받아들이게 합니다.", "interview": "실제 파라미터가 존재하지 않아, 기본 파라미터(q)로 테스트되었지만, 실제 파라미터로 재확인이 필요합니다"},
     "DI": {"name": "디렉터리 인덱싱", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 Apache 웹 서버 설정 파일(httpd.conf 또는 apache2.conf 또는 VirtualHost 설정)에서 해당 디렉터리 또는 전체 웹 루트에 설정된 Options의  Indexes 옵션을 제거하여 주시기 바랍니다.", "countermeasure": "웹 서버 설정에서 디렉터리 리스팅 기능을 비활성화하고, 각 디렉터리에 기본 페이지(index.html 등)를 설정합니다. Apache 서버의 경우 httpd.conf 파일 내 DocumentRoot 항목의 Options에서 Indexes를 제거합니다."},
-    "IL": {"name": "정보 누출", "result":"주요정보통신기반시설 가이드를 참고하시어 httpd.conf 또는 apache2.conf 설정파일에서 'ServerTokens Prod'로 설정 값을 변경하여 주시고 'ServerSignature Off'로 설정 값을 변경하여 주시기 바랍니다.", "countermeasure": "웹 사이트에 노출되는 중요정보는 마스킹을 적용해야 합니다."},
+    "IL": {"name": "정보 누출", "result":"주요정보통신기반시설 가이드를 참고하시어 httpd.conf 또는 apache2.conf 설정파일에서 'ServerTokens Prod'로 설정 값을 변경하여 주시고 'ServerSignature Off'로 설정 값을 변경하여 주시기 바랍니다.", "countermeasure": "httpd.conf 또는 apache2.conf 설정파일에서 'ServerTokens Prod'로 설정 값을 변경하여 주시고 'ServerSignature Off'로 설정 값을 변경하여 주시기 바랍니다."},
     "CS": {"name": "악성 콘텐츠", "countermeasure": "업로드되는 파일의 확장자, MIME 타입을 제한하고, 파일 내용을 검사하며, 웹 루트 외부의 안전한 경로에 저장합니다."},
     "XS": {"name": "크로스사이트 스크립팅", "countermeasure": "입력값 필터링 및 출력값 인코딩(HTML Encoding)을 적용하여 스크립트 실행을 방지합니다."},
     "BF": {"name": "약한 문자열 강도", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 무차별 대입 공격을 방어할 수 있도록 Server Side Script(PHP, ASP, JSP 등)를 활용해 로그인 인증 실패 횟수를 3~5회 이상 초과 시 해당 계정의 접근을 제한하시기 바랍니다.", "countermeasure": "취약한 계정 및 패스워드를 삭제하고, 사용자가 취약한 계정이나 패스워드를 등록하지 못하도록 패스워드 규정이 반영된 체크 로직을 회원가입, 정보변경, 패스워드 변경 등 적용 필요한 페이지에 모두 구현하여야 함", "interview":"수동 확인이 필요합니다."},
@@ -47,7 +47,7 @@ WEB_CODE_MAP: Dict[str, dict] = {
     "CF": {"name": "크로스사이트 리퀘스트 변조", "countermeasure": "주요 요청에 대해 사용자의 재인증을 요구하고, HTTP 헤더의 Referer 검증 로직을 구현합니다. 또한 정상적인 요청과 비정상적인 요청을 구분할 수 있도록 Hidden Form을 사용하여 임의의 암호화된 토큰(세션 ID, Timestamp, nonce 등)을 추가하고 이 토큰을 검증하도록 설계합니다."},
     "SE": {"name": "세션 예측", "countermeasure": "예측 불가능한 복잡하고 긴 세션 ID를 생성하기 위해 암호학적으로 안전한 난수 생성기를 사용합니다.", "interview": "세션 쿠키가 발견되지 않아 검사할 수 없습니다. 세션을 사용하는 페이지에서 테스트하세요"},
     "IN": {"name": "불충분한 인가", "countermeasure": "사용자의 모든 요청에 대해 서버 측에서 해당 사용자가 요청된 기능에 접근할 권한이 있는지 명시적으로 확인합니다.", "interview": "다음 주소에 대한 수동 확인이 필요합니다. 'http://192.168.0.63/wordpress/admin : anon=404, auth=404', 'http://192.168.0.63/wordpress/api/admin/data : anon=404, auth=404', 'http://192.168.0.63/wordpress/user/profile : anon=404, auth=404'"},
-    "SC": {"name": "불충분한 세션 만료", "result":"주요정보통신기반시설 가이드를 참고하시어 세션 타임아웃을 10분으로 설정하여 주시기 바랍니다.", "countermeasure": "사용자가 활동이 없을 경우 일정 시간 후에 세션이 자동으로 만료되도록 타임아웃을 설정하고, 로그아웃 시 세션을 즉시 무효화합니다.", "interview":"수동 확인이 필요합니다."},
+    "SC": {"name": "불충분한 세션 만료", "result":"주요정보통신기반시설 가이드를 참고하시어 세션 타임아웃을 10분으로 설정하여 주시기 바랍니다.", "countermeasure": "사용자가 활동이 없을 경우 일정 시간 후에 세션이 자동으로 만료되도록 타임아웃을 설정하고, 로그아웃 시 세션을 즉시 무효화합니다.", "interview":""},
     "SF": {"name": "세션 고정", "countermeasure": "사용자가 성공적으로 인증된 후에는 즉시 새로운 세션 ID를 발급하여 이전 세션을 무효화합니다.", "interview": "세션 쿠키가 발견되지 않아 검사할 수 없습니다. 로그인 페이지나 세션을 사용하는 페이지에서 테스트하세요"},
     "AU": {"name": "자동화 공격", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 캡차(CAPTCHA)를 활용하여 반복적인 로그인 시도에 대한 일회성 확인 로직을 구현하여주시고, 자동화 공격을 감지하고 방어할 수 있는 IDS/IPS 시스템을 구축하여 주시기 바랍니다.", "countermeasure": "로그인, 회원가입 등 주요 기능에 CAPTCHA를 도입하고, 동일 IP에서의 비정상적인 반복 요청을 탐지하고 차단합니다."},
     "PV": {"name": "프로세스 검증 누락", "countermeasure": "중요한 비즈니스 로직의 모든 단계를 서버 측에서 순차적으로 검증하여 사용자가 단계를 건너뛸 수 없도록 방지합니다.", "interview":"수동 확인이 필요합니다."},
@@ -56,7 +56,7 @@ WEB_CODE_MAP: Dict[str, dict] = {
     "AE": {"name": "관리자 페이지 노출", "countermeasure": "관리자 페이지 URL을 추측하기 어렵게 변경하고, 특정 IP 대역에서만 접근을 허용하며, 강력한 인증을 적용합니다. 단, 부득이하게 관리자 페이지를 외부에 노출해야 하는 경우 관리자 페이지 로그인 시 2차 인증(otp, vpn, 인증서 등) 적용이 필요합니다.", "interview":"관리자/로그인 페이지 1개 발견. 오탐 및 인가/인증 강도 수동 확인이 필요합니다. [포트 체크] 포트 노출된 관리자 페이지 추정: http://192.168.0.63:80/ (상태코드 200)"},
     "PT": {"name": "경로 추적", "countermeasure": "사용자 입력에서 '../' 와 같은 디렉터리 탐색 문자를 필터링하고, 파일 시스템 접근 시 경로를 검증합니다."},
     "PL": {"name": "위치 공개", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 캡차(CAPTCHA)를 활용하여 반복적인 로그인 시도에 대한 일회성 확인 로직을 구현하여주시고, 자동화 공격을 감지하고 방어할 수 있는 IDS/IPS 시스템을 구축하여 주시기 바랍니다.", "countermeasure": "시스템 경로, 설정 파일 위치 등 내부 정보가 오류 메시지나 소스 코드에 노출되지 않도록 수정합니다. 또한,  웹 루트 디렉터리 이하 모든 불필요한 파일 및 샘플 페이지를 삭제합니다."},
-    "SN": {"name": "데이터 평문 전송", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 httpd-ssl.conf 또는 ssl.conf의 SSL 관련 Virtual Host 설정을 'SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1'로 적용하여 주시기 바랍니다.", "countermeasure": "로그인 정보, 개인정보 등 모든 민감한 데이터는 SSL/TLS를 적용하여 암호화된 HTTPS 프로토콜을 통해 전송합니다."},
+    "SN": {"name": "데이터 평문 전송", "result": "[대응 방안]\n주요정보통신기반시설 가이드를 참고하시어 httpd-ssl.conf 또는 ssl.conf의 SSL 관련 Virtual Host 설정을 'SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1'로 적용하여 주시기 바랍니다.", "countermeasure": "httpd-ssl.conf 또는 ssl.conf의 SSL 관련 VirtualHost 설정을 SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1로 변경하여 주시기 바랍니다."},
     "CC": {"name": "쿠키 변조", "countermeasure": "쿠키에 저장되는 중요 정보는 암호화하고, 쿠키 대신 Server Side Session 방식을 사용하거나, 쿠키를 통해 인증 등 중요한 기능을 구현해야 할 경우엔 안전한 알고리즘(SEED, 3DES, AES 등) 적용합니다."},
 }
 
