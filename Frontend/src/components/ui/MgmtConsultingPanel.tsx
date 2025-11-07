@@ -769,7 +769,7 @@ export default function MgmtConsultingPanel() {
   const startDiagnosis = async (files: File | File[]) => {
     setUploading(true);
     setDiagnosisGenerated(false);
-    showModalMessage("자동 진단", "자동 진단을 시작합니다...", "info");
+    showModalMessage("AI 진단", "AI 진단을 시작합니다...", "info");
   
     // 1. 메시지와 진행률을 묶어서 객체 배열로 관리합니다.
     const progressSteps = [
@@ -849,12 +849,12 @@ export default function MgmtConsultingPanel() {
       // 오류 발생 시에도 반드시 타이머를 중지합니다.
       if (intervalId) clearInterval(intervalId);
       
-      console.error('자동 진단 중 오류:', error);
+      console.error('AI 진단 중 오류:', error);
       setUploading(false);
       setDiagnosisStep("");
       showModalMessage(
         "진단 오류",
-        "자동 진단 중 오류가 발생했습니다. 다시 시도해주세요.",
+        "AI 진단 중 오류가 발생했습니다. 다시 시도해주세요.",
         "error"
       );
     }
@@ -949,7 +949,7 @@ export default function MgmtConsultingPanel() {
                 value="auto"
                 className="flex items-center gap-2"
               >
-                자동 진단
+                AI 진단
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="p-0 h-auto cursor-help inline-flex">
@@ -1386,7 +1386,7 @@ export default function MgmtConsultingPanel() {
               )}
 
             </TabsContent>
-            {/* 자동 진단 */}
+            {/* AI 진단 */}
             <TabsContent
               value="auto"
               className="flex-1 flex flex-col space-y-4"
@@ -1409,7 +1409,7 @@ export default function MgmtConsultingPanel() {
                   <div className="space-y-4">
                     <div className="text-center space-y-2">
                       <p className="text-muted-foreground">
-                      증적자료를 업로드하면 자동 진단해드립니다.
+                      증적자료를 업로드하면 AI 진단해드립니다.
                       </p>
                     </div>
                     <div className="flex justify-center">
@@ -1873,7 +1873,7 @@ export default function MgmtConsultingPanel() {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-500" />
                   <CardTitle className="text-base">
-                    자동 진단 완료
+                    AI 진단 완료
                   </CardTitle>
                 </div>
                 <Button
@@ -1892,7 +1892,7 @@ export default function MgmtConsultingPanel() {
               <div className="space-y-3">
                 <div>
                   <div className="font-medium">
-                    자동 진단이 완료되었습니다.
+                    AI 진단이 완료되었습니다.
                   </div>
                 </div>
 
