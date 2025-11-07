@@ -615,23 +615,23 @@ const getDiagnosisVulnerableItems = (tabType: "db" | "web") => {
       { good: false, vulnerable: true, interview: false }, // 3. 취약
       { good: false, vulnerable: false, interview: true }, // 4. 인터뷰
       { good: false, vulnerable: false, interview: true }, // 5. 취약 -> 인터뷰
-      { good: false, vulnerable: false, interview: true }, // 6. 양호 -> 인터뷰
-      { good: true, vulnerable: false, interview: false }, // 7. 양호
-      { good: true, vulnerable: false, interview: false }, // 8. 양호
+      { good: false, vulnerable: false, interview: true }, // 6. 양호 -> 인터뷰 
+      { good: false, vulnerable: false, interview: true }, // 7. 양호 -> 인터뷰 ??
+      { good: false, vulnerable: false, interview: true }, // 8. 양호 -> 인터뷰 ??
       { good: false, vulnerable: false, interview: true }, // 9. 인터뷰
       { good: false, vulnerable: true, interview: false }, // 10. 취약
       { good: false, vulnerable: true, interview: false }, // 11. 취약
       { good: false, vulnerable: false, interview: true }, // 12. 취약 -> 인터뷰
       { good: false, vulnerable: false, interview: true }, // 13. 인터뷰
       { good: false, vulnerable: false, interview: true }, // 14. 인터뷰
-      { good: false, vulnerable: false, interview: true }, // 15. 취약 -> 인터뷰
-      { good: true, vulnerable: false, interview: false }, // 16. 양호 
+      { good: false, vulnerable: false, interview: true }, // 15. 취약 -> 인터뷰 
+      { good: false, vulnerable: false, interview: true }, // 16. 양호 -> 인터뷰 ??
       { good: false, vulnerable: true, interview: false }, // 17. 취약 
-      { good: false, vulnerable: false, interview: true }, // 18. 취약 -> 인터뷰
+      { good: false, vulnerable: false, interview: true }, // 18. 취약 -> 인터뷰 
       { good: false, vulnerable: false, interview: true }, // 19. 취약 -> 인터뷰
       { good: false, vulnerable: false, interview: true }, // 20. 인터뷰
-      { good: false, vulnerable: false, interview: true }, // 21. 인터뷰
-      { good: false, vulnerable: true, interview: false }, // 22. 취약
+      { good: false, vulnerable: false, interview: true }, // 21. 인터뷰 
+      { good: false, vulnerable: false, interview: true }, // 22. 취약 -> 인터뷰 ??
       { good: false, vulnerable: true, interview: false }, // 23. 취약
       { good: false, vulnerable: true, interview: false }  // 24. 취약 -> 인터뷰
     ];
